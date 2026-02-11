@@ -18,7 +18,7 @@ export function SpecialistWidget() {
       <div className="flex items-center gap-5">
         {SPECIALISTS.map((s) => (
           <div key={s.name} className="flex flex-col items-center gap-1.5">
-            <div className="w-14 h-14 rounded-full border-2 border-[#E91E63]/20 overflow-hidden bg-gray-50">
+            <div className="w-[73px] h-[73px] rounded-full border-2 border-[#E91E63]/20 overflow-hidden bg-gray-50">
               <img src={s.photo} alt={s.name} className="w-full h-full object-cover" />
             </div>
             <span className="text-sm font-medium text-gray-700">{s.name}</span>
