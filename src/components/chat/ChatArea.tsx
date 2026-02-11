@@ -206,12 +206,12 @@ export function ChatArea({ initialSessionId = null }: ChatAreaProps) {
             <h1 className="text-[28px] md:text-4xl font-extrabold text-[#0A1E5C] tracking-tight mb-3">
               {visitorName
                 ? `Zdravím, ${visitorName}!`
-                : 'Spočítejte si hypotéku'}
+                : 'Jsem Hugo, váš hypoteční poradce'}
             </h1>
             <p className="text-gray-500 text-base md:text-lg leading-relaxed">
               {visitorName
                 ? 'Pokračujte tam, kde jste skončili, nebo začněte novou kalkulaci.'
-                : 'Zjistěte za minutu, zda dosáhnete na hypotéku. Porovnáme nabídky bank a spočítáme splátku.'}
+                : 'Spočítám splátku, ověřím bonitu a porovnám nabídky bank. Za minutu víte, na co dosáhnete.'}
             </p>
           </div>
 
