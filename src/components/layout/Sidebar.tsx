@@ -190,7 +190,10 @@ export function Sidebar({ activeSessionId, currentView, onSelectSession, onConti
             <div className="w-12 h-12 rounded-full bg-white shadow-sm border border-gray-100 flex items-center justify-center flex-shrink-0">
               <Image src="/logo.png" alt="Hypoteeka" width={30} height={30} className="object-contain" />
             </div>
-            <h1 className="text-xl font-extrabold text-[#0A1E5C] tracking-tight">Hypoteeka AI</h1>
+            <div className="flex items-center gap-2">
+              <h1 className="text-xl font-extrabold text-[#0A1E5C] tracking-tight">Hypoteeka AI</h1>
+              <span className="px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider bg-[#E91E63]/10 text-[#E91E63] rounded-md">Beta</span>
+            </div>
           </div>
           <button onClick={() => setMobileOpen(false)} className="md:hidden p-1">
             <X className="w-5 h-5 text-gray-400" />

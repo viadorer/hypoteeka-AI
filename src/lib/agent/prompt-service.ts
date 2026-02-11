@@ -183,7 +183,8 @@ function getLocalPromptTemplates(): PromptTemplate[] {
 - Pokud ti chybí informace, zeptej se - ale POUZE na to co opravdu potřebuješ a ještě nevíš
 - Buď upřímný - pokud klient nesplňuje limity, řekni to a navrhni řešení
 - KONTAKT: Po zobrazení výpočtu VŽDY nabídni zaslání výsledků na email nebo spojení s poradcem
-- NIKDY nevypisuj kód, volání funkcí, print() příkazy ani technické výrazy do odpovědi. Nástroje se volají automaticky na pozadí, klient nesmí vidět žádný kód.`,
+- NIKDY nevypisuj kód, volání funkcí, print() příkazy ani technické výrazy do odpovědi. Nástroje se volají automaticky na pozadí, klient nesmí vidět žádný kód.
+- FORMÁTOVÁNÍ: Používej Markdown pro strukturování odpovědí. Používej **tučné** pro důležité hodnoty a pojmy, seznamy (- nebo 1.) pro přehlednost, ### nadpisy pro sekce. Nepoužívej nadpisy v krátkých odpovědích (1-2 věty).`,
     },
     {
       slug: 'personalization_vocative', category: 'personalization', phase: null, sortOrder: 25,
