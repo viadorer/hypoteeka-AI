@@ -3,7 +3,7 @@
 import { useChat } from '@ai-sdk/react';
 import { useRef, useEffect, useState, useMemo } from 'react';
 import { v4 as uuidv4 } from 'uuid';
-import { Send, AlertCircle, RotateCcw, Calculator, ShieldCheck, TrendingUp, Users, BarChart3 } from 'lucide-react';
+import { Send, AlertCircle, RotateCcw, Calculator, ShieldCheck, TrendingUp, Users, BarChart3, RefreshCw, Home, PiggyBank, Percent, HelpCircle, ArrowDownUp } from 'lucide-react';
 import { WidgetRenderer } from '../widgets/WidgetRenderer';
 import ReactMarkdown from 'react-markdown';
 import { DefaultChatTransport } from 'ai';
@@ -13,7 +13,11 @@ const QUICK_ACTIONS = [
   { label: 'Spočítat splátku', icon: Calculator },
   { label: 'Ověřit bonitu', icon: ShieldCheck },
   { label: 'Kolik si můžu dovolit?', icon: TrendingUp },
-  { label: 'Nájem vs. hypotéka', icon: Users },
+  { label: 'Nájem vs. hypotéka', icon: ArrowDownUp },
+  { label: 'Nejlepší sazby na trhu', icon: Percent },
+  { label: 'Refinancování hypotéky', icon: RefreshCw },
+  { label: 'Koupě první nemovitosti', icon: Home },
+  { label: 'Investiční nemovitost', icon: PiggyBank },
 ];
 
 
@@ -174,7 +178,7 @@ export function ChatArea({ initialSessionId = null }: ChatAreaProps) {
         value={inputValue}
         onChange={(e) => setInputValue(e.target.value)}
         onKeyDown={(e) => { if (e.key === 'Escape') setInputValue(''); }}
-        placeholder="Napište cenu nemovitosti nebo dotaz..."
+        placeholder="Zeptejte se na cokoliv ohledně hypotéky..."
         className="flex-1 bg-transparent border-none outline-none text-base md:text-[15px] text-gray-900 placeholder:text-gray-400 py-3 md:py-2.5"
         autoComplete="off"
         disabled={isLoading}
@@ -214,9 +218,6 @@ export function ChatArea({ initialSessionId = null }: ChatAreaProps) {
           {/* Input */}
           <div className="w-full max-w-[560px] mb-6 min-w-0">
             {inputBar}
-            <p className="text-center text-[11px] text-gray-400 mt-2.5">
-              Napište přirozeně, např. &quot;Kupuji byt za 5 mil, mám 1 mil a beru 60 tisíc&quot;
-            </p>
           </div>
 
           {/* Quick action badges */}
@@ -270,27 +271,52 @@ export function ChatArea({ initialSessionId = null }: ChatAreaProps) {
             </div>
           )}
 
-          {/* What we do */}
-          <div className="w-full max-w-[700px] grid grid-cols-2 md:grid-cols-4 gap-4 mb-10 min-w-0">
-            <div className={`rounded-xl p-4 text-center ${glass}`}>
-              <Calculator className="w-6 h-6 text-[#E91E63] mx-auto mb-2" />
-              <p className="text-sm font-semibold text-gray-800 mb-1">Splátka a bonita</p>
-              <p className="text-xs text-gray-400">Výpočet dle pravidel ČNB 2026</p>
-            </div>
-            <div className={`rounded-xl p-4 text-center ${glass}`}>
-              <BarChart3 className="w-6 h-6 text-[#E91E63] mx-auto mb-2" />
-              <p className="text-sm font-semibold text-gray-800 mb-1">Sazby 8+ bank</p>
-              <p className="text-xs text-gray-400">Live data z ČNB ARAD</p>
-            </div>
-            <div className={`rounded-xl p-4 text-center ${glass}`}>
-              <ShieldCheck className="w-6 h-6 text-[#E91E63] mx-auto mb-2" />
-              <p className="text-sm font-semibold text-gray-800 mb-1">Limity ČNB</p>
-              <p className="text-xs text-gray-400">LTV, DSTI, DTI kontrola</p>
-            </div>
-            <div className={`rounded-xl p-4 text-center ${glass}`}>
-              <Users className="w-6 h-6 text-[#E91E63] mx-auto mb-2" />
-              <p className="text-sm font-semibold text-gray-800 mb-1">Osobní poradce</p>
-              <p className="text-xs text-gray-400">Konzultace zdarma</p>
+          {/* Co všechno tady řešíme */}
+          <div className="w-full max-w-[700px] mb-10 min-w-0">
+            <p className="text-center text-[11px] text-gray-400 uppercase tracking-wider mb-5 font-medium">
+              Co všechno tady řešíme
+            </p>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              <div className={`rounded-xl p-4 text-center ${glass}`}>
+                <Calculator className="w-6 h-6 text-[#E91E63] mx-auto mb-2" />
+                <p className="text-sm font-semibold text-gray-800 mb-1">Splátka a bonita</p>
+                <p className="text-xs text-gray-400">Výpočet dle ČNB 2026</p>
+              </div>
+              <div className={`rounded-xl p-4 text-center ${glass}`}>
+                <Percent className="w-6 h-6 text-[#E91E63] mx-auto mb-2" />
+                <p className="text-sm font-semibold text-gray-800 mb-1">Nejlepší sazby</p>
+                <p className="text-xs text-gray-400">Exkluzivní podmínky bank</p>
+              </div>
+              <div className={`rounded-xl p-4 text-center ${glass}`}>
+                <RefreshCw className="w-6 h-6 text-[#E91E63] mx-auto mb-2" />
+                <p className="text-sm font-semibold text-gray-800 mb-1">Refinancování</p>
+                <p className="text-xs text-gray-400">Snížení splátky i sazby</p>
+              </div>
+              <div className={`rounded-xl p-4 text-center ${glass}`}>
+                <Home className="w-6 h-6 text-[#E91E63] mx-auto mb-2" />
+                <p className="text-sm font-semibold text-gray-800 mb-1">Koupě nemovitosti</p>
+                <p className="text-xs text-gray-400">Od výběru po podpis</p>
+              </div>
+              <div className={`rounded-xl p-4 text-center ${glass}`}>
+                <PiggyBank className="w-6 h-6 text-[#E91E63] mx-auto mb-2" />
+                <p className="text-sm font-semibold text-gray-800 mb-1">Investice</p>
+                <p className="text-xs text-gray-400">ROI, cash flow, výnos</p>
+              </div>
+              <div className={`rounded-xl p-4 text-center ${glass}`}>
+                <ShieldCheck className="w-6 h-6 text-[#E91E63] mx-auto mb-2" />
+                <p className="text-sm font-semibold text-gray-800 mb-1">Limity ČNB</p>
+                <p className="text-xs text-gray-400">LTV, DSTI, DTI kontrola</p>
+              </div>
+              <div className={`rounded-xl p-4 text-center ${glass}`}>
+                <ArrowDownUp className="w-6 h-6 text-[#E91E63] mx-auto mb-2" />
+                <p className="text-sm font-semibold text-gray-800 mb-1">Nájem vs. koupě</p>
+                <p className="text-xs text-gray-400">Co se víc vyplatí?</p>
+              </div>
+              <div className={`rounded-xl p-4 text-center ${glass}`}>
+                <Users className="w-6 h-6 text-[#E91E63] mx-auto mb-2" />
+                <p className="text-sm font-semibold text-gray-800 mb-1">Osobní poradce</p>
+                <p className="text-xs text-gray-400">Konzultace zdarma</p>
+              </div>
             </div>
           </div>
 
