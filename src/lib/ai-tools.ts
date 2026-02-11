@@ -275,6 +275,38 @@ export const toolDefinitions = {
     },
   },
 
+  get_news: {
+    description: 'Nacti aktualni novinky a clanky z naseho webu. Pouzij kdyz se klient pta na novinky, aktuality, zmeny sazeb, zmeny limitu CNB, nebo co je noveho. Vraci seznam clanku s obsahem.',
+    inputSchema: z.object({
+      query: z.string().optional().describe('Volitelne klicove slovo pro filtrovani clanku (napr. "sazby", "CNB", "limity")'),
+    }),
+    execute: async ({ query }: { query?: string }) => {
+      const { storage } = await import('./storage');
+      const articles = await storage.listNews();
+      let filtered = articles;
+      if (query) {
+        const q = query.toLowerCase();
+        filtered = articles.filter(a =>
+          a.title.toLowerCase().includes(q) ||
+          a.content.toLowerCase().includes(q) ||
+          (a.summary && a.summary.toLowerCase().includes(q))
+        );
+      }
+      if (filtered.length === 0) {
+        return { articles: [], summary: 'Žádné novinky nebyly nalezeny.' };
+      }
+      return {
+        articles: filtered.map(a => ({
+          title: a.title,
+          summary: a.summary,
+          content: a.content,
+          publishedAt: a.publishedAt,
+        })),
+        summary: `Nalezeno ${filtered.length} článků.`,
+      };
+    },
+  },
+
   send_whatsapp_link: {
     description: 'Vygeneruj odkaz na WhatsApp pro kontaktovani poradce nebo zaslani shrnuti. Pouzij kdyz klient chce komunikovat pres WhatsApp nebo kdyz nabidnes WhatsApp a klient souhlasi.',
     inputSchema: z.object({
