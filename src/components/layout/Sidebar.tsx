@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
-import { Menu, X, Plus, MessageSquare, BarChart3, FolderPlus, LogIn, UserPlus, ChevronRight } from 'lucide-react';
+import { Menu, X, Plus, MessageSquare, BarChart3, FolderPlus, LogIn, UserPlus, LogOut, KeyRound, ChevronRight, User } from 'lucide-react';
+import { useAuth } from '@/lib/auth/auth-context';
 
 interface SessionSummary {
   id: string;
@@ -72,10 +73,19 @@ function phaseLabel(phase: string): string {
   return map[phase] ?? phase;
 }
 
+type AuthView = 'none' | 'login' | 'signup' | 'change-password';
+
 export function Sidebar({ activeSessionId, currentView, onSelectSession, onContinueChat, onNewChat }: SidebarProps) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [sessions, setSessions] = useState<SessionSummary[]>([]);
-  const [showAuth, setShowAuth] = useState(false);
+  const [authView, setAuthView] = useState<AuthView>('none');
+  const [authEmail, setAuthEmail] = useState('');
+  const [authPassword, setAuthPassword] = useState('');
+  const [authName, setAuthName] = useState('');
+  const [authError, setAuthError] = useState('');
+  const [authLoading, setAuthLoading] = useState(false);
+  const [authSuccess, setAuthSuccess] = useState('');
+  const { user, login, signup, logout, changePassword } = useAuth();
 
   // Load sessions for chat history
   useEffect(() => {
@@ -238,31 +248,126 @@ export function Sidebar({ activeSessionId, currentView, onSelectSession, onConti
 
         {/* Auth section */}
         <div className="p-4 pt-2 border-t border-gray-100/50 space-y-2">
-          {!showAuth ? (
-            <button
-              onClick={() => setShowAuth(true)}
-              className="w-full flex items-center gap-2 px-3 py-2.5 rounded-xl text-sm text-gray-500 hover:bg-gray-50/80 transition-all"
-            >
-              <LogIn className="w-4 h-4" />
-              Přihlásit se
-            </button>
-          ) : (
+          {user ? (
+            /* Logged in */
             <div className="space-y-1.5">
-              <button className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-gray-600 hover:bg-gray-50 transition-all">
+              <div className="flex items-center gap-2 px-3 py-2 text-sm text-gray-700">
+                <User className="w-4 h-4 text-[#E91E63]" />
+                <span className="truncate font-medium">{user.name ?? user.email}</span>
+              </div>
+              <button
+                onClick={() => { setAuthView('change-password'); setAuthError(''); setAuthSuccess(''); setAuthPassword(''); }}
+                className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-gray-500 hover:bg-gray-50 transition-all"
+              >
+                <KeyRound className="w-4 h-4" />
+                Změnit heslo
+              </button>
+              <button
+                onClick={() => { logout(); setAuthView('none'); }}
+                className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-gray-500 hover:bg-gray-50 transition-all"
+              >
+                <LogOut className="w-4 h-4" />
+                Odhlásit se
+              </button>
+            </div>
+          ) : authView === 'none' ? (
+            /* Not logged in - show buttons */
+            <div className="space-y-1">
+              <button
+                onClick={() => { setAuthView('login'); setAuthError(''); setAuthEmail(''); setAuthPassword(''); }}
+                className="w-full flex items-center gap-2 px-3 py-2.5 rounded-xl text-sm text-gray-500 hover:bg-gray-50/80 transition-all"
+              >
                 <LogIn className="w-4 h-4" />
                 Přihlásit se
               </button>
-              <button className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-gray-600 hover:bg-gray-50 transition-all">
+              <button
+                onClick={() => { setAuthView('signup'); setAuthError(''); setAuthEmail(''); setAuthPassword(''); setAuthName(''); }}
+                className="w-full flex items-center gap-2 px-3 py-2.5 rounded-xl text-sm text-gray-500 hover:bg-gray-50/80 transition-all"
+              >
                 <UserPlus className="w-4 h-4" />
                 Registrace
               </button>
+            </div>
+          ) : (
+            /* Auth form */
+            <form
+              onSubmit={async (e) => {
+                e.preventDefault();
+                setAuthLoading(true);
+                setAuthError('');
+                setAuthSuccess('');
+                try {
+                  if (authView === 'login') {
+                    const res = await login(authEmail, authPassword);
+                    if (res.error) { setAuthError(res.error); } else { setAuthView('none'); }
+                  } else if (authView === 'signup') {
+                    const res = await signup(authEmail, authPassword, authName || undefined);
+                    if (res.error) { setAuthError(res.error); }
+                    else if (res.needsConfirmation) { setAuthSuccess('Ověřte svůj e-mail.'); }
+                    else { setAuthView('none'); }
+                  } else if (authView === 'change-password') {
+                    const res = await changePassword(authPassword);
+                    if (res.error) { setAuthError(res.error); }
+                    else { setAuthSuccess('Heslo změněno.'); setTimeout(() => setAuthView('none'), 1500); }
+                  }
+                } finally { setAuthLoading(false); }
+              }}
+              className="space-y-2"
+            >
+              <p className="text-xs font-medium text-gray-600 px-1">
+                {authView === 'login' ? 'Přihlášení' : authView === 'signup' ? 'Registrace' : 'Změna hesla'}
+              </p>
+              {authView === 'signup' && (
+                <input
+                  type="text"
+                  placeholder="Jméno"
+                  value={authName}
+                  onChange={e => setAuthName(e.target.value)}
+                  className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm outline-none focus:border-[#E91E63]/40"
+                />
+              )}
+              {authView !== 'change-password' && (
+                <input
+                  type="email"
+                  placeholder="E-mail"
+                  value={authEmail}
+                  onChange={e => setAuthEmail(e.target.value)}
+                  required
+                  className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm outline-none focus:border-[#E91E63]/40"
+                />
+              )}
+              <input
+                type="password"
+                placeholder={authView === 'change-password' ? 'Nové heslo' : 'Heslo'}
+                value={authPassword}
+                onChange={e => setAuthPassword(e.target.value)}
+                required
+                minLength={6}
+                className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm outline-none focus:border-[#E91E63]/40"
+              />
+              {authError && <p className="text-xs text-red-500 px-1">{authError}</p>}
+              {authSuccess && <p className="text-xs text-green-600 px-1">{authSuccess}</p>}
               <button
-                onClick={() => setShowAuth(false)}
-                className="w-full text-center text-[11px] text-gray-400 py-1"
+                type="submit"
+                disabled={authLoading}
+                className="w-full px-3 py-2 rounded-lg bg-[#E91E63] hover:bg-[#C2185B] disabled:bg-gray-200 text-white text-sm font-medium transition-all"
               >
+                {authLoading ? '...' : authView === 'login' ? 'Přihlásit' : authView === 'signup' ? 'Registrovat' : 'Změnit'}
+              </button>
+              {authView === 'login' && (
+                <button type="button" onClick={() => { setAuthView('signup'); setAuthError(''); }} className="w-full text-[11px] text-gray-400 py-0.5">
+                  Nemáte účet? Registrace
+                </button>
+              )}
+              {authView === 'signup' && (
+                <button type="button" onClick={() => { setAuthView('login'); setAuthError(''); }} className="w-full text-[11px] text-gray-400 py-0.5">
+                  Máte účet? Přihlášení
+                </button>
+              )}
+              <button type="button" onClick={() => setAuthView('none')} className="w-full text-[11px] text-gray-400 py-0.5">
                 Zrušit
               </button>
-            </div>
+            </form>
           )}
           <p className="text-[10px] text-gray-300 text-center">Hypoteeka AI v0.4</p>
         </div>
