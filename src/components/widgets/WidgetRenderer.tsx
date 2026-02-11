@@ -61,7 +61,9 @@ export function WidgetRenderer({ toolInvocation, sessionId }: { toolInvocation: 
   }
 
   // Show widget as soon as we have args (input-available, output-available, call, etc.)
-  if (!args || Object.keys(args).length === 0) {
+  // Some tools have no input (e.g. show_specialists) - skip check for those
+  const NO_INPUT_TOOLS = ['show_specialists'];
+  if (!NO_INPUT_TOOLS.includes(toolName) && (!args || Object.keys(args).length === 0)) {
     return <WidgetSkeleton toolName={toolName} />;
   }
 
