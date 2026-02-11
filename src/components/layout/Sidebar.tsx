@@ -403,7 +403,6 @@ export function Sidebar({ activeSessionId, currentView, onSelectSession, onConti
           ) : authView === 'none' ? (
             /* Not logged in - show buttons */
             <div className="space-y-1">
-              <p className="text-[10px] text-gray-300 text-center mb-1">Testovaci rezim</p>
               <button
                 onClick={() => { setAuthView('login'); setAuthError(''); setAuthEmail(''); setAuthPassword(''); }}
                 className="w-full flex items-center gap-2 px-3 py-2.5 rounded-xl text-sm text-gray-500 hover:bg-gray-50/80 transition-all"

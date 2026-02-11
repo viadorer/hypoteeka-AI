@@ -205,6 +205,11 @@ export function ChatArea({ initialSessionId = null }: ChatAreaProps) {
       <div className="flex-1 md:ml-[260px] flex flex-col min-h-screen pt-16 md:pt-0 overflow-x-hidden overflow-y-auto min-w-0 w-full">
         <div className="flex-1 flex flex-col items-center px-4 md:px-4 py-8 md:py-12 w-full min-w-0">
 
+          {/* Test mode banner */}
+          <div className="mb-6 px-5 py-2.5 rounded-xl bg-amber-50 border border-amber-200 text-amber-700 text-sm font-medium">
+            Testovaci rezim
+          </div>
+
           {/* Hero */}
           <div className="text-center mb-8 max-w-lg">
             {!visitorName && (
