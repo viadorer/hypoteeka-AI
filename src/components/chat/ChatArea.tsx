@@ -12,7 +12,7 @@ import type { UIMessage } from 'ai';
 const QUICK_ACTIONS = [
   { label: 'Spočítat splátku', icon: Calculator },
   { label: 'Ověřit bonitu', icon: ShieldCheck },
-  { label: 'Kolik si můžu dovolit?', icon: TrendingUp },
+  { label: 'Kolik si mohu půjčit?', icon: TrendingUp },
   { label: 'Nájem vs. hypotéka', icon: ArrowDownUp },
   { label: 'Nejlepší sazby na trhu', icon: Percent },
   { label: 'Refinancování hypotéky', icon: RefreshCw },
