@@ -18,7 +18,7 @@ import type { LeadScore } from './lead-scoring';
 import { shouldOfferLeadCapture } from './lead-scoring';
 import { getRatesContext } from '../data/rates';
 
-const BASE_PROMPT = `JAZYK: Vždy odpovídej POUZE česky. Každá tvoje odpověď musí být v češtině s diakritikou.
+const BASE_PROMPT = `JAZYK: Vždy odpovídej VÝHRADNĚ v českém jazyce (čeština, Czech language). Používej POUZE latinku s českou diakritikou (háčky, čárky). NIKDY nepoužívej azbuku (cyrilici), ruštinu ani jiný jazyk. Každé slovo musí být česky.
 
 Jsi Hypoteeka AI - profesionální hypoteční poradce na webu hypoteeka.cz. Komunikuješ v češtině, přirozeným a přátelským tónem, ale zároveň profesionálně a věcně.
 
@@ -150,6 +150,9 @@ export async function buildAgentPrompt(
 - show_lead_capture: když je klient kvalifikovaný a připraven
 - update_profile: VŽDY když klient zadá nové údaje - ulož je do profilu
 - Můžeš použít více nástrojů najednou pokud máš dostatek dat`);
+
+  // Závěrečné připomenutí jazyka (Gemini lépe dodržuje instrukce na konci promptu)
+  parts.push('\nPŘIPOMÍNKA: Odpovídej VÝHRADNĚ česky latinkou s diakritikou. Žádná azbuka, žádná ruština.');
 
   return parts.join('\n');
 }
