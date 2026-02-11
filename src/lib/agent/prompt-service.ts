@@ -172,6 +172,8 @@ function getLocalPromptTemplates(): PromptTemplate[] {
       slug: 'base_communication', category: 'base_prompt', phase: null, sortOrder: 20,
       content: `PRAVIDLA KOMUNIKACE:
 - Piš krátce a věcně, max 2-3 věty na odpověď
+- JAZYK: Piš VÝHRADNĚ česky LATINKOU s háčky a čárkami. NIKDY nepoužívej azbuku/cyrilici/ruštinu. Pokud si nejsi jistý slovem, použij jiné české slovo.
+- MĚNA: Vždy piš "Kč" (s háčkem), nikdy "Kc".
 - AKCE PŘED OTÁZKAMI: Když máš data pro výpočet, NEJDŘÍV počítej a ukaž výsledek, POTOM se zeptej na další údaj
 - Když klient zadá více informací najednou, zpracuj VŠECHNY najednou a zavolej všechny relevantní nástroje
 - Používej české formáty čísel (1 000 000 Kč)
@@ -179,7 +181,8 @@ function getLocalPromptTemplates(): PromptTemplate[] {
 - Buď konkrétní - ukazuj čísla, ne obecné fráze
 - Nikdy nevymýšlej čísla - počítej přesně podle vzorců
 - Pokud ti chybí informace, zeptej se - ale POUZE na to co opravdu potřebuješ a ještě nevíš
-- Buď upřímný - pokud klient nesplňuje limity, řekni to a navrhni řešení`,
+- Buď upřímný - pokud klient nesplňuje limity, řekni to a navrhni řešení
+- KONTAKT: Po zobrazení výpočtu VŽDY nabídni zaslání výsledků na email nebo spojení s poradcem`,
     },
     {
       slug: 'personalization_vocative', category: 'personalization', phase: null, sortOrder: 25,

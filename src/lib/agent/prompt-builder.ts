@@ -67,22 +67,32 @@ export async function buildAgentPrompt(
     }
   }
 
-  // Contact status
+  // Contact status - AGRESIVNÍ výzva
   const hasEmail = !!profile.email;
   const hasPhone = !!profile.phone;
+  const widgetCount = state.widgetsShown.length;
   if (!hasEmail && !hasPhone) {
-    parts.push('\nKONTAKT: Ještě NEMÁŠ email ani telefon klienta. Při vhodné příležitosti nabídni zaslání shrnutí na email nebo WhatsApp.');
+    if (widgetCount >= 1) {
+      parts.push('\n*** POVINNÁ AKCE - KONTAKT ***\nUž jsi ukázal výpočty. MUSÍŠ v této odpovědi nabídnout:\n"Mohu vám výsledky poslat na e-mail, abyste se k nim mohli vrátit. Stačí zadat adresu. Nebo vás mohu spojit s naším specialistou na bezplatnou konzultaci."\nToto je POVINNÉ - neignoruj to.');
+    } else {
+      parts.push('\nKONTAKT: Ještě NEMÁŠ email ani telefon. Po prvním výpočtu NABÍDNI zaslání na email.');
+    }
   } else if (!hasEmail) {
-    parts.push(`\nKONTAKT: Máš telefon (${profile.phone}), ale NEMÁŠ email. Při příležitosti nabídni zaslání na email.`);
+    parts.push(`\nKONTAKT: Máš telefon (${profile.phone}), ale NEMÁŠ email. Nabídni: "Mohu vám výsledky poslat i na e-mail."`);
   } else if (!hasPhone) {
-    parts.push(`\nKONTAKT: Máš email (${profile.email}), ale NEMÁŠ telefon. Při příležitosti nabídni kontakt přes WhatsApp.`);
+    parts.push(`\nKONTAKT: Máš email (${profile.email}), ale NEMÁŠ telefon. Nabídni: "Chcete, abych vás spojil s poradcem přes WhatsApp nebo telefon?"`);
   } else {
-    parts.push('\nKONTAKT: Máš email i telefon klienta. Nemusíš se ptát znovu.');
+    parts.push('\nKONTAKT: Máš email i telefon. Nabídni sjednání bezplatné schůzky s poradcem.');
   }
 
   // Lead capture
   if (shouldOfferLeadCapture(leadScore, state)) {
     parts.push('\nDOPORUČENÍ: Nabídni klientovi kontaktní formulář (show_lead_capture). Je kvalifikovaný.');
+  }
+
+  // Schůzka - po kvalifikaci
+  if (state.phase === 'qualification' || state.phase === 'conversion' || state.phase === 'followup') {
+    parts.push('\nSCHŮZKA: Nabídni sjednání bezplatné schůzky s hypotečním specialistou. Řekni: "Chcete, abych vám domluvil bezplatnou konzultaci s naším specialistou? Pomůže vám s celým procesem od A do Z."');
   }
 
   // Widgety které už byly zobrazeny
@@ -94,8 +104,12 @@ export async function buildAgentPrompt(
   const toolInstruction = await getToolInstruction(tenantId);
   parts.push('\n' + toolInstruction);
 
-  // Závěrečné připomenutí jazyka (Gemini lépe dodržuje instrukce na konci promptu)
-  parts.push('\nPŘIPOMÍNKA: Odpovídej VÝHRADNĚ česky latinkou s diakritikou. Žádná azbuka, žádná ruština.');
+  // Závěrečné připomenutí (Gemini lépe dodržuje instrukce na konci promptu)
+  parts.push('\n*** ZÁVĚREČNÁ PRAVIDLA ***');
+  parts.push('- JAZYK: Piš VÝHRADNĚ česky LATINKOU s háčky a čárkami. NIKDY nepoužívej azbuku (cyrilici), ruštinu ani jiný jazyk. Pokud si nejsi jistý slovem, použij jiné české slovo.');
+  parts.push('- FORMÁT MĚNY: Vždy "Kč" (s háčkem), nikdy "Kc".');
+  parts.push('- KONTAKT: Pokud jsi v této odpovědi ukázal widget a klient ještě nezadal email, MUSÍŠ nabídnout zaslání na email.');
+  parts.push('- SCHŮZKA: Po výpočtu bonity vždy nabídni bezplatnou konzultaci se specialistou.');
 
   return parts.join('\n');
 }
