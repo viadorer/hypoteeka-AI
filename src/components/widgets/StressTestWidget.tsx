@@ -21,15 +21,15 @@ export function StressTestWidget({ loanAmount, rate, years }: Props) {
         Stress test
       </p>
       <p className="text-xs text-gray-400 mb-4">
-        Co kdyz sazba vzroste po refixaci?
+        Co když sazba vzroste po refixaci?
       </p>
 
       <div className="space-y-0 rounded-xl border border-gray-100 overflow-hidden">
         {/* Header */}
         <div className="grid grid-cols-3 gap-0 bg-gray-50 px-3 py-2 text-[11px] font-semibold text-gray-500 uppercase tracking-wider">
           <span>Sazba</span>
-          <span className="text-right">Splatka</span>
-          <span className="text-right">Rozdil</span>
+          <span className="text-right">Splátka</span>
+          <span className="text-right">Rozdíl</span>
         </div>
 
         {/* Base row */}
@@ -41,7 +41,7 @@ export function StressTestWidget({ loanAmount, rate, years }: Props) {
             {formatCZK(result.basePayment)}
           </span>
           <span className="text-sm text-green-600 text-right font-medium">
-            aktualni
+            aktuální
           </span>
         </div>
 
@@ -69,12 +69,12 @@ export function StressTestWidget({ loanAmount, rate, years }: Props) {
       {/* Total cost comparison */}
       <div className="mt-4 pt-3 border-t border-gray-100">
         <div className="flex justify-between text-sm mb-1">
-          <span className="text-gray-500">Celkem pri aktualni sazbe</span>
+          <span className="text-gray-500">Celkem při aktuální sazbě</span>
           <span className="font-medium text-gray-900">{formatCZK(result.baseTotalCost)}</span>
         </div>
         {result.scenarios.length > 0 && (
           <div className="flex justify-between text-sm">
-            <span className="text-gray-500">Celkem pri +{(result.scenarios[result.scenarios.length - 1].rateChange * 100).toFixed(0)}pp</span>
+            <span className="text-gray-500">Celkem při +{(result.scenarios[result.scenarios.length - 1].rateChange * 100).toFixed(0)}pp</span>
             <span className="font-medium text-red-600">
               {formatCZK(result.scenarios[result.scenarios.length - 1].totalCost)}
               <span className="text-[10px] text-red-400 ml-1">

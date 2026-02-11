@@ -32,17 +32,17 @@ export function AmortizationWidget({ loanAmount, rate, years }: Props) {
     <div className="bg-white rounded-2xl p-4 md:p-6 shadow-sm border border-gray-100 animate-in slide-in-from-bottom-4 duration-500 overflow-hidden w-full min-w-0">
       <div className="w-8 h-[3px] rounded-full bg-indigo-500 mb-4" />
       <p className="text-[11px] font-semibold uppercase tracking-wider text-gray-400 mb-3">
-        Prubeh splaceni
+        Průběh splácení
       </p>
 
       <div className="flex gap-4 mb-3 text-xs">
         <div className="flex items-center gap-1.5">
           <span className="w-3 h-3 rounded-sm bg-indigo-500" />
-          <span className="text-gray-500">Splacena jistina</span>
+          <span className="text-gray-500">Splacená jistina</span>
         </div>
         <div className="flex items-center gap-1.5">
           <span className="w-3 h-3 rounded-sm bg-gray-200" />
-          <span className="text-gray-500">Zbyvajici dluh</span>
+          <span className="text-gray-500">Zbývající dluh</span>
         </div>
       </div>
 
@@ -77,7 +77,7 @@ export function AmortizationWidget({ loanAmount, rate, years }: Props) {
       {/* Stats */}
       <div className="mt-4 space-y-2">
         <div className="flex justify-between text-sm">
-          <span className="text-gray-500">Mesicni splatka</span>
+          <span className="text-gray-500">Měsíční splátka</span>
           <span className="font-medium text-gray-900">{formatCZK(rows[0]?.payment ?? 0)}</span>
         </div>
         <div className="flex justify-between text-sm">
@@ -85,7 +85,7 @@ export function AmortizationWidget({ loanAmount, rate, years }: Props) {
           <span className="font-medium text-gray-900">{formatCZK(totalPaid)}</span>
         </div>
         <div className="flex justify-between text-sm">
-          <span className="text-gray-500">Z toho uroky</span>
+          <span className="text-gray-500">Z toho úroky</span>
           <span className="font-medium text-red-500">{formatCZK(totalInterest)}</span>
         </div>
       </div>
@@ -94,7 +94,7 @@ export function AmortizationWidget({ loanAmount, rate, years }: Props) {
       {milestones.length > 0 && (
         <div className="mt-4 pt-3 border-t border-gray-100">
           <p className="text-[11px] font-semibold uppercase tracking-wider text-gray-400 mb-2">
-            Milniky
+            Milníky
           </p>
           <div className="space-y-2">
             {milestones.map((m) => (

@@ -44,7 +44,7 @@ function fmt(n: number): string {
 function timeAgo(dateStr: string): string {
   const diff = Date.now() - new Date(dateStr).getTime();
   const mins = Math.floor(diff / 60000);
-  if (mins < 1) return 'prave ted';
+  if (mins < 1) return 'právě teď';
   if (mins < 60) return `${mins} min`;
   const hours = Math.floor(mins / 60);
   if (hours < 24) return `${hours} h`;
@@ -53,7 +53,7 @@ function timeAgo(dateStr: string): string {
 }
 
 function chatTitle(s: SessionSummary): string {
-  if (s.profile.propertyPrice) return `${fmt(s.profile.propertyPrice)} Kc`;
+  if (s.profile.propertyPrice) return `${fmt(s.profile.propertyPrice)} Kč`;
   if (s.profile.name) return s.profile.name;
   const parts = [s.profile.propertyType, s.profile.location].filter(Boolean);
   if (parts.length > 0) return parts.join(', ');
@@ -62,12 +62,12 @@ function chatTitle(s: SessionSummary): string {
 
 function phaseLabel(phase: string): string {
   const map: Record<string, string> = {
-    greeting: 'Zacatek',
-    discovery: 'Sber dat',
-    analysis: 'Analyza',
+    greeting: 'Začátek',
+    discovery: 'Sběr dat',
+    analysis: 'Analýza',
     qualification: 'Kvalifikace',
     conversion: 'Konverze',
-    followup: 'Dokonceno',
+    followup: 'Dokončeno',
   };
   return map[phase] ?? phase;
 }
@@ -143,7 +143,7 @@ export function Sidebar({ activeSessionId, currentView, onSelectSession, onConti
             className="w-full flex items-center gap-2 px-4 py-3 rounded-xl text-[15px] font-semibold bg-[#E91E63] text-white hover:bg-[#C2185B] transition-colors shadow-sm"
           >
             <Plus className="w-4 h-4" />
-            Nova konzultace
+            Nová konzultace
           </button>
         </div>
 
@@ -165,7 +165,7 @@ export function Sidebar({ activeSessionId, currentView, onSelectSession, onConti
             }`}
           >
             <BarChart3 className="w-5 h-5" />
-            Analyzy
+            Analýzy
           </button>
           <button
             disabled
@@ -180,11 +180,11 @@ export function Sidebar({ activeSessionId, currentView, onSelectSession, onConti
         {/* Previous chats */}
         <div className="flex-1 overflow-y-auto px-4 py-2 border-t border-gray-100/50">
           <p className="text-[11px] font-semibold uppercase tracking-wider text-gray-400 mb-2 px-1">
-            Predchozi chaty
+            Předchozí chaty
           </p>
 
           {chatSessions.length === 0 && (
-            <p className="text-xs text-gray-300 px-1 py-2">Zatim zadne konverzace.</p>
+            <p className="text-xs text-gray-300 px-1 py-2">Zatím žádné konverzace.</p>
           )}
 
           <div className="space-y-1">
@@ -216,7 +216,7 @@ export function Sidebar({ activeSessionId, currentView, onSelectSession, onConti
                       }`}>
                         {phaseLabel(s.state.phase)}
                       </span>
-                      <span className="text-[11px] text-gray-300">{s.state.turnCount} zprav</span>
+                      <span className="text-[11px] text-gray-300">{s.state.turnCount} zpráv</span>
                     </div>
                   </button>
                   {/* Quick action: view analysis */}
@@ -226,7 +226,7 @@ export function Sidebar({ activeSessionId, currentView, onSelectSession, onConti
                       className="flex items-center gap-1 text-[11px] text-gray-400 hover:text-[#E91E63] transition-colors"
                     >
                       <BarChart3 className="w-3 h-3" />
-                      Zobrazit analyzu
+                      Zobrazit analýzu
                       <ChevronRight className="w-3 h-3" />
                     </button>
                   </div>
@@ -244,13 +244,13 @@ export function Sidebar({ activeSessionId, currentView, onSelectSession, onConti
               className="w-full flex items-center gap-2 px-3 py-2.5 rounded-xl text-sm text-gray-500 hover:bg-gray-50/80 transition-all"
             >
               <LogIn className="w-4 h-4" />
-              Prihlasit se
+              Přihlásit se
             </button>
           ) : (
             <div className="space-y-1.5">
               <button className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-gray-600 hover:bg-gray-50 transition-all">
                 <LogIn className="w-4 h-4" />
-                Prihlasit se
+                Přihlásit se
               </button>
               <button className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-gray-600 hover:bg-gray-50 transition-all">
                 <UserPlus className="w-4 h-4" />
@@ -260,7 +260,7 @@ export function Sidebar({ activeSessionId, currentView, onSelectSession, onConti
                 onClick={() => setShowAuth(false)}
                 className="w-full text-center text-[11px] text-gray-400 py-1"
               >
-                Zrusit
+                Zrušit
               </button>
             </div>
           )}

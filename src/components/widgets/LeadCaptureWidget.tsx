@@ -59,8 +59,8 @@ export function LeadCaptureWidget({ context, prefilledName, prefilledEmail, pref
       <div className="bg-white/60 backdrop-blur-xl border border-white/40 rounded-2xl p-4 md:p-6 shadow-lg shadow-black/[0.03] animate-in slide-in-from-bottom-4 duration-500 overflow-hidden w-full min-w-0">
         <div className="w-8 h-[3px] rounded-full bg-emerald-500 mb-4" />
         <div className="text-center py-4">
-          <p className="text-lg font-semibold text-gray-900 mb-2">Dekujeme za vas zajem</p>
-          <p className="text-sm text-gray-500">Nas poradce vas bude kontaktovat v nejblizsim moznem terminu.</p>
+          <p className="text-lg font-semibold text-gray-900 mb-2">Děkujeme za váš zájem</p>
+          <p className="text-sm text-gray-500">Náš poradce vás bude kontaktovat v nejbližším možném termínu.</p>
         </div>
       </div>
     );
@@ -70,16 +70,16 @@ export function LeadCaptureWidget({ context, prefilledName, prefilledEmail, pref
     <div className="bg-white/60 backdrop-blur-xl border border-white/40 rounded-2xl p-4 md:p-6 shadow-lg shadow-black/[0.03] animate-in slide-in-from-bottom-4 duration-500 overflow-hidden w-full min-w-0">
       <div className="w-8 h-[3px] rounded-full bg-[#E91E63] mb-4" />
       <p className="text-[11px] font-semibold uppercase tracking-wider text-gray-400 mb-1">
-        Nezavazna konzultace
+        Nezávazná konzultace
       </p>
       <p className="text-sm text-gray-500 mb-4">
-        Nechte nam na sebe kontakt a nas poradce se vam ozve. Sluzba je zcela zdarma.
+        Nechte nám na sebe kontakt a náš poradce se vám ozve. Služba je zcela zdarma.
       </p>
 
       <form onSubmit={handleSubmit} className="space-y-3">
         <input
           type="text"
-          placeholder="Jmeno a prijmeni *"
+          placeholder="Jméno a příjmení *"
           value={name}
           onChange={e => setName(e.target.value)}
           className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-white/80 text-sm text-gray-900 placeholder:text-gray-400 outline-none focus:border-[#E91E63]/40 focus:ring-1 focus:ring-[#E91E63]/20 transition-all"
@@ -111,8 +111,8 @@ export function LeadCaptureWidget({ context, prefilledName, prefilledEmail, pref
             className="mt-0.5 w-4 h-4 rounded border-gray-300 text-[#E91E63] focus:ring-[#E91E63]/20 accent-[#E91E63]"
           />
           <span className="text-[11px] text-gray-500 leading-relaxed">
-            Souhlasim se zpracovanim osobnich udaju za ucelem nezavazne konzultace.
-            Udaje budou pouzity pouze pro kontaktovani nasim poradcem.
+            Souhlasím se zpracováním osobních údajů za účelem nezávazné konzultace.
+            Údaje budou použity pouze pro kontaktování naším poradcem.
           </span>
         </label>
 
@@ -122,7 +122,7 @@ export function LeadCaptureWidget({ context, prefilledName, prefilledEmail, pref
           className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-[#E91E63] hover:bg-[#C2185B] disabled:bg-gray-200 disabled:text-gray-400 text-white text-sm font-medium transition-all"
         >
           <Send className="w-4 h-4" />
-          {submitting ? 'Odesilam...' : 'Odeslat nezavazne'}
+          {submitting ? 'Odesílám...' : 'Odeslat nezávazně'}
         </button>
       </form>
     </div>
