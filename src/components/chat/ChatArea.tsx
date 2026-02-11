@@ -3,7 +3,7 @@
 import { useChat } from '@ai-sdk/react';
 import { useRef, useEffect, useState, useMemo } from 'react';
 import { v4 as uuidv4 } from 'uuid';
-import { Send, AlertCircle, RotateCcw, Calculator, ShieldCheck, TrendingUp, Users, ArrowRight, CheckCircle2 } from 'lucide-react';
+import { Send, AlertCircle, RotateCcw, Calculator, ShieldCheck, TrendingUp, Users, ArrowRight, CheckCircle2, TrendingDown, Clock, BarChart3 } from 'lucide-react';
 import { WidgetRenderer } from '../widgets/WidgetRenderer';
 import ReactMarkdown from 'react-markdown';
 import { DefaultChatTransport } from 'ai';
@@ -77,12 +77,24 @@ export function ChatArea({ initialSessionId = null }: ChatAreaProps) {
   });
   const [inputValue, setInputValue] = useState('');
   const [visitorName, setVisitorName] = useState<string | null>(null);
+  const [todayRates, setTodayRates] = useState<{
+    date: string;
+    cnb: { repo: number };
+    mortgage: { avgRate: number; rateFix1y: number; rateFix5y: number; rateFix10y: number; rpsn: number };
+  } | null>(null);
   const [historyLoaded, setHistoryLoaded] = useState(false);
   const prevStatusRef = useRef(status);
   const inputRef = useRef<HTMLInputElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const hasStarted = messages.length > 0;
   const isLoading = status === 'submitted' || status === 'streaming';
+
+  // Fetch today's rates for welcome screen
+  useEffect(() => {
+    fetch('/api/rates').then(r => r.json()).then(data => {
+      if (data.mortgage?.avgRate > 0) setTodayRates(data);
+    }).catch(() => {});
+  }, []);
 
   // Save uiMessages after AI response completes
   useEffect(() => {
@@ -245,6 +257,42 @@ export function ChatArea({ initialSessionId = null }: ChatAreaProps) {
             ))}
           </div>
 
+          {/* Today's rates */}
+          {todayRates && todayRates.mortgage.avgRate > 0 && (
+            <div className="w-full max-w-[700px] mb-8 min-w-0">
+              <div className="flex items-center justify-center gap-2 mb-4">
+                <BarChart3 className="w-4 h-4 text-[#E91E63]" />
+                <p className="text-[11px] text-gray-400 uppercase tracking-wider font-medium">
+                  Sazby hypoték dnes ({todayRates.date})
+                </p>
+              </div>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                <div className={`rounded-xl p-3.5 text-center ${glass}`}>
+                  <p className="text-[10px] text-gray-400 uppercase tracking-wider mb-1">Repo ČNB</p>
+                  <p className="text-lg font-bold text-[#0A1E5C]">{todayRates.cnb.repo} %</p>
+                </div>
+                <div className={`rounded-xl p-3.5 text-center ${glass}`}>
+                  <p className="text-[10px] text-gray-400 uppercase tracking-wider mb-1">Fixace 1-5 let</p>
+                  <p className="text-lg font-bold text-[#0A1E5C]">{todayRates.mortgage.rateFix5y} %</p>
+                  <p className="text-[10px] text-gray-400">průměr trhu</p>
+                </div>
+                <div className={`rounded-xl p-3.5 text-center ${glass}`}>
+                  <p className="text-[10px] text-gray-400 uppercase tracking-wider mb-1">Fixace 5-10 let</p>
+                  <p className="text-lg font-bold text-[#0A1E5C]">{todayRates.mortgage.rateFix10y} %</p>
+                  <p className="text-[10px] text-gray-400">průměr trhu</p>
+                </div>
+                <div className={`rounded-xl p-3.5 text-center ${glass}`}>
+                  <p className="text-[10px] text-gray-400 uppercase tracking-wider mb-1">RPSN</p>
+                  <p className="text-lg font-bold text-[#0A1E5C]">{todayRates.mortgage.rpsn} %</p>
+                  <p className="text-[10px] text-gray-400">průměr trhu</p>
+                </div>
+              </div>
+              <p className="text-center text-[10px] text-gray-400 mt-2">
+                Zdroj: ČNB ARAD -- Díky exkluzivním smlouvám nabízíme výhodnější podmínky
+              </p>
+            </div>
+          )}
+
           {/* Feature cards - glass style */}
           <div className="w-full max-w-[700px] grid grid-cols-1 md:grid-cols-2 gap-3 mb-10 min-w-0">
             {FEATURES.map((f) => (
@@ -279,7 +327,7 @@ export function ChatArea({ initialSessionId = null }: ChatAreaProps) {
 
           {/* Footer info */}
           <div className={`rounded-xl px-6 py-3 text-center text-[11px] text-gray-400 max-w-lg ${glass}`}>
-            <p>Hypoteeka AI používá metodiku ČNB 2026 a live data z PRIBOR. Výsledky jsou orientační.</p>
+            <p>Hypoteeka AI používá metodiku ČNB 2026 a live data z ČNB ARAD. Výsledky jsou orientační.</p>
             <p className="mt-1">Vaše data zpracováváme pouze pro účely kalkulace a nejsou sdílena třetím stranám.</p>
           </div>
         </div>
