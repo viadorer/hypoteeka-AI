@@ -13,11 +13,11 @@ import { formatCZK, formatPercent } from './format';
 
 export const toolDefinitions = {
   show_property: {
-    description: 'Show property card with price and details. Use when user mentions a property price or type.',
+    description: 'Zobraz kartu nemovitosti s cenou a detaily. Pouzij kdyz klient zminuje cenu nebo typ nemovitosti.',
     inputSchema: z.object({
-      propertyPrice: z.number().describe('Property price in CZK'),
-      propertyType: z.string().optional().describe('Type: byt, dum, pozemek'),
-      location: z.string().optional().describe('Location if mentioned'),
+      propertyPrice: z.number().describe('Cena nemovitosti v CZK'),
+      propertyType: z.string().optional().describe('Typ: byt, dum, pozemek'),
+      location: z.string().optional().describe('Lokalita pokud je znama'),
     }),
     execute: async ({ propertyPrice, propertyType, location }: { propertyPrice: number; propertyType?: string; location?: string }) => {
       return { propertyPrice, propertyType, location, displayed: true };
@@ -25,12 +25,12 @@ export const toolDefinitions = {
   },
 
   show_payment: {
-    description: 'Show mortgage payment calculation. Use when you have property price and equity.',
+    description: 'Zobraz vypocet mesicni splatky hypoteky. Pouzij kdyz mas cenu nemovitosti a vlastni zdroje.',
     inputSchema: z.object({
-      propertyPrice: z.number().describe('Property price in CZK'),
-      equity: z.number().describe('Own funds / equity in CZK'),
-      rate: z.number().optional().describe('Annual interest rate, default 0.045'),
-      years: z.number().optional().describe('Loan term in years, default 30'),
+      propertyPrice: z.number().describe('Cena nemovitosti v CZK'),
+      equity: z.number().describe('Vlastni zdroje v CZK'),
+      rate: z.number().optional().describe('Rocni urokova sazba jako desetinne cislo (napr. 0.045 = 4,5 %). Pokud klient neuvedl, NEZADAVEJ - system pouzije aktualni trzni sazbu.'),
+      years: z.number().optional().describe('Doba splatnosti v letech. Pokud klient neuvedl, NEZADAVEJ - system pouzije 30 let.'),
     }),
     execute: async ({ propertyPrice, equity, rate, years }: { propertyPrice: number; equity: number; rate?: number; years?: number }) => {
       const r = rate ?? DEFAULTS.rate;
@@ -51,12 +51,12 @@ export const toolDefinitions = {
   },
 
   show_eligibility: {
-    description: 'Show CNB eligibility check (LTV, DSTI, DTI). Use when you have property price, equity AND income.',
+    description: 'Zobraz kontrolu bonity podle pravidel CNB (LTV, DSTI, DTI). Pouzij kdyz mas cenu, vlastni zdroje A prijem.',
     inputSchema: z.object({
-      propertyPrice: z.number().describe('Property price in CZK'),
-      equity: z.number().describe('Own funds in CZK'),
-      monthlyIncome: z.number().describe('Net monthly income in CZK'),
-      isYoung: z.boolean().optional().describe('Is the client under 36 years old'),
+      propertyPrice: z.number().describe('Cena nemovitosti v CZK'),
+      equity: z.number().describe('Vlastni zdroje v CZK'),
+      monthlyIncome: z.number().describe('Cisty mesicni prijem v CZK'),
+      isYoung: z.boolean().optional().describe('Je klient mladsi 36 let?'),
     }),
     execute: async ({ propertyPrice, equity, monthlyIncome, isYoung }: { propertyPrice: number; equity: number; monthlyIncome: number; isYoung?: boolean }) => {
       const result = checkEligibility(propertyPrice, equity, monthlyIncome, isYoung);
@@ -71,11 +71,11 @@ export const toolDefinitions = {
   },
 
   show_rent_vs_buy: {
-    description: 'Compare renting vs buying. Use when user asks about rent vs mortgage comparison.',
+    description: 'Porovnej najem vs koupi. Pouzij kdyz se klient pta na srovnani najmu a hypoteky.',
     inputSchema: z.object({
-      propertyPrice: z.number().describe('Property price in CZK'),
-      equity: z.number().describe('Own funds in CZK'),
-      monthlyRent: z.number().describe('Current or estimated monthly rent in CZK'),
+      propertyPrice: z.number().describe('Cena nemovitosti v CZK'),
+      equity: z.number().describe('Vlastni zdroje v CZK'),
+      monthlyRent: z.number().describe('Aktualni nebo odhadovany mesicni najem v CZK'),
     }),
     execute: async ({ propertyPrice, equity, monthlyRent }: { propertyPrice: number; equity: number; monthlyRent: number }) => {
       const result = compareRentVsBuy(propertyPrice, equity, monthlyRent);
@@ -88,12 +88,12 @@ export const toolDefinitions = {
   },
 
   show_investment: {
-    description: 'Show investment property analysis with ROI, ROE, cash flow. Use for investment property questions.',
+    description: 'Zobraz analyzu investicni nemovitosti s ROI, ROE, cash flow. Pouzij pro dotazy na investicni nemovitosti.',
     inputSchema: z.object({
-      purchasePrice: z.number().describe('Purchase price in CZK'),
-      equity: z.number().describe('Own funds in CZK'),
-      monthlyRentalIncome: z.number().describe('Expected monthly rental income in CZK'),
-      monthlyExpenses: z.number().optional().describe('Monthly expenses (maintenance, insurance, etc.) in CZK'),
+      purchasePrice: z.number().describe('Kupni cena v CZK'),
+      equity: z.number().describe('Vlastni zdroje v CZK'),
+      monthlyRentalIncome: z.number().describe('Ocekavany mesicni prijem z najmu v CZK'),
+      monthlyExpenses: z.number().optional().describe('Mesicni naklady (udrzba, pojisteni atd.) v CZK'),
     }),
     execute: async ({ purchasePrice, equity, monthlyRentalIncome, monthlyExpenses }: { purchasePrice: number; equity: number; monthlyRentalIncome: number; monthlyExpenses?: number }) => {
       const result = calculateInvestment(purchasePrice, equity, monthlyRentalIncome, monthlyExpenses);
@@ -106,11 +106,11 @@ export const toolDefinitions = {
   },
 
   show_affordability: {
-    description: 'Show how much property the client can afford. Use when user asks "how much can I afford" or "what price range".',
+    description: 'Zobraz kolik si klient muze dovolit. Pouzij kdyz se pta "kolik si muzu dovolit" nebo "jaky cenovy rozsah".',
     inputSchema: z.object({
-      monthlyIncome: z.number().describe('Net monthly income in CZK'),
-      equity: z.number().describe('Available own funds in CZK'),
-      isYoung: z.boolean().optional().describe('Is the client under 36'),
+      monthlyIncome: z.number().describe('Cisty mesicni prijem v CZK'),
+      equity: z.number().describe('Dostupne vlastni zdroje v CZK'),
+      isYoung: z.boolean().optional().describe('Je klient mladsi 36 let?'),
     }),
     execute: async ({ monthlyIncome, equity, isYoung }: { monthlyIncome: number; equity: number; isYoung?: boolean }) => {
       const result = calculateAffordability(monthlyIncome, equity, isYoung);
@@ -123,12 +123,12 @@ export const toolDefinitions = {
   },
 
   show_refinance: {
-    description: 'Show refinancing comparison. Use when user asks about refinancing existing mortgage.',
+    description: 'Zobraz srovnani refinancovani. Pouzij kdyz se klient pta na refinancovani stavajici hypoteky.',
     inputSchema: z.object({
-      remainingBalance: z.number().describe('Remaining mortgage balance in CZK'),
-      currentRate: z.number().describe('Current annual interest rate (e.g. 0.06 for 6%)'),
-      newRate: z.number().optional().describe('New rate to compare, default 0.045'),
-      remainingYears: z.number().describe('Remaining years on the mortgage'),
+      remainingBalance: z.number().describe('Zbyvajici zustatek hypoteky v CZK'),
+      currentRate: z.number().describe('Aktualni rocni urokova sazba (napr. 0.06 = 6 %)'),
+      newRate: z.number().optional().describe('Nova sazba pro srovnani. Pokud klient neuvedl, NEZADAVEJ - system pouzije aktualni trzni sazbu.'),
+      remainingYears: z.number().describe('Zbyvajici roky splatnosti'),
     }),
     execute: async ({ remainingBalance, currentRate, newRate, remainingYears }: { remainingBalance: number; currentRate: number; newRate?: number; remainingYears: number }) => {
       const result = calculateRefinance(remainingBalance, currentRate, newRate ?? DEFAULTS.rate, remainingYears);
@@ -141,11 +141,11 @@ export const toolDefinitions = {
   },
 
   show_amortization: {
-    description: 'Show amortization schedule / chart. Use when user wants to see payment breakdown over time.',
+    description: 'Zobraz amortizacni plan / graf. Pouzij kdyz klient chce videt rozlozeni splatek v case.',
     inputSchema: z.object({
-      loanAmount: z.number().describe('Loan amount in CZK'),
-      rate: z.number().optional().describe('Annual rate, default 0.045'),
-      years: z.number().optional().describe('Term in years, default 30'),
+      loanAmount: z.number().describe('Vyse uveru v CZK'),
+      rate: z.number().optional().describe('Rocni sazba. Pokud klient neuvedl, NEZADAVEJ - system pouzije aktualni trzni sazbu.'),
+      years: z.number().optional().describe('Doba splatnosti v letech. Pokud klient neuvedl, NEZADAVEJ - system pouzije 30 let.'),
     }),
     execute: async ({ loanAmount, rate, years }: { loanAmount: number; rate?: number; years?: number }) => {
       const r = rate ?? DEFAULTS.rate;
@@ -164,9 +164,9 @@ export const toolDefinitions = {
   },
 
   show_lead_capture: {
-    description: 'Show contact form to capture lead. Use when: (1) client meets eligibility criteria and wants to proceed, (2) client explicitly asks for help from a specialist, (3) conversation reaches a point where human advisor would add value. Do NOT show this too early.',
+    description: 'Zobraz kontaktni formular. Pouzij kdyz: (1) klient splnuje podminky a chce pokracovat, (2) klient explicitne zada o pomoc specialisty, (3) konverzace dosahla bodu kde by zivý poradce pridal hodnotu. NEZOBRAZUJ prilis brzy.',
     inputSchema: z.object({
-      context: z.string().describe('Brief summary of what the client needs, for the advisor'),
+      context: z.string().describe('Kratke shrnuti co klient potrebuje, pro poradce'),
       prefilledName: z.string().optional(),
       prefilledEmail: z.string().optional(),
       prefilledPhone: z.string().optional(),
@@ -177,25 +177,25 @@ export const toolDefinitions = {
   },
 
   update_profile: {
-    description: 'ALWAYS call this tool when the client provides any new data (price, equity, income, age, name, property type, location, rent, etc.). This stores the data for future reference. Call this BEFORE or TOGETHER WITH display widgets.',
+    description: 'VZDY zavolej tento nastroj kdyz klient uvede jakakoliv nova data (cena, zdroje, prijem, vek, jmeno, typ nemovitosti, lokalita, najem atd.). Ulozi data pro dalsi pouziti. Zavolej PRED nebo SPOLECNE s widgety.',
     inputSchema: z.object({
-      propertyPrice: z.number().optional().describe('Property price in CZK'),
+      propertyPrice: z.number().optional().describe('Cena nemovitosti v CZK'),
       propertyType: z.string().optional().describe('byt, dum, pozemek, rekonstrukce'),
-      location: z.string().optional().describe('City or area'),
+      location: z.string().optional().describe('Mesto nebo oblast'),
       purpose: z.string().optional().describe('vlastni_bydleni, investice, refinancovani'),
-      equity: z.number().optional().describe('Own funds in CZK'),
-      monthlyIncome: z.number().optional().describe('Net monthly income in CZK'),
-      partnerIncome: z.number().optional().describe('Partner net monthly income in CZK'),
-      age: z.number().optional().describe('Client age'),
-      currentRent: z.number().optional().describe('Current monthly rent in CZK'),
-      expectedRentalIncome: z.number().optional().describe('Expected rental income for investment property'),
-      existingLoans: z.number().optional().describe('Existing loan obligations monthly'),
-      existingMortgageBalance: z.number().optional().describe('Remaining mortgage balance for refinancing'),
-      existingMortgageRate: z.number().optional().describe('Current mortgage rate for refinancing'),
-      existingMortgageYears: z.number().optional().describe('Remaining years on existing mortgage'),
-      name: z.string().optional().describe('Client name'),
-      email: z.string().optional().describe('Client email'),
-      phone: z.string().optional().describe('Client phone'),
+      equity: z.number().optional().describe('Vlastni zdroje v CZK'),
+      monthlyIncome: z.number().optional().describe('Cisty mesicni prijem v CZK'),
+      partnerIncome: z.number().optional().describe('Cisty mesicni prijem partnera v CZK'),
+      age: z.number().optional().describe('Vek klienta'),
+      currentRent: z.number().optional().describe('Aktualni mesicni najem v CZK'),
+      expectedRentalIncome: z.number().optional().describe('Ocekavany prijem z najmu investicni nemovitosti'),
+      existingLoans: z.number().optional().describe('Stavajici mesicni zavazky z uveru'),
+      existingMortgageBalance: z.number().optional().describe('Zbyvajici zustatek hypoteky pro refinancovani'),
+      existingMortgageRate: z.number().optional().describe('Aktualni sazba hypoteky pro refinancovani'),
+      existingMortgageYears: z.number().optional().describe('Zbyvajici roky stavajici hypoteky'),
+      name: z.string().optional().describe('Jmeno klienta'),
+      email: z.string().optional().describe('Email klienta'),
+      phone: z.string().optional().describe('Telefon klienta'),
     }),
     execute: async (data: Record<string, unknown>) => {
       // Data se zpracovávají v API route přes onStepFinish

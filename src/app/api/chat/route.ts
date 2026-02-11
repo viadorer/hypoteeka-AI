@@ -100,7 +100,7 @@ export async function POST(req: Request) {
     state.leadQualified = leadScore.qualified;
 
     // Build dynamic prompt (async - fetches live rates from ČNB API)
-    const systemPrompt = await buildAgentPrompt(profile, state, leadScore);
+    const systemPrompt = await buildAgentPrompt(profile, state, leadScore, tenantId);
 
     console.log(`[Agent] Tenant: ${tenantId}, Session: ${sessionId}, Phase: ${state.phase}, Score: ${leadScore.score}/${leadScore.temperature}, Fields: ${collectedFields.join(',')}`);
 
