@@ -14,14 +14,5 @@ ALTER TABLE public.market_rates
   ADD COLUMN IF NOT EXISTS mortgage_volume_total NUMERIC(14,0),
   ADD COLUMN IF NOT EXISTS mortgage_volume_fix5y NUMERIC(14,0);
 
--- Update seed row with realistic initial values
-UPDATE public.market_rates
-SET mortgage_avg_rate = 4.89,
-    mortgage_rate_fix1y = 5.20,
-    mortgage_rate_fix5y = 4.85,
-    mortgage_rate_fix10y = 5.10,
-    mortgage_rate_fix10yplus = 5.30,
-    mortgage_rpsn = 5.12,
-    mortgage_volume_total = 28500,
-    mortgage_volume_fix5y = 18200
-WHERE source = 'seed';
+-- No seed values - real data comes from ARAD fetch (/api/cron/rates)
+-- After running this migration, call /api/cron/rates to populate with real ČNB data
