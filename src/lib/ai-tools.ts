@@ -314,13 +314,18 @@ export const toolDefinitions = {
       message: z.string().describe('Predvyplnena zprava pro WhatsApp'),
     }),
     execute: async ({ phone, message }: { phone: string; message: string }) => {
-      // Normalize phone number
-      let normalized = phone.replace(/\s+/g, '').replace(/^00/, '+');
-      if (!normalized.startsWith('+')) {
-        normalized = '+420' + normalized;
+      // Normalize phone number - strip spaces, dashes, parens
+      let digits = phone.replace(/[\s\-\(\)]/g, '');
+      // Remove leading + or 00 prefix
+      digits = digits.replace(/^\+/, '').replace(/^00/, '');
+      // If starts with 420 and has 12+ digits, it already has Czech prefix
+      // If 9 digits (Czech local), add 420
+      if (!digits.startsWith('420') || digits.length <= 9) {
+        digits = '420' + digits;
       }
+      const normalized = '+' + digits;
       const encoded = encodeURIComponent(message);
-      const whatsappUrl = `https://wa.me/${normalized.replace('+', '')}?text=${encoded}`;
+      const whatsappUrl = `https://wa.me/${digits}?text=${encoded}`;
       return {
         whatsappUrl,
         phone: normalized,
