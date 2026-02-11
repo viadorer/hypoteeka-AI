@@ -7,9 +7,9 @@ export async function POST(req: Request) {
     const body = await req.json();
     const { name, email, phone, context, sessionId, tenantId } = body;
 
-    if (!name || !email || !phone) {
+    if (!name || (!email && !phone)) {
       return new Response(
-        JSON.stringify({ error: 'Jmeno, email a telefon jsou povinne.' }),
+        JSON.stringify({ error: 'Jmeno a alespon email nebo telefon jsou povinne.' }),
         { status: 400, headers: { 'Content-Type': 'application/json' } }
       );
     }

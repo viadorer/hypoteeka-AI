@@ -1,21 +1,7 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
-
-declare global {
-  interface Window {
-    RealvisorWidget?: {
-      createContactForm: (
-        el: HTMLElement,
-        config: Record<string, unknown>
-      ) => void;
-    };
-  }
-}
-
-const WIDGET_SCRIPT = 'https://realvisor-com-widget.vercel.app/widget.iife.js';
-const REALVISOR_API = 'https://api-production-88cf.up.railway.app/api/v1';
-const FORM_CODE = 'kontaktni-formu-65695';
+import { useState } from 'react';
+import { Send } from 'lucide-react';
 
 interface Props {
   context?: string;
@@ -25,63 +11,55 @@ interface Props {
   sessionId?: string;
 }
 
-export function LeadCaptureWidget({ context, sessionId }: Props) {
-  const containerRef = useRef<HTMLDivElement>(null);
+export function LeadCaptureWidget({ context, prefilledName, prefilledEmail, prefilledPhone, sessionId }: Props) {
+  const [name, setName] = useState(prefilledName ?? '');
+  const [email, setEmail] = useState(prefilledEmail ?? '');
+  const [phone, setPhone] = useState(prefilledPhone ?? '');
   const [submitted, setSubmitted] = useState(false);
-  const initRef = useRef(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState('');
 
-  useEffect(() => {
-    if (initRef.current || !containerRef.current) return;
-    initRef.current = true;
+  const canSubmit = name.trim() && (email.trim() || phone.trim());
 
-    const initWidget = () => {
-      if (!window.RealvisorWidget || !containerRef.current) return;
-      window.RealvisorWidget.createContactForm(containerRef.current, {
-        apiUrl: REALVISOR_API,
-        formCode: FORM_CODE,
-        primaryColor: '#E91E63',
-        borderRadius: '16px',
-        maxWidth: '100%',
-        shadow: 'none',
-        onSuccess: (data: Record<string, unknown>) => {
-          setSubmitted(true);
-          // Uložit lead i do našeho backendu
-          const name = (data.name as string) ?? '';
-          const email = (data.email as string) ?? '';
-          const phone = (data.phone as string) ?? '';
-          fetch('/api/leads', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ name, email, phone, context, sessionId }),
-          }).catch(() => { /* silent - Realvisor already has the lead */ });
-        },
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!canSubmit || submitting) return;
+    setSubmitting(true);
+    setError('');
+
+    try {
+      const res = await fetch('/api/leads', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: name.trim(),
+          email: email.trim() || undefined,
+          phone: phone.trim() || undefined,
+          context,
+          sessionId,
+        }),
       });
-    };
 
-    // Load script if not already loaded
-    if (window.RealvisorWidget) {
-      initWidget();
-    } else {
-      const existing = document.querySelector(`script[src="${WIDGET_SCRIPT}"]`);
-      if (existing) {
-        existing.addEventListener('load', initWidget);
-      } else {
-        const script = document.createElement('script');
-        script.src = WIDGET_SCRIPT;
-        script.async = true;
-        script.onload = initWidget;
-        document.head.appendChild(script);
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error ?? 'Chyba pri odesilani');
       }
+
+      setSubmitted(true);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Chyba pri odesilani');
+    } finally {
+      setSubmitting(false);
     }
-  }, [context, sessionId]);
+  };
 
   if (submitted) {
     return (
       <div className="bg-white/60 backdrop-blur-xl border border-white/40 rounded-2xl p-4 md:p-6 shadow-lg shadow-black/[0.03] animate-in slide-in-from-bottom-4 duration-500 overflow-hidden w-full min-w-0">
         <div className="w-8 h-[3px] rounded-full bg-emerald-500 mb-4" />
         <div className="text-center py-4">
-          <p className="text-lg font-semibold text-gray-900 mb-2">Děkujeme za váš zájem</p>
-          <p className="text-sm text-gray-500">Náš poradce vás bude kontaktovat v nejbližším možném termínu.</p>
+          <p className="text-lg font-semibold text-gray-900 mb-2">Dekujeme za vas zajem</p>
+          <p className="text-sm text-gray-500">Nas poradce vas bude kontaktovat v nejblizsim moznem terminu.</p>
         </div>
       </div>
     );
@@ -91,12 +69,52 @@ export function LeadCaptureWidget({ context, sessionId }: Props) {
     <div className="bg-white/60 backdrop-blur-xl border border-white/40 rounded-2xl p-4 md:p-6 shadow-lg shadow-black/[0.03] animate-in slide-in-from-bottom-4 duration-500 overflow-hidden w-full min-w-0">
       <div className="w-8 h-[3px] rounded-full bg-[#E91E63] mb-4" />
       <p className="text-[11px] font-semibold uppercase tracking-wider text-gray-400 mb-1">
-        Nezávazná konzultace
+        Nezavazna konzultace
       </p>
       <p className="text-sm text-gray-500 mb-4">
-        Nechte nám na sebe kontakt a náš poradce se vám ozve.
+        Nechte nam na sebe kontakt a nas poradce se vam ozve. Sluzba je zcela zdarma.
       </p>
-      <div ref={containerRef} className="w-full min-w-0 overflow-hidden" />
+
+      <form onSubmit={handleSubmit} className="space-y-3">
+        <input
+          type="text"
+          placeholder="Jmeno a prijmeni *"
+          value={name}
+          onChange={e => setName(e.target.value)}
+          className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-white/80 text-sm text-gray-900 placeholder:text-gray-400 outline-none focus:border-[#E91E63]/40 focus:ring-1 focus:ring-[#E91E63]/20 transition-all"
+        />
+        <input
+          type="email"
+          placeholder="E-mail"
+          value={email}
+          onChange={e => setEmail(e.target.value)}
+          className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-white/80 text-sm text-gray-900 placeholder:text-gray-400 outline-none focus:border-[#E91E63]/40 focus:ring-1 focus:ring-[#E91E63]/20 transition-all"
+        />
+        <input
+          type="tel"
+          placeholder="Telefon"
+          value={phone}
+          onChange={e => setPhone(e.target.value)}
+          className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-white/80 text-sm text-gray-900 placeholder:text-gray-400 outline-none focus:border-[#E91E63]/40 focus:ring-1 focus:ring-[#E91E63]/20 transition-all"
+        />
+
+        {error && (
+          <p className="text-xs text-red-500">{error}</p>
+        )}
+
+        <button
+          type="submit"
+          disabled={!canSubmit || submitting}
+          className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-[#E91E63] hover:bg-[#C2185B] disabled:bg-gray-200 disabled:text-gray-400 text-white text-sm font-medium transition-all"
+        >
+          <Send className="w-4 h-4" />
+          {submitting ? 'Odesilam...' : 'Odeslat nezavazne'}
+        </button>
+
+        <p className="text-[10px] text-gray-400 text-center">
+          Vyplnte jmeno a alespon email nebo telefon. Vase udaje zpracovavame pouze pro ucely konzultace.
+        </p>
+      </form>
     </div>
   );
 }

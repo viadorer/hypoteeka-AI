@@ -8,6 +8,7 @@ import { calculateLeadScore } from '@/lib/agent/lead-scoring';
 import { buildAgentPrompt } from '@/lib/agent/prompt-builder';
 import { storage } from '@/lib/storage';
 import { getTenantConfig, getTenantApiKey } from '@/lib/tenant/config';
+import { submitLeadToRealvisor, buildRealvisorPayload } from '@/lib/realvisor';
 
 export const maxDuration = 30;
 
@@ -172,12 +173,31 @@ export async function POST(req: Request) {
 
             // Update profile from update_profile tool
             if (toolName === 'update_profile' && Object.keys(input).length > 0) {
+              const hadEmail = !!profile.email;
+              const hadPhone = !!profile.phone;
               Object.assign(profile, Object.fromEntries(
                 Object.entries(input).filter(([, v]) => v !== undefined)
               ));
               const fields = getCollectedFields(profile);
               state.dataCollected = fields;
               state.phase = determinePhase(state, fields);
+
+              // Auto-submit lead to Realvisor when we get new contact info
+              const gotNewContact = (!hadEmail && profile.email) || (!hadPhone && profile.phone);
+              if (gotNewContact && (profile.email || profile.phone)) {
+                const name = profile.name ?? 'Neznamy';
+                const rvPayload = buildRealvisorPayload(
+                  name,
+                  profile.email ?? '',
+                  profile.phone ?? '',
+                  `Auto-lead z chatu (${state.phase})`,
+                  profile as Record<string, unknown>,
+                  { sessionId, tenantId, leadScore: state.leadScore, leadTemperature: state.leadQualified ? 'qualified' : 'warm' }
+                );
+                submitLeadToRealvisor(rvPayload)
+                  .then(rv => console.log(`[Lead] Auto-submitted to Realvisor: ${rv.success ? rv.leadId : 'failed'}`))
+                  .catch(err => console.error('[Lead] Auto-submit error:', err));
+              }
             }
           }
         }
