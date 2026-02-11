@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
-import { Menu, X, Plus, MessageSquare, BarChart3, LogIn, UserPlus, ChevronRight } from 'lucide-react';
+import { Menu, X, Plus, MessageSquare, BarChart3, FolderPlus, LogIn, UserPlus, ChevronRight } from 'lucide-react';
 
 interface SessionSummary {
   id: string;
@@ -143,7 +143,7 @@ export function Sidebar({ activeSessionId, currentView, onSelectSession, onConti
             className="w-full flex items-center gap-2 px-4 py-3 rounded-xl text-[15px] font-semibold bg-[#E91E63] text-white hover:bg-[#C2185B] transition-colors shadow-sm"
           >
             <Plus className="w-4 h-4" />
-            Nova kalkulace
+            Nova konzultace
           </button>
         </div>
 
@@ -156,7 +156,7 @@ export function Sidebar({ activeSessionId, currentView, onSelectSession, onConti
             }`}
           >
             <MessageSquare className="w-5 h-5" />
-            Chat
+            Konzultace
           </button>
           <button
             onClick={() => { if (activeSessionId) onSelectSession(activeSessionId); setMobileOpen(false); }}
@@ -165,7 +165,15 @@ export function Sidebar({ activeSessionId, currentView, onSelectSession, onConti
             }`}
           >
             <BarChart3 className="w-5 h-5" />
-            Moje analyzy
+            Analyzy
+          </button>
+          <button
+            disabled
+            className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-[15px] font-medium text-gray-400 cursor-not-allowed"
+          >
+            <FolderPlus className="w-5 h-5" />
+            Projekty
+            <span className="ml-auto text-[10px] bg-gray-100 text-gray-400 px-1.5 py-0.5 rounded-full">brzy</span>
           </button>
         </div>
 
