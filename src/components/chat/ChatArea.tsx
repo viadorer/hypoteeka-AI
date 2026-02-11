@@ -203,6 +203,9 @@ export function ChatArea({ initialSessionId = null }: ChatAreaProps) {
 
           {/* Hero */}
           <div className="text-center mb-8 max-w-lg">
+            <div className="w-20 h-20 rounded-full overflow-hidden border-3 border-[#E91E63]/20 shadow-lg mx-auto mb-4">
+              <img src="/images/hugo-avatar.jpg" alt="Hugo" className="w-full h-full object-cover" />
+            </div>
             <h1 className="text-[28px] md:text-4xl font-extrabold text-[#0A1E5C] tracking-tight mb-3">
               {visitorName
                 ? `Zdravím, ${visitorName}!`
