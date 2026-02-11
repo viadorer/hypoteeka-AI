@@ -19,7 +19,7 @@ export async function POST(req: Request) {
     const tid = tenantId ?? session?.tenantId ?? 'hypoteeka';
     const profile = session?.profile ?? {};
     const score = session?.state.leadScore ?? 0;
-    const temperature = session?.state.leadQualified ? 'qualified' : 'unknown';
+    const temperature = session?.state.leadQualified ? 'qualified' : (score >= 40 ? 'hot' : (score >= 20 ? 'warm' : 'cold'));
 
     // Submit to Realvisor API with full profile data
     const rvPayload = buildRealvisorPayload(name, email, phone, context ?? '', profile as Record<string, unknown>, {
@@ -35,7 +35,7 @@ export async function POST(req: Request) {
     await storage.saveLead({
       id: leadId,
       tenantId: tid,
-      sessionId: sessionId ?? 'unknown',
+      sessionId: sessionId ?? '',
       name,
       email,
       phone,

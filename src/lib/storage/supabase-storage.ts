@@ -139,25 +139,28 @@ export class SupabaseStorage implements StorageProvider {
   }
 
   async saveLead(lead: LeadRecord): Promise<void> {
+    const insertData: Record<string, unknown> = {
+      tenant_id: lead.tenantId,
+      session_id: lead.sessionId || null,
+      name: lead.name,
+      email: lead.email || null,
+      phone: lead.phone || null,
+      context: lead.context || '',
+      profile_snapshot: lead.profile ?? {},
+      lead_score: lead.leadScore ?? 0,
+      lead_temperature: lead.leadTemperature || 'cold',
+    };
+    if (lead.realvisorLeadId) insertData.realvisor_lead_id = lead.realvisorLeadId;
+    if (lead.realvisorContactId) insertData.realvisor_contact_id = lead.realvisorContactId;
+
     const { error } = await this.db
       .from('leads')
-      .insert({
-        id: lead.id,
-        tenant_id: lead.tenantId,
-        session_id: lead.sessionId,
-        name: lead.name,
-        email: lead.email,
-        phone: lead.phone,
-        context: lead.context,
-        profile_snapshot: lead.profile,
-        lead_score: lead.leadScore,
-        lead_temperature: lead.leadTemperature,
-        realvisor_lead_id: lead.realvisorLeadId ?? null,
-        realvisor_contact_id: lead.realvisorContactId ?? null,
-      });
+      .insert(insertData);
 
     if (error) {
-      console.error('[SupabaseStorage] saveLead error:', error.message);
+      console.error('[SupabaseStorage] saveLead error:', error.message, JSON.stringify(insertData));
+    } else {
+      console.log(`[SupabaseStorage] Lead saved: ${lead.name} (${lead.email}, ${lead.phone})`);
     }
   }
 

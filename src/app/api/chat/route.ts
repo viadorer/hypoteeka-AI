@@ -9,6 +9,7 @@ import { buildAgentPrompt } from '@/lib/agent/prompt-builder';
 import { storage } from '@/lib/storage';
 import { getTenantConfig, getTenantApiKey } from '@/lib/tenant/config';
 import { submitLeadToRealvisor, buildRealvisorPayload } from '@/lib/realvisor';
+import { v4 as uuidv4 } from 'uuid';
 
 export const maxDuration = 30;
 
@@ -182,20 +183,39 @@ export async function POST(req: Request) {
               state.dataCollected = fields;
               state.phase = determinePhase(state, fields);
 
-              // Auto-submit lead to Realvisor when we get new contact info
+              // Auto-submit lead to Realvisor + save to our DB when we get new contact info
               const gotNewContact = (!hadEmail && profile.email) || (!hadPhone && profile.phone);
               if (gotNewContact && (profile.email || profile.phone)) {
-                const name = profile.name ?? 'Neznamy';
+                const leadName = profile.name ?? 'Neznamy';
+                const leadTemp = state.leadQualified ? 'qualified' : (state.leadScore >= 40 ? 'hot' : (state.leadScore >= 20 ? 'warm' : 'cold'));
                 const rvPayload = buildRealvisorPayload(
-                  name,
+                  leadName,
                   profile.email ?? '',
                   profile.phone ?? '',
                   `Auto-lead z chatu (${state.phase})`,
                   profile as Record<string, unknown>,
-                  { sessionId, tenantId, leadScore: state.leadScore, leadTemperature: state.leadQualified ? 'qualified' : 'warm' }
+                  { sessionId, tenantId, leadScore: state.leadScore, leadTemperature: leadTemp }
                 );
                 submitLeadToRealvisor(rvPayload)
-                  .then(rv => console.log(`[Lead] Auto-submitted to Realvisor: ${rv.success ? rv.leadId : 'failed'}`))
+                  .then(rv => {
+                    console.log(`[Lead] Auto-submitted to Realvisor: ${rv.success ? rv.leadId : 'failed'}`);
+                    // Save lead to our DB
+                    storage.saveLead({
+                      id: uuidv4(),
+                      tenantId,
+                      sessionId,
+                      name: leadName,
+                      email: profile.email ?? '',
+                      phone: profile.phone ?? '',
+                      context: `Auto-lead z chatu (${state.phase})`,
+                      profile,
+                      leadScore: state.leadScore ?? 0,
+                      leadTemperature: leadTemp,
+                      realvisorLeadId: rv.leadId,
+                      realvisorContactId: rv.contactId,
+                      createdAt: new Date().toISOString(),
+                    }).catch(err => console.error('[Lead] DB save error:', err));
+                  })
                   .catch(err => console.error('[Lead] Auto-submit error:', err));
               }
             }
