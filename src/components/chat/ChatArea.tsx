@@ -10,14 +10,14 @@ import { DefaultChatTransport } from 'ai';
 import type { UIMessage } from 'ai';
 
 const QUICK_ACTIONS = [
-  { label: 'Spočítat splátku', icon: Calculator },
-  { label: 'Ověřit bonitu', icon: ShieldCheck },
-  { label: 'Kolik si mohu půjčit?', icon: TrendingUp },
-  { label: 'Nájem vs. hypotéka', icon: ArrowDownUp },
-  { label: 'Nejlepší sazby na trhu', icon: Percent },
-  { label: 'Refinancování hypotéky', icon: RefreshCw },
-  { label: 'Koupě první nemovitosti', icon: Home },
-  { label: 'Investiční nemovitost', icon: PiggyBank },
+  { label: 'Spočítat splátku', icon: Calculator, prompt: 'Chci si spočítat splátku hypotéky.' },
+  { label: 'Ověřit bonitu', icon: ShieldCheck, prompt: 'Chci si ověřit, jestli dosáhnu na hypotéku.' },
+  { label: 'Kolik si mohu půjčit?', icon: TrendingUp, prompt: 'Kolik si mohu maximálně půjčit na hypotéku?' },
+  { label: 'Nájem vs. hypotéka', icon: ArrowDownUp, prompt: 'Vyplatí se mi víc nájem nebo hypotéka?' },
+  { label: 'Nejlepší sazby na trhu', icon: Percent, prompt: 'Jaké jsou aktuální nejlepší sazby hypoték na trhu?' },
+  { label: 'Refinancování hypotéky', icon: RefreshCw, prompt: 'Chci refinancovat hypotéku, jaké jsou aktuální podmínky?' },
+  { label: 'Koupě první nemovitosti', icon: Home, prompt: 'Kupuji první nemovitost, jak postupovat s hypotékou?' },
+  { label: 'Investiční nemovitost', icon: PiggyBank, prompt: 'Chci koupit investiční nemovitost, vyplatí se to?' },
 ];
 
 
@@ -222,10 +222,10 @@ export function ChatArea({ initialSessionId = null }: ChatAreaProps) {
 
           {/* Quick action badges */}
           <div className="flex flex-wrap gap-2 justify-center mb-10">
-            {QUICK_ACTIONS.map(({ label, icon: Icon }) => (
+            {QUICK_ACTIONS.map(({ label, icon: Icon, prompt }) => (
               <button
                 key={label}
-                onClick={() => useBadge(label)}
+                onClick={() => useBadge(prompt)}
                 disabled={isLoading}
                 className={`inline-flex items-center gap-2 px-4 py-3 md:py-2.5 rounded-xl text-[15px] md:text-sm text-gray-600 transition-all disabled:opacity-50 active:scale-[0.97] ${glass} ${glassHover} hover:text-[#E91E63]`}
               >
