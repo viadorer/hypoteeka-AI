@@ -30,7 +30,7 @@ export default function Home() {
   }, []);
 
   return (
-    <>
+    <div className="flex min-h-screen">
       <Sidebar
         activeSessionId={activeSessionId}
         currentView={view}
@@ -50,6 +50,6 @@ export default function Home() {
           onNewChat={handleNewChat}
         />
       )}
-    </>
+    </div>
   );
 }

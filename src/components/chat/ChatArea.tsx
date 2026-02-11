@@ -258,9 +258,9 @@ export function ChatArea({ initialSessionId = null }: ChatAreaProps) {
   // CHAT VIEW (after conversation starts)
   // =============================================
   return (
-    <div className="flex-1 md:ml-[260px] flex flex-col min-h-screen pt-16 md:pt-0 overflow-x-hidden min-w-0 w-full">
+    <div className="flex-1 md:ml-[260px] flex flex-col min-h-screen pt-16 md:pt-0 overflow-x-hidden min-w-0">
       <div className="flex-1 overflow-y-auto overflow-x-hidden min-w-0">
-        <div className="max-w-[640px] mx-auto px-4 md:px-4 pt-4 md:pt-8 pb-44 md:pb-40 w-full min-w-0">
+        <div className="max-w-[640px] mx-auto px-4 md:px-6 pt-4 md:pt-8 pb-44 md:pb-40 w-full min-w-0">
           {/* Messages */}
           {messages.map((message: UIMessage) => (
             <div key={message.id} className="mb-4 animate-in">
@@ -345,9 +345,9 @@ export function ChatArea({ initialSessionId = null }: ChatAreaProps) {
       </div>
 
       {/* Bottom input bar - glass */}
-      <div className="fixed bottom-0 right-0 md:left-[260px] left-0 z-50">
+      <div className="fixed bottom-0 left-0 right-0 md:left-[260px] z-50">
         <div className="bg-gradient-to-t from-[#F5F7FA] via-[#F5F7FA]/95 to-transparent backdrop-blur-md">
-          <div className="max-w-[640px] mx-auto px-4 pt-4 pb-4" style={{ paddingBottom: 'max(1rem, env(safe-area-inset-bottom))' }}>
+          <div className="max-w-[640px] mx-auto px-4 md:px-6 pt-4 pb-4" style={{ paddingBottom: 'max(1rem, env(safe-area-inset-bottom))' }}>
             {inputBar}
             <p className="text-center text-[11px] text-gray-400 mt-2">
               Hypoteeka AI -- metodika ČNB 2026, live PRIBOR. Výsledky jsou orientační.
