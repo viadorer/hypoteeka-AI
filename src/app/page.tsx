@@ -35,6 +35,7 @@ export default function Home() {
         activeSessionId={activeSessionId}
         currentView={view}
         onSelectSession={handleSelectSession}
+        onContinueChat={handleContinueChat}
         onNewChat={handleNewChat}
       />
       {view === 'chat' && (

@@ -67,6 +67,19 @@ export async function buildAgentPrompt(
     }
   }
 
+  // Contact status
+  const hasEmail = !!profile.email;
+  const hasPhone = !!profile.phone;
+  if (!hasEmail && !hasPhone) {
+    parts.push('\nKONTAKT: Ještě NEMÁŠ email ani telefon klienta. Při vhodné příležitosti nabídni zaslání shrnutí na email nebo WhatsApp.');
+  } else if (!hasEmail) {
+    parts.push(`\nKONTAKT: Máš telefon (${profile.phone}), ale NEMÁŠ email. Při příležitosti nabídni zaslání na email.`);
+  } else if (!hasPhone) {
+    parts.push(`\nKONTAKT: Máš email (${profile.email}), ale NEMÁŠ telefon. Při příležitosti nabídni kontakt přes WhatsApp.`);
+  } else {
+    parts.push('\nKONTAKT: Máš email i telefon klienta. Nemusíš se ptát znovu.');
+  }
+
   // Lead capture
   if (shouldOfferLeadCapture(leadScore, state)) {
     parts.push('\nDOPORUČENÍ: Nabídni klientovi kontaktní formulář (show_lead_capture). Je kvalifikovaný.');

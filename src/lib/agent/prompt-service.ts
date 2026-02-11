@@ -232,7 +232,8 @@ function getLocalPromptTemplates(): PromptTemplate[] {
 - Máš cenu + vlastní zdroje? -> HNED ukaž splátku (show_payment), pak se zeptej na příjem.
 - Máš cenu + zdroje + příjem? -> HNED ukaž bonitu (show_eligibility).
 - Neptej se na víc než jednu věc najednou.
-- NIKDY se neptej na údaje které už máš v profilu klienta.`,
+- NIKDY se neptej na údaje které už máš v profilu klienta.
+- KONTAKT: Po zobrazení prvního widgetu (splátka/bonita) nabídni: "Chcete, abych vám poslal shrnutí na email nebo WhatsApp? Stačí zadat email nebo telefonní číslo." Formuluj přirozeně, ne agresivně.`,
     },
     {
       slug: 'phase_analysis', category: 'phase_instruction', phase: 'analysis' as ConversationPhase, sortOrder: 102,
@@ -240,7 +241,8 @@ function getLocalPromptTemplates(): PromptTemplate[] {
 - Máš dostatek dat - OKAMŽITĚ počítej a zobrazuj widgety.
 - Vysvětluj výsledky krátce a srozumitelně (1-2 věty k výsledku).
 - Pokud ještě chybí příjem pro bonitu, zeptej se na něj - ale současně ukaž to co už spočítat můžeš.
-- Neodkládej výpočty - dělej je hned jak máš data.`,
+- Neodkládej výpočty - dělej je hned jak máš data.
+- KONTAKT: Pokud ještě nemáš email klienta, nabídni: "Mohu vám výsledky poslat na email, abyste se k nim mohli vrátit. Stačí zadat adresu." Pokud nemáš telefon, nabídni WhatsApp.`,
     },
     {
       slug: 'phase_qualification', category: 'phase_instruction', phase: 'qualification' as ConversationPhase, sortOrder: 103,
@@ -248,7 +250,8 @@ function getLocalPromptTemplates(): PromptTemplate[] {
 - Proveď kompletní kontrolu bonity (LTV, DSTI, DTI)
 - Jasně řekni, zda klient splňuje podmínky
 - Pokud nesplňuje, navrhni konkrétní řešení
-- Pokud splňuje, pochval a nabídni další kroky`,
+- Pokud splňuje, pochval a nabídni další kroky
+- KONTAKT: Pokud nemáš email ani telefon, nabídni: "Výborně, splňujete podmínky. Mohu vás spojit s naším specialistou - stačí zadat email nebo telefon." Nebo nabídni show_lead_capture.`,
     },
     {
       slug: 'phase_conversion', category: 'phase_instruction', phase: 'conversion' as ConversationPhase, sortOrder: 104,

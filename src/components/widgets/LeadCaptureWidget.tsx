@@ -18,8 +18,9 @@ export function LeadCaptureWidget({ context, prefilledName, prefilledEmail, pref
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
+  const [gdprConsent, setGdprConsent] = useState(false);
 
-  const canSubmit = name.trim() && (email.trim() || phone.trim());
+  const canSubmit = name.trim() && (email.trim() || phone.trim()) && gdprConsent;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -102,6 +103,19 @@ export function LeadCaptureWidget({ context, prefilledName, prefilledEmail, pref
           <p className="text-xs text-red-500">{error}</p>
         )}
 
+        <label className="flex items-start gap-2.5 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={gdprConsent}
+            onChange={e => setGdprConsent(e.target.checked)}
+            className="mt-0.5 w-4 h-4 rounded border-gray-300 text-[#E91E63] focus:ring-[#E91E63]/20 accent-[#E91E63]"
+          />
+          <span className="text-[11px] text-gray-500 leading-relaxed">
+            Souhlasim se zpracovanim osobnich udaju za ucelem nezavazne konzultace.
+            Udaje budou pouzity pouze pro kontaktovani nasim poradcem.
+          </span>
+        </label>
+
         <button
           type="submit"
           disabled={!canSubmit || submitting}
@@ -110,10 +124,6 @@ export function LeadCaptureWidget({ context, prefilledName, prefilledEmail, pref
           <Send className="w-4 h-4" />
           {submitting ? 'Odesilam...' : 'Odeslat nezavazne'}
         </button>
-
-        <p className="text-[10px] text-gray-400 text-center">
-          Vyplnte jmeno a alespon email nebo telefon. Vase udaje zpracovavame pouze pro ucely konzultace.
-        </p>
       </form>
     </div>
   );

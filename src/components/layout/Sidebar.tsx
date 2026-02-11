@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
-import { Menu, X, Plus, MessageSquare, FolderOpen, Home } from 'lucide-react';
+import { Menu, X, Plus, MessageSquare, BarChart3, LogIn, UserPlus, ChevronRight } from 'lucide-react';
 
 interface SessionSummary {
   id: string;
@@ -33,10 +33,9 @@ interface SidebarProps {
   activeSessionId: string | null;
   currentView: 'chat' | 'dashboard';
   onSelectSession: (sessionId: string) => void;
+  onContinueChat: (sessionId: string) => void;
   onNewChat: () => void;
 }
-
-type Tab = 'chat' | 'analyses';
 
 function fmt(n: number): string {
   return n.toLocaleString('cs-CZ');
@@ -45,7 +44,7 @@ function fmt(n: number): string {
 function timeAgo(dateStr: string): string {
   const diff = Date.now() - new Date(dateStr).getTime();
   const mins = Math.floor(diff / 60000);
-  if (mins < 1) return 'právě teď';
+  if (mins < 1) return 'prave ted';
   if (mins < 60) return `${mins} min`;
   const hours = Math.floor(mins / 60);
   if (hours < 24) return `${hours} h`;
@@ -53,39 +52,51 @@ function timeAgo(dateStr: string): string {
   return `${days} d`;
 }
 
+function chatTitle(s: SessionSummary): string {
+  if (s.profile.propertyPrice) return `${fmt(s.profile.propertyPrice)} Kc`;
+  if (s.profile.name) return s.profile.name;
+  const parts = [s.profile.propertyType, s.profile.location].filter(Boolean);
+  if (parts.length > 0) return parts.join(', ');
+  return `Chat ${s.id.slice(0, 6)}`;
+}
+
 function phaseLabel(phase: string): string {
   const map: Record<string, string> = {
-    greeting: 'Začátek',
-    discovery: 'Sběr dat',
-    analysis: 'Analýza',
+    greeting: 'Zacatek',
+    discovery: 'Sber dat',
+    analysis: 'Analyza',
     qualification: 'Kvalifikace',
     conversion: 'Konverze',
-    followup: 'Dokončeno',
+    followup: 'Dokonceno',
   };
   return map[phase] ?? phase;
 }
 
-export function Sidebar({ activeSessionId, currentView, onSelectSession, onNewChat }: SidebarProps) {
+export function Sidebar({ activeSessionId, currentView, onSelectSession, onContinueChat, onNewChat }: SidebarProps) {
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [tab, setTab] = useState<Tab>('chat');
   const [sessions, setSessions] = useState<SessionSummary[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [showAuth, setShowAuth] = useState(false);
 
+  // Load sessions for chat history
   useEffect(() => {
-    if (tab === 'analyses') {
-      setLoading(true);
-      fetch('/api/sessions')
-        .then(r => r.json())
-        .then((data: SessionSummary[]) => setSessions(data))
-        .catch(() => setSessions([]))
-        .finally(() => setLoading(false));
-    }
-  }, [tab]);
+    fetch('/api/sessions')
+      .then(r => r.json())
+      .then((data: SessionSummary[]) => setSessions(data))
+      .catch(() => setSessions([]));
+  }, [activeSessionId]);
 
-  const handleSelectSession = (id: string) => {
+  const handleContinue = (id: string) => {
+    onContinueChat(id);
+    setMobileOpen(false);
+  };
+
+  const handleAnalyse = (id: string) => {
     onSelectSession(id);
     setMobileOpen(false);
   };
+
+  // Filter: only sessions with at least 1 turn
+  const chatSessions = sessions.filter(s => s.state.turnCount > 0);
 
   return (
     <>
@@ -126,130 +137,126 @@ export function Sidebar({ activeSessionId, currentView, onSelectSession, onNewCh
         </div>
 
         {/* New chat button */}
-        <div className="px-4 mb-3">
+        <div className="px-4 mb-4">
           <button
-            onClick={() => { onNewChat(); setTab('chat'); setMobileOpen(false); }}
+            onClick={() => { onNewChat(); setMobileOpen(false); }}
             className="w-full flex items-center gap-2 px-4 py-3 rounded-xl text-[15px] font-semibold bg-[#E91E63] text-white hover:bg-[#C2185B] transition-colors shadow-sm"
           >
             <Plus className="w-4 h-4" />
-            Nová kalkulace
+            Nova kalkulace
           </button>
         </div>
 
-        {/* Tabs */}
-        <div className="px-4 mb-2">
-          <div className="flex gap-1 bg-gray-100/60 rounded-lg p-0.5">
-            <button
-              onClick={() => setTab('chat')}
-              className={`flex-1 flex items-center justify-center gap-1.5 px-2 py-2 rounded-lg text-sm font-medium transition-all ${
-                tab === 'chat' ? 'bg-white shadow-sm text-gray-900' : 'text-gray-500 hover:text-gray-700'
-              }`}
-            >
-              <Home className="w-4 h-4" />
-              Chat
-            </button>
-            <button
-              onClick={() => setTab('analyses')}
-              className={`flex-1 flex items-center justify-center gap-1.5 px-2 py-2 rounded-lg text-sm font-medium transition-all ${
-                tab === 'analyses' ? 'bg-white shadow-sm text-gray-900' : 'text-gray-500 hover:text-gray-700'
-              }`}
-            >
-              <FolderOpen className="w-4 h-4" />
-              Moje analýzy
-            </button>
-          </div>
+        {/* Nav items */}
+        <div className="px-4 space-y-1 mb-3">
+          <button
+            onClick={() => { onNewChat(); setMobileOpen(false); }}
+            className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-[15px] font-medium transition-all ${
+              currentView === 'chat' ? 'bg-blue-50/80 text-[#0A1E5C]' : 'text-gray-600 hover:bg-gray-50/80'
+            }`}
+          >
+            <MessageSquare className="w-5 h-5" />
+            Chat
+          </button>
+          <button
+            onClick={() => { if (activeSessionId) onSelectSession(activeSessionId); setMobileOpen(false); }}
+            className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-[15px] font-medium transition-all ${
+              currentView === 'dashboard' ? 'bg-blue-50/80 text-[#0A1E5C]' : 'text-gray-600 hover:bg-gray-50/80'
+            }`}
+          >
+            <BarChart3 className="w-5 h-5" />
+            Moje analyzy
+          </button>
         </div>
 
-        {/* Content */}
-        <div className="flex-1 overflow-y-auto px-4 py-2">
-          {tab === 'chat' && (
-            <div className="space-y-1.5">
-              <p className="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2 px-1">Aktivní chat</p>
-              <div className={`px-3 py-3 rounded-xl text-[15px] font-semibold flex items-center gap-2.5 ${
-                currentView === 'chat' ? 'bg-blue-50/80 text-[#0A1E5C]' : 'text-gray-600 hover:bg-gray-50/80'
-              }`}>
-                <MessageSquare className="w-5 h-5" />
-                Kalkulace hypotéky
-              </div>
-            </div>
+        {/* Previous chats */}
+        <div className="flex-1 overflow-y-auto px-4 py-2 border-t border-gray-100/50">
+          <p className="text-[11px] font-semibold uppercase tracking-wider text-gray-400 mb-2 px-1">
+            Predchozi chaty
+          </p>
+
+          {chatSessions.length === 0 && (
+            <p className="text-xs text-gray-300 px-1 py-2">Zatim zadne konverzace.</p>
           )}
 
-          {tab === 'analyses' && (
-            <div className="space-y-2">
-              <p className="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-3 px-1">
-                Uložené analýzy ({sessions.length})
-              </p>
-
-              {loading && (
-                <p className="text-sm text-gray-400 px-1 py-4 text-center">Načítám...</p>
-              )}
-
-              {!loading && sessions.length === 0 && (
-                <div className="px-3 py-6 text-center">
-                  <FolderOpen className="w-8 h-8 text-gray-300 mx-auto mb-2" />
-                  <p className="text-sm text-gray-400">Zatím žádné analýzy.</p>
-                  <p className="text-xs text-gray-300 mt-1">Začněte novou kalkulaci.</p>
-                </div>
-              )}
-
-              {sessions.map((s) => {
-                const isActive = activeSessionId === s.id && currentView === 'dashboard';
-                const title = s.profile.propertyPrice
-                  ? `${fmt(s.profile.propertyPrice)} Kč`
-                  : (s.profile.name ?? `Analýza ${s.id.slice(0, 6)}`);
-                const subtitle = [
-                  s.profile.propertyType,
-                  s.profile.location,
-                ].filter(Boolean).join(', ');
-
-                return (
+          <div className="space-y-1">
+            {chatSessions.map((s) => {
+              const isActive = activeSessionId === s.id;
+              const title = chatTitle(s);
+              return (
+                <div
+                  key={s.id}
+                  className={`group rounded-xl transition-all ${
+                    isActive ? 'bg-[#E91E63]/5' : 'hover:bg-gray-50/80'
+                  }`}
+                >
                   <button
-                    key={s.id}
-                    onClick={() => handleSelectSession(s.id)}
-                    className={`w-full text-left px-3 py-3 rounded-xl transition-all cursor-pointer ${
-                      isActive
-                        ? 'bg-[#E91E63]/10 border border-[#E91E63]/20'
-                        : 'hover:bg-white/60 border border-transparent'
-                    }`}
+                    onClick={() => handleContinue(s.id)}
+                    className="w-full text-left px-3 py-2.5 cursor-pointer"
                   >
-                    <div className="flex items-center justify-between mb-1">
-                      <span className={`font-semibold text-[15px] truncate ${isActive ? 'text-[#E91E63]' : 'text-gray-900'}`}>
+                    <div className="flex items-center justify-between">
+                      <span className={`text-sm font-medium truncate ${isActive ? 'text-[#E91E63]' : 'text-gray-800'}`}>
                         {title}
                       </span>
-                      <span className="text-[11px] text-gray-400 flex-shrink-0 ml-2">
+                      <span className="text-[10px] text-gray-400 flex-shrink-0 ml-2">
                         {timeAgo(s.updatedAt)}
                       </span>
                     </div>
-                    {subtitle && (
-                      <p className="text-xs text-gray-500 mb-1.5 truncate">{subtitle}</p>
-                    )}
-                    <div className="flex items-center gap-3 text-[11px]">
-                      <span className={`font-medium ${
+                    <div className="flex items-center gap-2 mt-0.5">
+                      <span className={`text-[11px] ${
                         s.state.phase === 'followup' ? 'text-green-600' : 'text-gray-400'
                       }`}>
                         {phaseLabel(s.state.phase)}
                       </span>
-                      <span className="text-gray-300">|</span>
-                      <span className="text-gray-400">{s.state.turnCount} zpráv</span>
-                      {s.state.leadScore > 0 && (
-                        <>
-                          <span className="text-gray-300">|</span>
-                          <span className={`font-medium ${s.state.leadScore >= 60 ? 'text-green-600' : 'text-gray-400'}`}>
-                            {s.state.leadScore} b.
-                          </span>
-                        </>
-                      )}
+                      <span className="text-[11px] text-gray-300">{s.state.turnCount} zprav</span>
                     </div>
                   </button>
-                );
-              })}
-            </div>
-          )}
+                  {/* Quick action: view analysis */}
+                  <div className="hidden group-hover:flex px-3 pb-2 -mt-1">
+                    <button
+                      onClick={() => handleAnalyse(s.id)}
+                      className="flex items-center gap-1 text-[11px] text-gray-400 hover:text-[#E91E63] transition-colors"
+                    >
+                      <BarChart3 className="w-3 h-3" />
+                      Zobrazit analyzu
+                      <ChevronRight className="w-3 h-3" />
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
         </div>
 
-        {/* Footer */}
-        <div className="p-4 pt-2 border-t border-gray-100/50">
-          <p className="text-xs text-gray-400">Hypoteeka AI v0.3</p>
+        {/* Auth section */}
+        <div className="p-4 pt-2 border-t border-gray-100/50 space-y-2">
+          {!showAuth ? (
+            <button
+              onClick={() => setShowAuth(true)}
+              className="w-full flex items-center gap-2 px-3 py-2.5 rounded-xl text-sm text-gray-500 hover:bg-gray-50/80 transition-all"
+            >
+              <LogIn className="w-4 h-4" />
+              Prihlasit se
+            </button>
+          ) : (
+            <div className="space-y-1.5">
+              <button className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-gray-600 hover:bg-gray-50 transition-all">
+                <LogIn className="w-4 h-4" />
+                Prihlasit se
+              </button>
+              <button className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-gray-600 hover:bg-gray-50 transition-all">
+                <UserPlus className="w-4 h-4" />
+                Registrace
+              </button>
+              <button
+                onClick={() => setShowAuth(false)}
+                className="w-full text-center text-[11px] text-gray-400 py-1"
+              >
+                Zrusit
+              </button>
+            </div>
+          )}
+          <p className="text-[10px] text-gray-300 text-center">Hypoteeka AI v0.4</p>
         </div>
       </aside>
     </>
