@@ -10,8 +10,8 @@ export async function GET(
 
     if (!session) {
       return new Response(
-        JSON.stringify({ error: 'Session not found' }),
-        { status: 404, headers: { 'Content-Type': 'application/json' } }
+        JSON.stringify({ uiMessages: [], profile: {}, phase: 'greeting' }),
+        { status: 200, headers: { 'Content-Type': 'application/json' } }
       );
     }
 

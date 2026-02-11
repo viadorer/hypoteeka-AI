@@ -52,11 +52,13 @@ function WidgetSkeleton({ toolName }: { toolName: string }) {
 export function WidgetRenderer({ toolInvocation, sessionId }: { toolInvocation: ToolInvocation; sessionId?: string }) {
   const { toolName, args, state } = toolInvocation;
 
+  // Show skeleton only while input is still streaming
   if (state === 'input-streaming') {
     return <WidgetSkeleton toolName={toolName} />;
   }
 
-  if (state !== 'output-available' && state !== 'input-available') {
+  // Show widget as soon as we have args (input-available, output-available, call, etc.)
+  if (!args || Object.keys(args).length === 0) {
     return <WidgetSkeleton toolName={toolName} />;
   }
 
