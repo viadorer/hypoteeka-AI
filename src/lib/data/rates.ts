@@ -285,9 +285,21 @@ export async function getBankSpreads(tenantId = 'hypoteeka'): Promise<BankSpread
     }
   }
 
-  // Dev fallback: no DB
-  console.log('[Spreads] No DB, using empty spreads');
-  return [];
+  // Dev fallback: hardcoded spreads matching 003_cnb_limits.sql seed
+  console.log('[Spreads] No DB, using local fallback spreads');
+  cachedSpreads = [
+    { name: 'Hypoteeka (naše)', spread3y: 0.29, spread5y: 0.49, spread10y: 0.89, isOurRate: true },
+    { name: 'Hypoteční banka',  spread3y: 0.79, spread5y: 0.99, spread10y: 1.39, isOurRate: false },
+    { name: 'Česká spořitelna', spread3y: 0.89, spread5y: 1.09, spread10y: 1.49, isOurRate: false },
+    { name: 'Komerční banka',   spread3y: 0.99, spread5y: 1.19, spread10y: 1.59, isOurRate: false },
+    { name: 'ČSOB',             spread3y: 0.89, spread5y: 1.09, spread10y: 1.49, isOurRate: false },
+    { name: 'Raiffeisenbank',   spread3y: 0.79, spread5y: 0.99, spread10y: 1.39, isOurRate: false },
+    { name: 'mBank',            spread3y: 0.59, spread5y: 0.89, spread10y: 1.29, isOurRate: false },
+    { name: 'UniCredit Bank',   spread3y: 0.89, spread5y: 1.09, spread10y: 1.49, isOurRate: false },
+    { name: 'Moneta',           spread3y: 1.09, spread5y: 1.29, spread10y: 1.69, isOurRate: false },
+  ];
+  spreadsCacheTs = Date.now();
+  return cachedSpreads;
 }
 
 // ============================================================
@@ -360,31 +372,25 @@ export async function getRatesContext(tenantId = 'hypoteeka'): Promise<string> {
   return `AKTUALNI SAZBY (${rates.lastUpdated}, zdroj: ${rates.source}):
 
 KLICOVE SAZBY CNB:
-- 2T repo sazba: ${rates.cnbRepo} % (klicova sazba - od ni se odviji cena hypotek)
-- Diskontni sazba: ${rates.cnbDiscount} %
-- Lombardni sazba: ${rates.cnbLombard} %
+- 2T repo sazba: ${rates.cnbRepo} % (zakladni sazba CNB - od ni se odviji cena hypotek)
 
 JAK SE POCITA HYPOTECNI SAZBA:
-- Banka si pujci od CNB za repo sazbu (${rates.cnbRepo} %) a prida svou marzi (spread)
-- Kratsi fixace = nizsi spread (mensi riziko pro banku)
-- Delsi fixace = vyssi spread (banka nese urokove riziko dele)
+- Hypotecni sazba = repo sazba CNB (${rates.cnbRepo} %) + marze banky (cca 0,8-1,3 %)
+- Kratsi fixace = nizsi marze, delsi fixace = vyssi marze
+- Toto vysvetleni muzes pouzit pro klienta - je srozumitelne
 
-MEZIBANKOVI SAZBY (PRIBOR):
-- PRIBOR 3M: ${rates.pribor3m} %
-- PRIBOR 1R: ${rates.pribor1y} %
-
-ORIENTACNI ROZSAH SAZEB NA TRHU (repo ${rates.cnbRepo} % + marze bank):
+ORIENTACNI ROZSAH SAZEB NA TRHU:
 - Fixace 3 roky: orientacne od ${bankRates.best3y} % do ${round2(bankRates.average3y + 0.3)} %
 - Fixace 5 let: orientacne od ${bankRates.best5y} % do ${round2(bankRates.average5y + 0.3)} %
 - Fixace 10 let: orientacne od ${bankRates.best10y} % do ${round2(bankRates.average10y + 0.3)} %
 
 DULEZITE - PRAVIDLA PRO KOMUNIKACI SAZEB:
-- NIKDY neslibuj zadnou konkretni sazbu. Vse je vzdy "od", "orientacne", "v rozmezi", "zavisi na individualnim posouzeni"
-- Konkretni sazbu muze stanovit POUZE poradce po kompletni analyze bonity, vyse uveru, LTV, typu nemovitosti a dalsich faktoru
-- Sazba zavisi na mnoha faktorech: vyse uveru, LTV, prijem, typ nemovitosti, ucel, delka fixace, pojisteni, cross-sell produkty banky
-- Kdyz klient chce vedet presnou sazbu, rekni: "Presnou sazbu vam sdeli nas poradce po analyze - zavisi na mnoha faktorech. Orientacne se sazby na trhu pohybuji od X %."
-- Muzes vysvetlit jak se sazba sklada (repo + marze) - to budi duveru a ukazuje odbornost
-- Diky objemu a partnerstvim s bankami dokazeme vyjednat vyhodnejsi podminky - ale konkretni cislo zavisi na situaci klienta
-- Pri refinancovani muzes porovnat aktualni sazbu klienta s orientacnim rozsahem na trhu
-- Vzdy zdurazni, ze nezavazna konzultace s poradcem je zdarma a teprve tam se klient dozvi konkretni nabidku`;
+- NIKDY nezminuj PRIBOR, IRS, diskontni sazbu ani lombardni sazbu - to jsou technicke pojmy, ktere klienta matou
+- Vysvetluj jednodusse: "Sazba hypoteky se sklada ze zakladni sazby CNB (${rates.cnbRepo} %) a marze banky"
+- NIKDY neslibuj zadnou konkretni sazbu. Vse je vzdy "od", "orientacne", "v rozmezi"
+- Konkretni sazbu muze stanovit POUZE poradce po kompletni analyze
+- Sazba zavisi na: vyse uveru, LTV, prijem, typ nemovitosti, ucel, delka fixace, pojisteni
+- Kdyz klient chce presnou sazbu: "Presnou sazbu vam sdeli nas poradce - zavisi na mnoha faktorech. Orientacne se sazby pohybuji od ${bankRates.best5y} %."
+- Diky objemu a partnerstvim s bankami dokazeme vyjednat vyhodnejsi podminky
+- Vzdy zdurazni, ze nezavazna konzultace s poradcem je zdarma`;
 }

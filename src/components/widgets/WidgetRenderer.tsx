@@ -72,16 +72,18 @@ export function WidgetRenderer({ toolInvocation, sessionId }: { toolInvocation: 
           location={args.location as string | undefined}
         />
       );
-    case 'show_payment':
+    case 'show_payment': {
+      const out = toolInvocation.output;
       return (
         <PaymentWidget
           propertyPrice={args.propertyPrice as number}
           equity={args.equity as number}
-          rate={args.rate as number | undefined}
-          rpsn={args.rpsn as number | undefined}
-          years={args.years as number | undefined}
+          rate={(out?.rate as number | undefined) ?? (args.rate as number | undefined)}
+          rpsn={(out?.rpsn as number | undefined) ?? (args.rpsn as number | undefined)}
+          years={(out?.years as number | undefined) ?? (args.years as number | undefined)}
         />
       );
+    }
     case 'show_eligibility':
       return (
         <EligibilityWidget
