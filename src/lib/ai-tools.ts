@@ -307,6 +307,17 @@ export const toolDefinitions = {
     },
   },
 
+  show_specialists: {
+    description: 'Zobraz widget s dostupnymi specialisty. Pouzij VZDY kdyz nabizis osobni konzultaci, schuzku s poradcem, nebo kdyz klient chce mluvit se specialistou.',
+    inputSchema: z.object({}),
+    execute: async () => {
+      return {
+        summary: 'Zobrazeni dostupnych specialistu.',
+        displayed: true,
+      };
+    },
+  },
+
   send_whatsapp_link: {
     description: 'Vygeneruj odkaz na WhatsApp pro kontaktovani poradce nebo zaslani shrnuti. Pouzij kdyz klient chce komunikovat pres WhatsApp nebo kdyz nabidnes WhatsApp a klient souhlasi.',
     inputSchema: z.object({

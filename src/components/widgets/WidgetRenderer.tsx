@@ -10,6 +10,7 @@ import { RefinanceWidget } from './RefinanceWidget';
 import { AmortizationWidget } from './AmortizationWidget';
 import { StressTestWidget } from './StressTestWidget';
 import { LeadCaptureWidget } from './LeadCaptureWidget';
+import { SpecialistWidget } from './SpecialistWidget';
 
 interface ToolInvocation {
   toolName: string;
@@ -29,6 +30,7 @@ const TOOL_LABELS: Record<string, string> = {
   show_amortization: 'Průběh splácení',
   show_stress_test: 'Stress test',
   show_lead_capture: 'Kontaktní formulář',
+  show_specialists: 'Dostupní specialisté',
   send_email_summary: 'Odesílám email',
   send_whatsapp_link: 'WhatsApp odkaz',
 };
@@ -153,6 +155,8 @@ export function WidgetRenderer({ toolInvocation, sessionId }: { toolInvocation: 
           sessionId={sessionId}
         />
       );
+    case 'show_specialists':
+      return <SpecialistWidget />;
     case 'send_email_summary': {
       const out = toolInvocation.output;
       if (!out) return <WidgetSkeleton toolName={toolName} />;

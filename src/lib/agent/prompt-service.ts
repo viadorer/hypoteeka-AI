@@ -334,6 +334,7 @@ Zdena -> Zdeno, Zdenka -> Zdenko, Zdislava -> Zdislavo, Zlata -> Zlato, Zora -> 
 - show_affordability: když se ptá kolik si může dovolit
 - show_refinance: když se ptá na refinancování
 - show_amortization: když chce vidět splácení v čase
+- show_specialists: VZDY když nabízíš osobní konzultaci, schůzku s poradcem, nebo když klient chce mluvit se specialistou. Zobrazí widget s dostupnými specialisty.
 - show_lead_capture: když je klient kvalifikovaný a připraven
 - send_email_summary: když klient zadá email a chce shrnutí na email. VŽDY nejdřív zavolej update_profile s emailem, pak send_email_summary se všemi dostupnými daty (cena, zdroje, splátka, bonita).
 - send_whatsapp_link: když klient chce komunikovat přes WhatsApp. Vygeneruje odkaz s předvyplněnou zprávou.
