@@ -7,6 +7,7 @@ import {
   calculateInvestment,
   calculateAffordability,
   calculateRefinance,
+  calculateStressTest,
   DEFAULTS,
 } from './calculations';
 import { formatCZK, formatPercent } from './format';
@@ -166,6 +167,27 @@ export const toolDefinitions = {
         monthlyPayment: Math.round(monthly),
         totalPaid: Math.round(monthly * y * 12),
         summary: `Amortizacni plan: uver ${formatCZK(loanAmount)}, splatka ${formatCZK(Math.round(monthly))}/mes, ${y} let`,
+        displayed: true,
+      };
+    },
+  },
+
+  show_stress_test: {
+    description: 'Zobraz stress test - co se stane se splatkou kdyz sazba vzroste o 1/2/3 procentni body po refixaci. Pouzij kdyz klient chce vedet rizika, pta se na refixaci, nebo chce videt scenare.',
+    inputSchema: z.object({
+      loanAmount: z.number().describe('Vyse uveru v CZK'),
+      rate: z.number().optional().describe('Aktualni rocni sazba. Pokud klient neuvedl, NEZADAVEJ.'),
+      years: z.number().optional().describe('Doba splatnosti v letech. Pokud klient neuvedl, NEZADAVEJ.'),
+    }),
+    execute: async ({ loanAmount, rate, years }: { loanAmount: number; rate?: number; years?: number }) => {
+      const dynamic = await getDynamicDefaultRate();
+      const r = rate ?? dynamic.rate;
+      const y = years ?? DEFAULTS.years;
+      const result = calculateStressTest(loanAmount, r, y);
+      const worst = result.scenarios[result.scenarios.length - 1];
+      return {
+        ...result,
+        summary: `Stress test: pri sazbe +${(worst.rateChange * 100).toFixed(0)}pp (${formatPercent(worst.newRate)}) splatka vzroste o ${formatCZK(worst.difference)}/mes na ${formatCZK(worst.monthlyPayment)}`,
         displayed: true,
       };
     },

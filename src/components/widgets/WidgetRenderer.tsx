@@ -8,6 +8,7 @@ import { InvestmentWidget } from './InvestmentWidget';
 import { AffordabilityWidget } from './AffordabilityWidget';
 import { RefinanceWidget } from './RefinanceWidget';
 import { AmortizationWidget } from './AmortizationWidget';
+import { StressTestWidget } from './StressTestWidget';
 import { LeadCaptureWidget } from './LeadCaptureWidget';
 
 interface ToolInvocation {
@@ -25,6 +26,7 @@ const TOOL_LABELS: Record<string, string> = {
   show_affordability: 'Kolik si můžete dovolit',
   show_refinance: 'Refinancování',
   show_amortization: 'Průběh splácení',
+  show_stress_test: 'Stress test',
   show_lead_capture: 'Kontaktní formulář',
 };
 
@@ -121,6 +123,14 @@ export function WidgetRenderer({ toolInvocation, sessionId }: { toolInvocation: 
     case 'show_amortization':
       return (
         <AmortizationWidget
+          loanAmount={args.loanAmount as number}
+          rate={args.rate as number | undefined}
+          years={args.years as number | undefined}
+        />
+      );
+    case 'show_stress_test':
+      return (
+        <StressTestWidget
           loanAmount={args.loanAmount as number}
           rate={args.rate as number | undefined}
           years={args.years as number | undefined}

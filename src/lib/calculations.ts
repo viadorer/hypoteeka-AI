@@ -309,3 +309,109 @@ export function calculateRefinance(
     remainingMonths,
   };
 }
+
+export interface StressScenario {
+  rateChange: number;
+  newRate: number;
+  monthlyPayment: number;
+  difference: number;
+  totalCost: number;
+}
+
+export interface StressTestResult {
+  baseRate: number;
+  basePayment: number;
+  baseTotalCost: number;
+  scenarios: StressScenario[];
+  loanAmount: number;
+  years: number;
+}
+
+export function calculateStressTest(
+  loanAmount: number,
+  baseRate: number,
+  years: number,
+  increments = [0.01, 0.02, 0.03]
+): StressTestResult {
+  const months = years * 12;
+  const basePayment = calculateAnnuity(loanAmount, baseRate, months);
+  const baseTotalCost = basePayment * months;
+
+  const scenarios: StressScenario[] = increments.map(inc => {
+    const newRate = baseRate + inc;
+    const payment = calculateAnnuity(loanAmount, newRate, months);
+    return {
+      rateChange: inc,
+      newRate,
+      monthlyPayment: Math.round(payment),
+      difference: Math.round(payment - basePayment),
+      totalCost: Math.round(payment * months),
+    };
+  });
+
+  return {
+    baseRate,
+    basePayment: Math.round(basePayment),
+    baseTotalCost: Math.round(baseTotalCost),
+    scenarios,
+    loanAmount,
+    years,
+  };
+}
+
+export interface AmortizationMilestone {
+  label: string;
+  month: number;
+  year: number;
+  balance: number;
+}
+
+export function getAmortizationMilestones(
+  loanAmount: number,
+  rateAnnual: number,
+  months: number
+): { milestones: AmortizationMilestone[]; totalPaid: number; totalInterest: number } {
+  const payment = calculateAnnuity(loanAmount, rateAnnual, months);
+  const totalPaid = Math.round(payment * months);
+  const totalInterest = totalPaid - loanAmount;
+
+  const r = rateAnnual / 12;
+  let balance = loanAmount;
+  const half = loanAmount / 2;
+  let halfMonth = 0;
+  let quarterMonth = 0;
+
+  for (let i = 1; i <= months; i++) {
+    const interest = balance * r;
+    const principal = payment - interest;
+    balance -= principal;
+    if (!halfMonth && balance <= half) halfMonth = i;
+    if (!quarterMonth && balance <= loanAmount * 0.25) quarterMonth = i;
+  }
+
+  const milestones: AmortizationMilestone[] = [];
+  if (halfMonth) {
+    milestones.push({
+      label: 'Polovina splacena',
+      month: halfMonth,
+      year: Math.ceil(halfMonth / 12),
+      balance: Math.round(half),
+    });
+  }
+  if (quarterMonth) {
+    milestones.push({
+      label: '75 % splaceno',
+      month: quarterMonth,
+      year: Math.ceil(quarterMonth / 12),
+      balance: Math.round(loanAmount * 0.25),
+    });
+  }
+  milestones.push({
+    label: 'Doplaceno',
+    month: months,
+    year: Math.ceil(months / 12),
+    balance: 0,
+  });
+
+  return { milestones, totalPaid, totalInterest };
+}
