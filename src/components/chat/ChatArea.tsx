@@ -7,7 +7,6 @@ import { Send, AlertCircle, RotateCcw, Calculator, ShieldCheck, TrendingUp, User
 import { WidgetRenderer } from '../widgets/WidgetRenderer';
 import ReactMarkdown from 'react-markdown';
 import { DefaultChatTransport } from 'ai';
-import { toVocative } from '@/lib/vocative';
 import type { UIMessage } from 'ai';
 
 const QUICK_ACTIONS = [
@@ -60,6 +59,7 @@ export function ChatArea({ initialSessionId = null }: ChatAreaProps) {
   });
   const [inputValue, setInputValue] = useState('');
   const [visitorName, setVisitorName] = useState<string | null>(null);
+  const [visitorNameVocative, setVisitorNameVocative] = useState<string | null>(null);
   const [todayRates, setTodayRates] = useState<{
     date: string;
     cnb: { repo: number };
@@ -105,6 +105,7 @@ export function ChatArea({ initialSessionId = null }: ChatAreaProps) {
         }
         if (data.profile?.name) {
           setVisitorName(data.profile.name.split(' ')[0]);
+          setVisitorNameVocative(data.profile.name.split(' ')[0]);
         }
       })
       .catch(() => {});
@@ -115,10 +116,12 @@ export function ChatArea({ initialSessionId = null }: ChatAreaProps) {
     if (visitorName) return;
     fetch('/api/sessions')
       .then(r => r.json())
-      .then((sessions: Array<{ profile: { name?: string } }>) => {
+      .then((sessions: Array<{ profile: { name?: string; nameVocative?: string } }>) => {
         for (const s of sessions) {
           if (s.profile.name) {
-            setVisitorName(s.profile.name.split(' ')[0]);
+            const first = s.profile.name.split(' ')[0];
+            setVisitorName(first);
+            setVisitorNameVocative(s.profile.nameVocative ?? first);
             break;
           }
         }
@@ -211,7 +214,7 @@ export function ChatArea({ initialSessionId = null }: ChatAreaProps) {
             )}
             <h1 className="text-[28px] md:text-4xl font-extrabold text-[#0A1E5C] tracking-tight mb-3">
               {visitorName
-                ? `Zdravím, ${toVocative(visitorName)}!`
+                ? `Zdravím, ${visitorNameVocative ?? visitorName}!`
                 : 'Jsem Hugo, váš hypoteční poradce'}
             </h1>
             <p className="text-gray-500 text-base md:text-lg leading-relaxed">
