@@ -16,13 +16,14 @@ import type { LeadScore } from './lead-scoring';
 import { shouldOfferLeadCapture } from './lead-scoring';
 import { getRatesContext } from '../data/rates';
 import { getCnbLimits } from '../data/cnb-limits';
-import { getBasePromptParts, getPhaseInstruction, getToolInstruction } from './prompt-service';
+import { getBasePromptParts, getPhaseInstruction, getToolInstruction, getRelevantKnowledge } from './prompt-service';
 
 export async function buildAgentPrompt(
   profile: ClientProfile,
   state: ConversationState,
   leadScore: LeadScore,
-  tenantId: string = 'hypoteeka'
+  tenantId: string = 'hypoteeka',
+  lastUserMessage?: string
 ): Promise<string> {
   // Base prompt z DB (nebo lokální fallback)
   const baseParts = await getBasePromptParts(tenantId);
@@ -98,6 +99,20 @@ export async function buildAgentPrompt(
   // Widgety které už byly zobrazeny
   if (state.widgetsShown.length > 0) {
     parts.push(`\nJIŽ ZOBRAZENÉ WIDGETY: ${state.widgetsShown.join(', ')} - nezobrazuj je znovu pokud se data nezměnila`);
+  }
+
+  // Knowledge base - relevantní znalosti z DB
+  const kbEntries = await getRelevantKnowledge(tenantId, {
+    lastUserMessage,
+    phase: state.phase,
+    profileFields: state.dataCollected,
+    widgetsShown: state.widgetsShown,
+  });
+  if (kbEntries.length > 0) {
+    parts.push('\n---\nZNALOSTNÍ BÁZE (použij tyto informace ve své odpovědi, pokud jsou relevantní):');
+    for (const entry of kbEntries) {
+      parts.push(`[${entry.category}] ${entry.title}: ${entry.content}`);
+    }
   }
 
   // Instrukce pro nástroje (z DB)

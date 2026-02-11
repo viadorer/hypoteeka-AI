@@ -101,8 +101,11 @@ export async function POST(req: Request) {
     state.leadScore = leadScore.score;
     state.leadQualified = leadScore.qualified;
 
-    // Build dynamic prompt (async - fetches live rates from ČNB API)
-    const systemPrompt = await buildAgentPrompt(profile, state, leadScore, tenantId);
+    // Extract last user message for knowledge base matching
+    const lastUserMessage = [...messages].reverse().find((m: { role: string }) => m.role === 'user')?.content as string | undefined;
+
+    // Build dynamic prompt (async - fetches live rates from ČNB API + knowledge base)
+    const systemPrompt = await buildAgentPrompt(profile, state, leadScore, tenantId, lastUserMessage);
 
     console.log(`[Agent] Tenant: ${tenantId}, Session: ${sessionId}, Phase: ${state.phase}, Score: ${leadScore.score}/${leadScore.temperature}, Fields: ${collectedFields.join(',')}`);
 
