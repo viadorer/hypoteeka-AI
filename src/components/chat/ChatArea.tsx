@@ -5,6 +5,7 @@ import { useRef, useEffect, useState, useMemo } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { Send, AlertCircle, RotateCcw, Calculator, ShieldCheck, TrendingUp, Users, ArrowRight, CheckCircle2 } from 'lucide-react';
 import { WidgetRenderer } from '../widgets/WidgetRenderer';
+import ReactMarkdown from 'react-markdown';
 import { DefaultChatTransport } from 'ai';
 import type { UIMessage } from 'ai';
 
@@ -310,8 +311,19 @@ export function ChatArea({ initialSessionId = null }: ChatAreaProps) {
                     if (part.type === 'text' && part.text) {
                       return (
                         <div key={index} className="flex justify-start mb-2">
-                          <div className={`text-gray-900 px-4 py-3 md:py-2.5 rounded-2xl rounded-bl-md max-w-[85%] text-base md:text-[15px] leading-relaxed whitespace-pre-wrap break-words overflow-hidden ${glass}`}>
-                            {part.text}
+                          <div className={`text-gray-900 px-4 py-3 md:py-2.5 rounded-2xl rounded-bl-md max-w-[85%] text-base md:text-[15px] leading-relaxed break-words overflow-hidden ${glass}
+                            prose prose-sm prose-gray max-w-none
+                            [&_p]:my-1 [&_p]:leading-relaxed
+                            [&_strong]:text-gray-900 [&_strong]:font-semibold
+                            [&_ul]:my-1 [&_ul]:pl-4 [&_ol]:my-1 [&_ol]:pl-4
+                            [&_li]:my-0.5
+                            [&_h2]:text-sm [&_h2]:font-bold [&_h2]:text-[#0A1E5C] [&_h2]:mt-2 [&_h2]:mb-1
+                            [&_h3]:text-sm [&_h3]:font-semibold [&_h3]:text-gray-800 [&_h3]:mt-2 [&_h3]:mb-1
+                            [&_table]:text-xs [&_th]:px-2 [&_th]:py-1 [&_td]:px-2 [&_td]:py-1 [&_th]:bg-gray-50/50 [&_table]:border-collapse [&_td]:border [&_td]:border-gray-200 [&_th]:border [&_th]:border-gray-200
+                            [&_blockquote]:border-l-2 [&_blockquote]:border-[#E91E63] [&_blockquote]:pl-3 [&_blockquote]:text-gray-500 [&_blockquote]:my-1
+                            [&_code]:bg-gray-100 [&_code]:px-1 [&_code]:rounded [&_code]:text-xs
+                          `}>
+                            <ReactMarkdown>{part.text}</ReactMarkdown>
                           </div>
                         </div>
                       );

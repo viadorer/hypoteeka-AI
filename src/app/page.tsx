@@ -4,8 +4,9 @@ import { useState, useCallback } from 'react';
 import { ChatArea } from "@/components/chat/ChatArea";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { Dashboard } from "@/components/dashboard/Dashboard";
+import { NewsView } from "@/components/news/NewsView";
 
-type View = 'chat' | 'dashboard';
+type View = 'chat' | 'dashboard' | 'news';
 
 export default function Home() {
   const [view, setView] = useState<View>('chat');
@@ -29,6 +30,10 @@ export default function Home() {
     setSessionKey(k => k + 1);
   }, []);
 
+  const handleShowNews = useCallback(() => {
+    setView('news');
+  }, []);
+
   return (
     <div className="flex min-h-screen">
       <Sidebar
@@ -37,6 +42,7 @@ export default function Home() {
         onSelectSession={handleSelectSession}
         onContinueChat={handleContinueChat}
         onNewChat={handleNewChat}
+        onShowNews={handleShowNews}
       />
       {view === 'chat' && (
         <ChatArea
@@ -50,6 +56,9 @@ export default function Home() {
           onContinueChat={handleContinueChat}
           onNewChat={handleNewChat}
         />
+      )}
+      {view === 'news' && (
+        <NewsView />
       )}
     </div>
   );
