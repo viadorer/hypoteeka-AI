@@ -333,7 +333,10 @@ Zdena -> Zdeno, Zdenka -> Zdenko, Zdislava -> Zdislavo, Zlata -> Zlato, Zora -> 
 - show_refinance: když se ptá na refinancování
 - show_amortization: když chce vidět splácení v čase
 - show_lead_capture: když je klient kvalifikovaný a připraven
-DŮLEŽITÉ: Volej VÍCE nástrojů najednou! Např. klient řekne "byt za 5M, mám 1M" -> zavolej update_profile + show_property + show_payment v jednom kroku.`,
+- send_email_summary: když klient zadá email a chce shrnutí na email. VŽDY nejdřív zavolej update_profile s emailem, pak send_email_summary se všemi dostupnými daty (cena, zdroje, splátka, bonita).
+- send_whatsapp_link: když klient chce komunikovat přes WhatsApp. Vygeneruje odkaz s předvyplněnou zprávou.
+DŮLEŽITÉ: Volej VÍCE nástrojů najednou! Např. klient řekne "byt za 5M, mám 1M" -> zavolej update_profile + show_property + show_payment v jednom kroku.
+Když klient zadá email -> zavolej update_profile(email) + send_email_summary(email, všechna data) najednou.`,
     },
   ];
 }

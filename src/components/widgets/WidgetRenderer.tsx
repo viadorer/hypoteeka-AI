@@ -28,6 +28,8 @@ const TOOL_LABELS: Record<string, string> = {
   show_amortization: 'Průběh splácení',
   show_stress_test: 'Stress test',
   show_lead_capture: 'Kontaktní formulář',
+  send_email_summary: 'Odesílám email',
+  send_whatsapp_link: 'WhatsApp odkaz',
 };
 
 function WidgetSkeleton({ toolName }: { toolName: string }) {
@@ -146,6 +148,45 @@ export function WidgetRenderer({ toolInvocation, sessionId }: { toolInvocation: 
           sessionId={sessionId}
         />
       );
+    case 'send_email_summary': {
+      const sent = args.sent as boolean | undefined;
+      return (
+        <div className="bg-white rounded-2xl p-4 md:p-6 shadow-sm border border-gray-100 animate-in slide-in-from-bottom-4 duration-500 overflow-hidden w-full min-w-0">
+          <div className={`w-8 h-[3px] rounded-full ${sent ? 'bg-emerald-500' : 'bg-red-400'} mb-4`} />
+          <p className="text-[11px] font-semibold uppercase tracking-wider text-gray-400 mb-2">
+            {sent ? 'Email odeslán' : 'Chyba odesílání'}
+          </p>
+          <p className="text-sm text-gray-600">
+            {sent
+              ? `Shrnutí kalkulace bylo odesláno na ${args.email as string}.`
+              : `Nepodařilo se odeslat email. ${(args.error as string) ?? ''}`}
+          </p>
+        </div>
+      );
+    }
+    case 'send_whatsapp_link': {
+      const url = args.whatsappUrl as string | undefined;
+      return (
+        <div className="bg-white rounded-2xl p-4 md:p-6 shadow-sm border border-gray-100 animate-in slide-in-from-bottom-4 duration-500 overflow-hidden w-full min-w-0">
+          <div className="w-8 h-[3px] rounded-full bg-green-500 mb-4" />
+          <p className="text-[11px] font-semibold uppercase tracking-wider text-gray-400 mb-2">
+            WhatsApp
+          </p>
+          {url ? (
+            <a
+              href={url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-green-500 hover:bg-green-600 text-white text-sm font-medium transition-all"
+            >
+              Otevřít WhatsApp
+            </a>
+          ) : (
+            <p className="text-sm text-gray-500">Odkaz se připravuje...</p>
+          )}
+        </div>
+      );
+    }
     default:
       return null;
   }

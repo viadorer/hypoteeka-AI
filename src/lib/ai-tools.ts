@@ -13,6 +13,7 @@ import {
 import { formatCZK, formatPercent } from './format';
 import { getDynamicDefaultRate } from './data/rates';
 import { getCnbLimits } from './data/cnb-limits';
+import { sendBrevoEmail, buildCalculationEmailHtml } from './brevo';
 
 export const toolDefinitions = {
   show_property: {
@@ -231,6 +232,69 @@ export const toolDefinitions = {
       // Data se zpracovávají v API route přes onStepFinish
       const fields = Object.keys(data).filter(k => data[k] !== undefined);
       return { updated: fields, summary: `Profil aktualizovan: ${fields.join(', ')}` };
+    },
+  },
+
+  send_email_summary: {
+    description: 'Posli shrnuti kalkulace na email klienta. Pouzij kdyz klient zada email a chce dostat vysledky na email, nebo kdyz nabidnes zaslani a klient souhlasi. VZDY nejdriv zavolej update_profile s emailem.',
+    inputSchema: z.object({
+      email: z.string().describe('Email klienta'),
+      name: z.string().optional().describe('Jmeno klienta'),
+      propertyPrice: z.number().optional().describe('Cena nemovitosti'),
+      equity: z.number().optional().describe('Vlastni zdroje'),
+      loanAmount: z.number().optional().describe('Vyse uveru'),
+      monthlyPayment: z.number().optional().describe('Mesicni splatka'),
+      rate: z.number().optional().describe('Urokova sazba'),
+      years: z.number().optional().describe('Splatnost v letech'),
+      totalInterest: z.number().optional().describe('Celkem na urocich'),
+      ltvOk: z.boolean().optional().describe('LTV splneno'),
+      dstiOk: z.boolean().optional().describe('DSTI splneno'),
+      dtiOk: z.boolean().optional().describe('DTI splneno'),
+      ltvValue: z.number().optional().describe('LTV hodnota'),
+      dstiValue: z.number().optional().describe('DSTI hodnota'),
+      dtiValue: z.number().optional().describe('DTI hodnota'),
+    }),
+    execute: async (data: {
+      email: string; name?: string;
+      propertyPrice?: number; equity?: number; loanAmount?: number;
+      monthlyPayment?: number; rate?: number; years?: number; totalInterest?: number;
+      ltvOk?: boolean; dstiOk?: boolean; dtiOk?: boolean;
+      ltvValue?: number; dstiValue?: number; dtiValue?: number;
+    }) => {
+      const html = buildCalculationEmailHtml(data);
+      const result = await sendBrevoEmail({
+        to: data.email,
+        toName: data.name,
+        subject: 'Vaše kalkulace hypotéky -- Hypoteeka AI',
+        htmlContent: html,
+      });
+      if (result.success) {
+        return { sent: true, summary: `Email se shrnutím odeslán na ${data.email}.` };
+      }
+      return { sent: false, error: result.error, summary: `Nepodařilo se odeslat email: ${result.error}` };
+    },
+  },
+
+  send_whatsapp_link: {
+    description: 'Vygeneruj odkaz na WhatsApp pro kontaktovani poradce nebo zaslani shrnuti. Pouzij kdyz klient chce komunikovat pres WhatsApp nebo kdyz nabidnes WhatsApp a klient souhlasi.',
+    inputSchema: z.object({
+      phone: z.string().describe('Telefonni cislo klienta (cesky format, napr. +420123456789 nebo 123456789)'),
+      message: z.string().describe('Predvyplnena zprava pro WhatsApp'),
+    }),
+    execute: async ({ phone, message }: { phone: string; message: string }) => {
+      // Normalize phone number
+      let normalized = phone.replace(/\s+/g, '').replace(/^00/, '+');
+      if (!normalized.startsWith('+')) {
+        normalized = '+420' + normalized;
+      }
+      const encoded = encodeURIComponent(message);
+      const whatsappUrl = `https://wa.me/${normalized.replace('+', '')}?text=${encoded}`;
+      return {
+        whatsappUrl,
+        phone: normalized,
+        summary: `WhatsApp odkaz připraven pro ${normalized}`,
+        displayed: true,
+      };
     },
   },
 };
