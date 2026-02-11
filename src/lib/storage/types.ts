@@ -78,6 +78,17 @@ export interface PropertyRecord {
   details?: Record<string, unknown>;
 }
 
+export interface ProjectRecord {
+  id: string;
+  tenantId: string;
+  name: string;
+  description?: string;
+  profile: ClientProfile;
+  sessionIds: string[];
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface StorageProvider {
   // Sessions
   getSession(sessionId: string): Promise<SessionData | null>;
@@ -93,6 +104,12 @@ export interface StorageProvider {
 
   // Properties
   saveProperty(property: PropertyRecord): Promise<void>;
+
+  // Projects
+  getProject(projectId: string): Promise<ProjectRecord | null>;
+  saveProject(project: ProjectRecord): Promise<void>;
+  listProjects(tenantId?: string): Promise<ProjectRecord[]>;
+  deleteProject(projectId: string): Promise<void>;
 
   // Cleanup
   deleteSession(sessionId: string): Promise<void>;

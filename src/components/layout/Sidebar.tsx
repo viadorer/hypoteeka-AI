@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
-import { Menu, X, Plus, MessageSquare, BarChart3, FolderPlus, LogIn, UserPlus, LogOut, KeyRound, ChevronRight, User } from 'lucide-react';
+import { Menu, X, Plus, MessageSquare, BarChart3, FolderPlus, LogIn, UserPlus, LogOut, KeyRound, ChevronRight, User, Trash2 } from 'lucide-react';
 import { useAuth } from '@/lib/auth/auth-context';
 
 interface SessionSummary {
@@ -27,6 +27,14 @@ interface SessionSummary {
     dataCollected: string[];
   };
   createdAt: string;
+  updatedAt: string;
+}
+
+interface ProjectSummary {
+  id: string;
+  name: string;
+  description?: string;
+  sessionCount: number;
   updatedAt: string;
 }
 
@@ -78,6 +86,11 @@ type AuthView = 'none' | 'login' | 'signup' | 'change-password';
 export function Sidebar({ activeSessionId, currentView, onSelectSession, onContinueChat, onNewChat }: SidebarProps) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [sessions, setSessions] = useState<SessionSummary[]>([]);
+  const [projects, setProjects] = useState<ProjectSummary[]>([]);
+  const [showNewProject, setShowNewProject] = useState(false);
+  const [newProjectName, setNewProjectName] = useState('');
+  const [newProjectDesc, setNewProjectDesc] = useState('');
+  const [projectsExpanded, setProjectsExpanded] = useState(false);
   const [authView, setAuthView] = useState<AuthView>('none');
   const [authEmail, setAuthEmail] = useState('');
   const [authPassword, setAuthPassword] = useState('');
@@ -94,6 +107,43 @@ export function Sidebar({ activeSessionId, currentView, onSelectSession, onConti
       .then((data: SessionSummary[]) => setSessions(data))
       .catch(() => setSessions([]));
   }, [activeSessionId]);
+
+  // Load projects
+  useEffect(() => {
+    fetch('/api/projects')
+      .then(r => r.json())
+      .then((data: ProjectSummary[]) => { if (Array.isArray(data)) setProjects(data); })
+      .catch(() => setProjects([]));
+  }, []);
+
+  const createProject = async () => {
+    if (!newProjectName.trim()) return;
+    try {
+      const res = await fetch('/api/projects', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: newProjectName.trim(),
+          description: newProjectDesc.trim() || undefined,
+          sessionId: activeSessionId ?? undefined,
+        }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setProjects(prev => [{ id: data.id, name: data.name, description: newProjectDesc.trim() || undefined, sessionCount: activeSessionId ? 1 : 0, updatedAt: new Date().toISOString() }, ...prev]);
+        setNewProjectName('');
+        setNewProjectDesc('');
+        setShowNewProject(false);
+      }
+    } catch { /* ignore */ }
+  };
+
+  const deleteProject = async (projectId: string) => {
+    try {
+      await fetch(`/api/projects/${projectId}`, { method: 'DELETE' });
+      setProjects(prev => prev.filter(p => p.id !== projectId));
+    } catch { /* ignore */ }
+  };
 
   const handleContinue = (id: string) => {
     onContinueChat(id);
@@ -178,14 +228,84 @@ export function Sidebar({ activeSessionId, currentView, onSelectSession, onConti
             Analýzy
           </button>
           <button
-            disabled
-            className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-[15px] font-medium text-gray-400 cursor-not-allowed"
+            onClick={() => setProjectsExpanded(!projectsExpanded)}
+            className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-[15px] font-medium transition-all ${
+              projectsExpanded ? 'bg-blue-50/80 text-[#0A1E5C]' : 'text-gray-600 hover:bg-gray-50/80'
+            }`}
           >
             <FolderPlus className="w-5 h-5" />
             Projekty
-            <span className="ml-auto text-[10px] bg-gray-100 text-gray-400 px-1.5 py-0.5 rounded-full">brzy</span>
+            {projects.length > 0 && (
+              <span className="ml-auto text-[10px] bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded-full">{projects.length}</span>
+            )}
           </button>
         </div>
+
+        {/* Projects section */}
+        {projectsExpanded && (
+          <div className="px-4 py-2 border-t border-gray-100/50 space-y-2 max-h-[200px] overflow-y-auto">
+            {projects.length === 0 && !showNewProject && (
+              <p className="text-xs text-gray-300 px-1 py-1">Zatím žádné projekty.</p>
+            )}
+            {projects.map(p => (
+              <div key={p.id} className="group flex items-center gap-2 px-3 py-2 rounded-xl hover:bg-gray-50/80 transition-all">
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-gray-800 truncate">{p.name}</p>
+                  {p.description && <p className="text-[11px] text-gray-400 truncate">{p.description}</p>}
+                  <p className="text-[10px] text-gray-300">{p.sessionCount} konzultací</p>
+                </div>
+                <button
+                  onClick={() => deleteProject(p.id)}
+                  className="opacity-0 group-hover:opacity-100 p-1 rounded-lg hover:bg-red-50 text-gray-300 hover:text-red-400 transition-all"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            ))}
+            {showNewProject ? (
+              <div className="space-y-2 px-1">
+                <input
+                  type="text"
+                  placeholder="Název projektu *"
+                  value={newProjectName}
+                  onChange={e => setNewProjectName(e.target.value)}
+                  autoFocus
+                  className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm outline-none focus:border-[#E91E63]/40"
+                />
+                <input
+                  type="text"
+                  placeholder="Popis (volitelný)"
+                  value={newProjectDesc}
+                  onChange={e => setNewProjectDesc(e.target.value)}
+                  className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm outline-none focus:border-[#E91E63]/40"
+                />
+                <div className="flex gap-2">
+                  <button
+                    onClick={createProject}
+                    disabled={!newProjectName.trim()}
+                    className="flex-1 px-3 py-2 rounded-lg bg-[#E91E63] hover:bg-[#C2185B] disabled:bg-gray-200 text-white text-sm font-medium transition-all"
+                  >
+                    Vytvořit
+                  </button>
+                  <button
+                    onClick={() => { setShowNewProject(false); setNewProjectName(''); setNewProjectDesc(''); }}
+                    className="px-3 py-2 rounded-lg text-sm text-gray-500 hover:bg-gray-50 transition-all"
+                  >
+                    Zrušit
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <button
+                onClick={() => setShowNewProject(true)}
+                className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-sm text-gray-500 hover:bg-gray-50/80 transition-all"
+              >
+                <Plus className="w-4 h-4" />
+                Nový projekt
+              </button>
+            )}
+          </div>
+        )}
 
         {/* Previous chats */}
         <div className="flex-1 overflow-y-auto px-4 py-2 border-t border-gray-100/50">

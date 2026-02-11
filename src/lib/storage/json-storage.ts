@@ -7,20 +7,27 @@
 
 import fs from 'fs';
 import path from 'path';
-import type { StorageProvider, SessionData, LeadRecord, WidgetEventRecord, PropertyRecord } from './types';
+import type { StorageProvider, SessionData, LeadRecord, WidgetEventRecord, PropertyRecord, ProjectRecord } from './types';
 
 const DATA_DIR = path.join(process.cwd(), 'data');
 const SESSIONS_DIR = path.join(DATA_DIR, 'sessions');
+const PROJECTS_DIR = path.join(DATA_DIR, 'projects');
 const LEADS_FILE = path.join(DATA_DIR, 'leads.json');
 
 function ensureDirs() {
   if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
   if (!fs.existsSync(SESSIONS_DIR)) fs.mkdirSync(SESSIONS_DIR, { recursive: true });
+  if (!fs.existsSync(PROJECTS_DIR)) fs.mkdirSync(PROJECTS_DIR, { recursive: true });
 }
 
 function sessionPath(id: string): string {
   const safe = id.replace(/[^a-zA-Z0-9_-]/g, '_');
   return path.join(SESSIONS_DIR, `${safe}.json`);
+}
+
+function projectPath(id: string): string {
+  const safe = id.replace(/[^a-zA-Z0-9_-]/g, '_');
+  return path.join(PROJECTS_DIR, `${safe}.json`);
 }
 
 export class JsonFileStorage implements StorageProvider {
@@ -98,6 +105,45 @@ export class JsonFileStorage implements StorageProvider {
 
   async deleteSession(sessionId: string): Promise<void> {
     const p = sessionPath(sessionId);
+    if (fs.existsSync(p)) fs.unlinkSync(p);
+  }
+
+  async getProject(projectId: string): Promise<ProjectRecord | null> {
+    const p = projectPath(projectId);
+    if (!fs.existsSync(p)) return null;
+    try {
+      const raw = fs.readFileSync(p, 'utf-8');
+      return JSON.parse(raw) as ProjectRecord;
+    } catch {
+      return null;
+    }
+  }
+
+  async saveProject(project: ProjectRecord): Promise<void> {
+    ensureDirs();
+    project.updatedAt = new Date().toISOString();
+    fs.writeFileSync(projectPath(project.id), JSON.stringify(project, null, 2), 'utf-8');
+  }
+
+  async listProjects(tenantId?: string): Promise<ProjectRecord[]> {
+    ensureDirs();
+    const files = fs.readdirSync(PROJECTS_DIR).filter(f => f.endsWith('.json'));
+    const projects: ProjectRecord[] = [];
+    for (const file of files) {
+      try {
+        const raw = fs.readFileSync(path.join(PROJECTS_DIR, file), 'utf-8');
+        const project = JSON.parse(raw) as ProjectRecord;
+        if (!tenantId || project.tenantId === tenantId || !project.tenantId) {
+          projects.push(project);
+        }
+      } catch { /* skip corrupted files */ }
+    }
+    projects.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
+    return projects;
+  }
+
+  async deleteProject(projectId: string): Promise<void> {
+    const p = projectPath(projectId);
     if (fs.existsSync(p)) fs.unlinkSync(p);
   }
 }

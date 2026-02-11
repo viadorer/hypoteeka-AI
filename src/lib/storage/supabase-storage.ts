@@ -6,7 +6,7 @@
  */
 
 import type { SupabaseClient } from '@supabase/supabase-js';
-import type { StorageProvider, SessionData, LeadRecord, WidgetEventRecord, PropertyRecord } from './types';
+import type { StorageProvider, SessionData, LeadRecord, WidgetEventRecord, PropertyRecord, ProjectRecord } from './types';
 
 export class SupabaseStorage implements StorageProvider {
   constructor(private db: SupabaseClient) {}
@@ -244,6 +244,82 @@ export class SupabaseStorage implements StorageProvider {
 
     if (error) {
       console.error('[SupabaseStorage] deleteSession error:', error.message);
+    }
+  }
+
+  async getProject(projectId: string): Promise<ProjectRecord | null> {
+    const { data, error } = await this.db
+      .from('projects')
+      .select('*')
+      .eq('id', projectId)
+      .single();
+
+    if (error || !data) return null;
+
+    return {
+      id: data.id,
+      tenantId: data.tenant_id,
+      name: data.name,
+      description: data.description ?? undefined,
+      profile: data.client_profile ?? {},
+      sessionIds: data.session_ids ?? [],
+      createdAt: data.created_at,
+      updatedAt: data.updated_at,
+    };
+  }
+
+  async saveProject(project: ProjectRecord): Promise<void> {
+    const { error } = await this.db
+      .from('projects')
+      .upsert({
+        id: project.id,
+        tenant_id: project.tenantId,
+        name: project.name,
+        description: project.description ?? null,
+        client_profile: project.profile,
+        session_ids: project.sessionIds,
+        updated_at: new Date().toISOString(),
+      }, { onConflict: 'id' });
+
+    if (error) {
+      console.error('[SupabaseStorage] saveProject error:', error.message);
+    }
+  }
+
+  async listProjects(tenantId?: string): Promise<ProjectRecord[]> {
+    let query = this.db
+      .from('projects')
+      .select('*')
+      .order('updated_at', { ascending: false })
+      .limit(50);
+
+    if (tenantId) {
+      query = query.eq('tenant_id', tenantId);
+    }
+
+    const { data, error } = await query;
+    if (error || !data) return [];
+
+    return data.map(row => ({
+      id: row.id,
+      tenantId: row.tenant_id,
+      name: row.name,
+      description: row.description ?? undefined,
+      profile: row.client_profile ?? {},
+      sessionIds: row.session_ids ?? [],
+      createdAt: row.created_at,
+      updatedAt: row.updated_at,
+    }));
+  }
+
+  async deleteProject(projectId: string): Promise<void> {
+    const { error } = await this.db
+      .from('projects')
+      .delete()
+      .eq('id', projectId);
+
+    if (error) {
+      console.error('[SupabaseStorage] deleteProject error:', error.message);
     }
   }
 }
