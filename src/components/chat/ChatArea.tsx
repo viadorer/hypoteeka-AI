@@ -7,6 +7,7 @@ import { Send, AlertCircle, RotateCcw, Calculator, ShieldCheck, TrendingUp, User
 import { WidgetRenderer } from '../widgets/WidgetRenderer';
 import ReactMarkdown from 'react-markdown';
 import { DefaultChatTransport } from 'ai';
+import { toVocative } from '@/lib/vocative';
 import type { UIMessage } from 'ai';
 
 const QUICK_ACTIONS = [
@@ -210,7 +211,7 @@ export function ChatArea({ initialSessionId = null }: ChatAreaProps) {
             )}
             <h1 className="text-[28px] md:text-4xl font-extrabold text-[#0A1E5C] tracking-tight mb-3">
               {visitorName
-                ? `Zdravím, ${visitorName}!`
+                ? `Zdravím, ${toVocative(visitorName)}!`
                 : 'Jsem Hugo, váš hypoteční poradce'}
             </h1>
             <p className="text-gray-500 text-base md:text-lg leading-relaxed">
