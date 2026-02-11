@@ -5,6 +5,7 @@ import { useRef, useEffect, useState, useMemo } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { Send, AlertCircle, RotateCcw, Calculator, ShieldCheck, TrendingUp, Users, ArrowRight, CheckCircle2 } from 'lucide-react';
 import { WidgetRenderer } from '../widgets/WidgetRenderer';
+import { DefaultChatTransport } from 'ai';
 import type { UIMessage } from 'ai';
 
 const QUICK_ACTIONS = [
@@ -68,8 +69,10 @@ interface ChatAreaProps {
 export function ChatArea({ initialSessionId = null }: ChatAreaProps) {
   const sessionId = useMemo(() => getSessionId(initialSessionId), [initialSessionId]);
   const { messages, sendMessage, status, error, clearError } = useChat({
-    api: '/api/chat',
-    body: { sessionId },
+    transport: new DefaultChatTransport({
+      api: '/api/chat',
+      body: { sessionId },
+    }),
   });
   const [inputValue, setInputValue] = useState('');
   const [visitorName, setVisitorName] = useState<string | null>(null);
