@@ -319,7 +319,7 @@ export function Sidebar({ activeSessionId, currentView, onSelectSession, onConti
         {/* Previous chats */}
         <div className="flex-1 overflow-y-auto px-4 py-2 border-t border-gray-100/50">
           <p className="text-[11px] font-semibold uppercase tracking-wider text-gray-400 mb-2 px-1">
-            Předchozí chaty
+            Předchozí konzultace
           </p>
 
           {chatSessions.length === 0 && (
