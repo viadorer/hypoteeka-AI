@@ -3,7 +3,7 @@
 import { useChat } from '@ai-sdk/react';
 import { useRef, useEffect, useState, useMemo } from 'react';
 import { v4 as uuidv4 } from 'uuid';
-import { Send, AlertCircle, RotateCcw, Calculator, ShieldCheck, TrendingUp, Users, ArrowRight, CheckCircle2, TrendingDown, Clock, BarChart3 } from 'lucide-react';
+import { Send, AlertCircle, RotateCcw, Calculator, ShieldCheck, TrendingUp, Users, BarChart3 } from 'lucide-react';
 import { WidgetRenderer } from '../widgets/WidgetRenderer';
 import ReactMarkdown from 'react-markdown';
 import { DefaultChatTransport } from 'ai';
@@ -16,28 +16,6 @@ const QUICK_ACTIONS = [
   { label: 'Nájem vs. hypotéka', icon: Users },
 ];
 
-const FEATURES = [
-  {
-    title: 'Výpočet splátky a bonity',
-    desc: 'Přesný výpočet měsíční splátky, celkových nákladů a ověření bonity podle limitů ČNB.',
-    items: ['Měsíční splátka', 'Celkové úroky', 'RPSN', 'Ověření DSTI a DTI'],
-  },
-  {
-    title: 'Porovnání sazeb bank',
-    desc: 'Orientační přehled aktuálních sazeb na trhu. Konkrétní nabídku připraví poradce na míru.',
-    items: ['Live sazby z ČNB', 'Porovnání 8+ bank', 'Fixace 3, 5 i 10 let'],
-  },
-  {
-    title: 'Pravidla ČNB 2026',
-    desc: 'Počítáme podle aktuálních doporučení České národní banky.',
-    items: ['LTV do 80 % (90 % do 36 let)', 'DSTI do 45 %', 'DTI do 9,5'],
-  },
-  {
-    title: 'Najdeme cestu k hypotéce',
-    desc: 'I když nesplňujete podmínky, navrhneme konkrétní kroky jak to změnit.',
-    items: ['Navýšení vlastních zdrojů', 'Spolužadatel', 'Alternativní banky', 'Refinancování'],
-  },
-];
 
 const BANKS = [
   'Hypoteční banka',
@@ -219,117 +197,116 @@ export function ChatArea({ initialSessionId = null }: ChatAreaProps) {
       <div className="flex-1 md:ml-[260px] flex flex-col min-h-screen pt-16 md:pt-0 overflow-x-hidden overflow-y-auto min-w-0 w-full">
         <div className="flex-1 flex flex-col items-center px-4 md:px-4 py-8 md:py-12 w-full min-w-0">
 
-          {/* Hero */}
-          <div className="text-center mb-8 max-w-lg">
-            <h1 className="text-[28px] md:text-4xl font-extrabold text-[#0A1E5C] tracking-tight mb-3">
+          {/* Hero - short and clear */}
+          <div className="text-center mb-6 max-w-md">
+            <h1 className="text-[26px] md:text-3xl font-extrabold text-[#0A1E5C] tracking-tight mb-2">
               {visitorName
-                ? `Vítejte zpět, ${visitorName}`
-                : 'Hypoteční poradce'}
+                ? `Zdravím, ${visitorName}!`
+                : 'Spočítejte si hypotéku'}
             </h1>
-            <p className="text-gray-500 text-base md:text-lg leading-relaxed">
+            <p className="text-gray-400 text-sm md:text-base">
               {visitorName
-                ? 'Pokračujte tam, kde jste skončili, nebo začněte novou kalkulaci. Porovnáme nabídky bank a ověříme bonitu podle pravidel ČNB 2026.'
-                : 'Zjistěte za minutu, zda dosáhnete na hypotéku. Porovnáme nabídky bank, spočítáme splátku a ověříme bonitu podle pravidel ČNB 2026.'}
+                ? 'Pokračujte nebo začněte novou kalkulaci.'
+                : 'Zadejte parametry a za minutu víte, na co dosáhnete.'}
             </p>
           </div>
 
-          {/* Centered input */}
-          <div className="w-full max-w-[560px] mb-6 min-w-0">
+          {/* Input - dominant CTA */}
+          <div className="w-full max-w-[560px] mb-5 min-w-0">
             {inputBar}
-            <p className="text-center text-[11px] text-gray-400 mt-2.5">
-              Napište přirozeně, např. &quot;Kupuji byt za 5 mil, mám 1 mil a beru 60 tisíc&quot;
+            <p className="text-center text-[11px] text-gray-400 mt-2">
+              např. &quot;Byt za 5 mil, mám 1 mil vlastních, příjem 60 tisíc&quot;
             </p>
           </div>
 
           {/* Quick action badges */}
-          <div className="flex flex-wrap gap-2 justify-center mb-10">
+          <div className="flex flex-wrap gap-2 justify-center mb-8">
             {QUICK_ACTIONS.map(({ label, icon: Icon }) => (
               <button
                 key={label}
                 onClick={() => useBadge(label)}
                 disabled={isLoading}
-                className={`inline-flex items-center gap-2 px-4 py-3 md:py-2.5 rounded-xl text-[15px] md:text-sm text-gray-600 transition-all disabled:opacity-50 active:scale-[0.97] ${glass} ${glassHover} hover:text-[#E91E63]`}
+                className={`inline-flex items-center gap-1.5 px-3.5 py-2.5 md:py-2 rounded-xl text-[13px] md:text-sm text-gray-500 transition-all disabled:opacity-50 active:scale-[0.97] ${glass} ${glassHover} hover:text-[#E91E63]`}
               >
-                <Icon className="w-4 h-4" />
+                <Icon className="w-3.5 h-3.5" />
                 {label}
-                <ArrowRight className="w-3 h-3 opacity-0 -ml-1 group-hover:opacity-100 transition-opacity" />
               </button>
             ))}
           </div>
 
-          {/* Today's rates */}
+          {/* Today's rates - compact inline */}
           {todayRates && todayRates.mortgage.avgRate > 0 && (
-            <div className="w-full max-w-[700px] mb-8 min-w-0">
-              <div className="flex items-center justify-center gap-2 mb-4">
-                <BarChart3 className="w-4 h-4 text-[#E91E63]" />
-                <p className="text-[11px] text-gray-400 uppercase tracking-wider font-medium">
-                  Sazby hypoték dnes ({todayRates.date})
-                </p>
+            <div className={`w-full max-w-[560px] mb-8 rounded-xl p-4 min-w-0 ${glass}`}>
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-1.5">
+                  <BarChart3 className="w-3.5 h-3.5 text-[#E91E63]" />
+                  <p className="text-[11px] text-gray-400 uppercase tracking-wider font-medium">Sazby dnes</p>
+                </div>
+                <p className="text-[10px] text-gray-400">{todayRates.date}</p>
               </div>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-                <div className={`rounded-xl p-3.5 text-center ${glass}`}>
-                  <p className="text-[10px] text-gray-400 uppercase tracking-wider mb-1">Repo ČNB</p>
-                  <p className="text-lg font-bold text-[#0A1E5C]">{todayRates.cnb.repo} %</p>
+              <div className="grid grid-cols-4 gap-3">
+                <div className="text-center">
+                  <p className="text-[10px] text-gray-400 mb-0.5">Repo ČNB</p>
+                  <p className="text-base font-bold text-[#0A1E5C]">{todayRates.cnb.repo} %</p>
                 </div>
-                <div className={`rounded-xl p-3.5 text-center ${glass}`}>
-                  <p className="text-[10px] text-gray-400 uppercase tracking-wider mb-1">Fixace 1-5 let</p>
-                  <p className="text-lg font-bold text-[#0A1E5C]">{todayRates.mortgage.rateFix5y} %</p>
-                  <p className="text-[10px] text-gray-400">průměr trhu</p>
+                <div className="text-center">
+                  <p className="text-[10px] text-gray-400 mb-0.5">Fix 1-5 let</p>
+                  <p className="text-base font-bold text-[#0A1E5C]">{todayRates.mortgage.rateFix5y} %</p>
                 </div>
-                <div className={`rounded-xl p-3.5 text-center ${glass}`}>
-                  <p className="text-[10px] text-gray-400 uppercase tracking-wider mb-1">Fixace 5-10 let</p>
-                  <p className="text-lg font-bold text-[#0A1E5C]">{todayRates.mortgage.rateFix10y} %</p>
-                  <p className="text-[10px] text-gray-400">průměr trhu</p>
+                <div className="text-center">
+                  <p className="text-[10px] text-gray-400 mb-0.5">Fix 5-10 let</p>
+                  <p className="text-base font-bold text-[#0A1E5C]">{todayRates.mortgage.rateFix10y} %</p>
                 </div>
-                <div className={`rounded-xl p-3.5 text-center ${glass}`}>
-                  <p className="text-[10px] text-gray-400 uppercase tracking-wider mb-1">RPSN</p>
-                  <p className="text-lg font-bold text-[#0A1E5C]">{todayRates.mortgage.rpsn} %</p>
-                  <p className="text-[10px] text-gray-400">průměr trhu</p>
+                <div className="text-center">
+                  <p className="text-[10px] text-gray-400 mb-0.5">RPSN</p>
+                  <p className="text-base font-bold text-[#0A1E5C]">{todayRates.mortgage.rpsn} %</p>
                 </div>
               </div>
-              <p className="text-center text-[10px] text-gray-400 mt-2">
-                Zdroj: ČNB ARAD -- Díky exkluzivním smlouvám nabízíme výhodnější podmínky
+              <p className="text-center text-[10px] text-gray-400 mt-2.5">
+                Průměr trhu dle ČNB -- Díky exkluzivním smlouvám nabízíme výhodnější podmínky
               </p>
             </div>
           )}
 
-          {/* Feature cards - glass style */}
-          <div className="w-full max-w-[700px] grid grid-cols-1 md:grid-cols-2 gap-3 mb-10 min-w-0">
-            {FEATURES.map((f) => (
-              <div key={f.title} className={`rounded-2xl p-5 transition-all ${glass} ${glassHover}`}>
-                <p className="text-[15px] md:text-sm font-semibold text-gray-900 mb-1.5">{f.title}</p>
-                <p className="text-sm md:text-xs text-gray-500 leading-relaxed mb-3">{f.desc}</p>
-                <div className="space-y-2 md:space-y-1.5">
-                  {f.items.map((item) => (
-                    <div key={item} className="flex items-center gap-2 text-sm md:text-xs text-gray-600">
-                      <CheckCircle2 className="w-3.5 h-3.5 text-[#E91E63] flex-shrink-0" />
-                      {item}
-                    </div>
-                  ))}
-                </div>
+          {/* What we do - compact feature strip */}
+          <div className="w-full max-w-[560px] mb-8 min-w-0">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              <div className="flex flex-col items-center text-center gap-1.5 py-3">
+                <Calculator className="w-5 h-5 text-[#E91E63]" />
+                <p className="text-[12px] font-medium text-gray-700">Splátka a bonita</p>
+                <p className="text-[10px] text-gray-400 leading-tight">Výpočet dle ČNB 2026</p>
               </div>
-            ))}
-          </div>
-
-          {/* Bank logos strip */}
-          <div className="w-full max-w-[700px] mb-8 min-w-0">
-            <p className="text-center text-[11px] text-gray-400 uppercase tracking-wider mb-4 font-medium">
-              Porovnáváme nabídky bank
-            </p>
-            <div className="flex flex-wrap justify-center gap-x-6 gap-y-2">
-              {BANKS.map((bank) => (
-                <span key={bank} className="text-xs text-gray-400 font-medium whitespace-nowrap">
-                  {bank}
-                </span>
-              ))}
+              <div className="flex flex-col items-center text-center gap-1.5 py-3">
+                <BarChart3 className="w-5 h-5 text-[#E91E63]" />
+                <p className="text-[12px] font-medium text-gray-700">Sazby 8+ bank</p>
+                <p className="text-[10px] text-gray-400 leading-tight">Live data z ČNB</p>
+              </div>
+              <div className="flex flex-col items-center text-center gap-1.5 py-3">
+                <ShieldCheck className="w-5 h-5 text-[#E91E63]" />
+                <p className="text-[12px] font-medium text-gray-700">Limity ČNB</p>
+                <p className="text-[10px] text-gray-400 leading-tight">LTV, DSTI, DTI</p>
+              </div>
+              <div className="flex flex-col items-center text-center gap-1.5 py-3">
+                <Users className="w-5 h-5 text-[#E91E63]" />
+                <p className="text-[12px] font-medium text-gray-700">Osobní poradce</p>
+                <p className="text-[10px] text-gray-400 leading-tight">Konzultace zdarma</p>
+              </div>
             </div>
           </div>
 
-          {/* Footer info */}
-          <div className={`rounded-xl px-6 py-3 text-center text-[11px] text-gray-400 max-w-lg ${glass}`}>
-            <p>Hypoteeka AI používá metodiku ČNB 2026 a live data z ČNB ARAD. Výsledky jsou orientační.</p>
-            <p className="mt-1">Vaše data zpracováváme pouze pro účely kalkulace a nejsou sdílena třetím stranám.</p>
+          {/* Banks */}
+          <div className="flex flex-wrap justify-center gap-x-5 gap-y-1.5 mb-6 max-w-[560px]">
+            {BANKS.map((bank) => (
+              <span key={bank} className="text-[11px] text-gray-400 font-medium whitespace-nowrap">
+                {bank}
+              </span>
+            ))}
           </div>
+
+          {/* Footer */}
+          <p className="text-center text-[10px] text-gray-400 max-w-md">
+            Metodika ČNB 2026, live data z ČNB ARAD. Výsledky jsou orientační. Data nejsou sdílena třetím stranám.
+          </p>
         </div>
       </div>
     );
