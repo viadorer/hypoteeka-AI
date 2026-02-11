@@ -40,14 +40,16 @@ const FEATURES = [
 ];
 
 const BANKS = [
-  'Hypoteční banka',
-  'Česká spořitelna',
-  'Komerční banka',
-  'ČSOB',
-  'Raiffeisenbank',
-  'mBank',
-  'UniCredit',
-  'Moneta',
+  { name: 'Hypoteční banka', logo: '/images/banks/hypotecni-banka.svg' },
+  { name: 'Česká spořitelna', logo: '/images/banks/ceska-sporitelna.svg' },
+  { name: 'Komerční banka', logo: '/images/banks/kb.svg' },
+  { name: 'ČSOB', logo: '/images/banks/csob.svg' },
+  { name: 'Raiffeisenbank', logo: '/images/banks/raiffeisen.svg' },
+  { name: 'mBank', logo: '/images/banks/mbank.svg' },
+  { name: 'UniCredit', logo: '/images/banks/unicredit.svg' },
+  { name: 'Moneta', logo: '/images/banks/moneta.svg' },
+  { name: 'Fio banka', logo: '/images/banks/fio.svg' },
+  { name: 'Air Bank', logo: '/images/banks/air-bank.svg' },
 ];
 
 function getSessionId(initialId: string | null): string {
@@ -316,11 +318,11 @@ export function ChatArea({ initialSessionId = null }: ChatAreaProps) {
             <p className="text-center text-[11px] text-gray-400 uppercase tracking-wider mb-4 font-medium">
               Porovnáváme nabídky bank
             </p>
-            <div className="flex flex-wrap justify-center gap-x-6 gap-y-2">
+            <div className="flex flex-wrap justify-center gap-x-4 gap-y-3 items-center">
               {BANKS.map((bank) => (
-                <span key={bank} className="text-xs text-gray-400 font-medium whitespace-nowrap">
-                  {bank}
-                </span>
+                <div key={bank.name} className="flex items-center gap-1.5 opacity-60 hover:opacity-100 transition-opacity">
+                  <img src={bank.logo} alt={bank.name} className="h-5 w-auto" />
+                </div>
               ))}
             </div>
           </div>
