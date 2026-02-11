@@ -45,6 +45,8 @@ export interface LeadRecord {
   profile: ClientProfile;
   leadScore: number;
   leadTemperature: string;
+  realvisorLeadId?: string;
+  realvisorContactId?: string;
   createdAt: string;
 }
 

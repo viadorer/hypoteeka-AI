@@ -146,6 +146,8 @@ export class SupabaseStorage implements StorageProvider {
         profile_snapshot: lead.profile,
         lead_score: lead.leadScore,
         lead_temperature: lead.leadTemperature,
+        realvisor_lead_id: lead.realvisorLeadId ?? null,
+        realvisor_contact_id: lead.realvisorContactId ?? null,
       });
 
     if (error) {
@@ -179,6 +181,8 @@ export class SupabaseStorage implements StorageProvider {
       profile: row.profile_snapshot ?? {},
       leadScore: row.lead_score,
       leadTemperature: row.lead_temperature,
+      realvisorLeadId: row.realvisor_lead_id ?? undefined,
+      realvisorContactId: row.realvisor_contact_id ?? undefined,
       createdAt: row.created_at,
     }));
   }

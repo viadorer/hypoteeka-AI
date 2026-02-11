@@ -1,5 +1,6 @@
 import { storage } from '@/lib/storage';
 import { v4 as uuidv4 } from 'uuid';
+import { submitLeadToRealvisor, buildRealvisorPayload } from '@/lib/realvisor';
 
 export async function POST(req: Request) {
   try {
@@ -15,22 +16,39 @@ export async function POST(req: Request) {
 
     // Load session to get profile and score
     const session = sessionId ? await storage.getSession(sessionId) : null;
+    const tid = tenantId ?? session?.tenantId ?? 'hypoteeka';
+    const profile = session?.profile ?? {};
+    const score = session?.state.leadScore ?? 0;
+    const temperature = session?.state.leadQualified ? 'qualified' : 'unknown';
 
+    // Submit to Realvisor API with full profile data
+    const rvPayload = buildRealvisorPayload(name, email, phone, context ?? '', profile as Record<string, unknown>, {
+      sessionId,
+      tenantId: tid,
+      leadScore: score,
+      leadTemperature: temperature,
+    });
+    const rvResult = await submitLeadToRealvisor(rvPayload);
+
+    // Save lead locally with Realvisor IDs
+    const leadId = uuidv4();
     await storage.saveLead({
-      id: uuidv4(),
-      tenantId: tenantId ?? session?.tenantId ?? 'hypoteeka',
+      id: leadId,
+      tenantId: tid,
       sessionId: sessionId ?? 'unknown',
       name,
       email,
       phone,
       context: context ?? '',
-      profile: session?.profile ?? {},
-      leadScore: session?.state.leadScore ?? 0,
-      leadTemperature: session?.state.leadQualified ? 'qualified' : 'unknown',
+      profile,
+      leadScore: score,
+      leadTemperature: temperature,
+      realvisorLeadId: rvResult.leadId,
+      realvisorContactId: rvResult.contactId,
       createdAt: new Date().toISOString(),
     });
 
-    // Uložit kontakt i do session profilu
+    // Update session profile with contact info
     if (session) {
       session.profile.name = name;
       session.profile.email = email;
@@ -39,12 +57,14 @@ export async function POST(req: Request) {
       await storage.saveSession(session);
     }
 
-    // Realvisor embed widget odesílá lead přímo na Realvisor API z klienta
-    // Tento endpoint pouze ukládá lead lokálně pro naše záznamy
-    console.log(`[Lead] Captured: ${name} (${email}, ${phone}), session: ${sessionId}, score: ${session?.state.leadScore ?? '?'}`);
+    console.log(`[Lead] Captured: ${name} (${email}, ${phone}), session: ${sessionId}, score: ${score}, realvisor: ${rvResult.success ? rvResult.leadId : 'failed'}`);
 
     return new Response(
-      JSON.stringify({ success: true }),
+      JSON.stringify({
+        success: true,
+        realvisorLeadId: rvResult.leadId,
+        realvisorContactId: rvResult.contactId,
+      }),
       { status: 200, headers: { 'Content-Type': 'application/json' } }
     );
   } catch (error: unknown) {
