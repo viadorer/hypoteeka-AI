@@ -10,6 +10,8 @@ import {
   DEFAULTS,
 } from './calculations';
 import { formatCZK, formatPercent } from './format';
+import { getDynamicDefaultRate } from './data/rates';
+import { getCnbLimits } from './data/cnb-limits';
 
 export const toolDefinitions = {
   show_property: {
@@ -33,7 +35,8 @@ export const toolDefinitions = {
       years: z.number().optional().describe('Doba splatnosti v letech. Pokud klient neuvedl, NEZADAVEJ - system pouzije 30 let.'),
     }),
     execute: async ({ propertyPrice, equity, rate, years }: { propertyPrice: number; equity: number; rate?: number; years?: number }) => {
-      const r = rate ?? DEFAULTS.rate;
+      const dynamic = await getDynamicDefaultRate();
+      const r = rate ?? dynamic.rate;
       const y = years ?? DEFAULTS.years;
       const loan = propertyPrice - equity;
       const monthly = calculateAnnuity(loan, r, y * 12);
@@ -43,6 +46,7 @@ export const toolDefinitions = {
         monthlyPayment: Math.round(monthly),
         totalInterest: Math.round(totalInterest),
         rate: r,
+        rpsn: dynamic.rpsn,
         years: y,
         summary: `Mesicni splatka: ${formatCZK(Math.round(monthly))}, uver: ${formatCZK(loan)}, sazba: ${formatPercent(r)}`,
         displayed: true,
@@ -59,7 +63,8 @@ export const toolDefinitions = {
       isYoung: z.boolean().optional().describe('Je klient mladsi 36 let?'),
     }),
     execute: async ({ propertyPrice, equity, monthlyIncome, isYoung }: { propertyPrice: number; equity: number; monthlyIncome: number; isYoung?: boolean }) => {
-      const result = checkEligibility(propertyPrice, equity, monthlyIncome, isYoung);
+      const limits = await getCnbLimits();
+      const result = checkEligibility(propertyPrice, equity, monthlyIncome, isYoung, limits);
       return {
         ...result,
         summary: result.allOk
@@ -113,7 +118,8 @@ export const toolDefinitions = {
       isYoung: z.boolean().optional().describe('Je klient mladsi 36 let?'),
     }),
     execute: async ({ monthlyIncome, equity, isYoung }: { monthlyIncome: number; equity: number; isYoung?: boolean }) => {
-      const result = calculateAffordability(monthlyIncome, equity, isYoung);
+      const [limits, dynamic] = await Promise.all([getCnbLimits(), getDynamicDefaultRate()]);
+      const result = calculateAffordability(monthlyIncome, equity, isYoung, limits, dynamic.rate);
       return {
         ...result,
         summary: `Maximalni cena nemovitosti: ${formatCZK(result.maxPropertyPrice)}, max uver: ${formatCZK(result.maxLoan)}, splatka: ${formatCZK(result.monthlyPayment)}/mes`,
@@ -131,7 +137,8 @@ export const toolDefinitions = {
       remainingYears: z.number().describe('Zbyvajici roky splatnosti'),
     }),
     execute: async ({ remainingBalance, currentRate, newRate, remainingYears }: { remainingBalance: number; currentRate: number; newRate?: number; remainingYears: number }) => {
-      const result = calculateRefinance(remainingBalance, currentRate, newRate ?? DEFAULTS.rate, remainingYears);
+      const dynamic = await getDynamicDefaultRate();
+      const result = calculateRefinance(remainingBalance, currentRate, newRate ?? dynamic.rate, remainingYears);
       return {
         ...result,
         summary: `Uspora: ${formatCZK(result.monthlySaving)}/mes, celkem: ${formatCZK(result.totalSaving)}`,
@@ -148,7 +155,8 @@ export const toolDefinitions = {
       years: z.number().optional().describe('Doba splatnosti v letech. Pokud klient neuvedl, NEZADAVEJ - system pouzije 30 let.'),
     }),
     execute: async ({ loanAmount, rate, years }: { loanAmount: number; rate?: number; years?: number }) => {
-      const r = rate ?? DEFAULTS.rate;
+      const dynamic = await getDynamicDefaultRate();
+      const r = rate ?? dynamic.rate;
       const y = years ?? DEFAULTS.years;
       const monthly = calculateAnnuity(loanAmount, r, y * 12);
       return {

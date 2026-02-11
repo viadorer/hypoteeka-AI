@@ -71,6 +71,7 @@ export function WidgetRenderer({ toolInvocation, sessionId }: { toolInvocation: 
           propertyPrice={args.propertyPrice as number}
           equity={args.equity as number}
           rate={args.rate as number | undefined}
+          rpsn={args.rpsn as number | undefined}
           years={args.years as number | undefined}
         />
       );

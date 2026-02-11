@@ -1,5 +1,7 @@
 // Hypoteeka AI - Calculation Engine
-// Based on CNB 2026 methodology
+// CLIENT-SIDE FALLBACKS ONLY. Server-side code uses:
+//   getDynamicDefaultRate() for rate/rpsn (from DB + ARAD)
+//   getCnbLimits() for LTV/DSTI/DTI limits (from DB)
 
 export const DEFAULTS = {
   rate: 0.045,
@@ -86,32 +88,44 @@ export interface EligibilityResult {
   reasons: string[];
 }
 
+export interface CnbLimitsOverride {
+  ltvLimit?: number;
+  ltvLimitYoung?: number;
+  dstiLimit?: number;
+  dtiLimit?: number;
+}
+
 export function checkEligibility(
   propertyPrice: number,
   equity: number,
   monthlyIncome: number,
-  isYoung = false
+  isYoung = false,
+  limits?: CnbLimitsOverride
 ): EligibilityResult {
   const loanAmount = propertyPrice - equity;
   const monthlyPayment = calculateAnnuity(loanAmount);
   const ltvValue = calculateLTV(loanAmount, propertyPrice);
-  const ltvLimit = isYoung ? DEFAULTS.ltvLimitYoung : DEFAULTS.ltvLimit;
+  const ltvLimit = isYoung
+    ? (limits?.ltvLimitYoung ?? DEFAULTS.ltvLimitYoung)
+    : (limits?.ltvLimit ?? DEFAULTS.ltvLimit);
   const dstiValue = calculateDSTI(monthlyPayment, monthlyIncome);
   const dtiValue = calculateDTI(loanAmount, monthlyIncome * 12);
 
+  const dstiLimitVal = limits?.dstiLimit ?? DEFAULTS.dstiLimit;
+  const dtiLimitVal = limits?.dtiLimit ?? DEFAULTS.dtiLimit;
   const ltvOk = ltvValue <= ltvLimit;
-  const dstiOk = dstiValue <= DEFAULTS.dstiLimit;
-  const dtiOk = dtiValue <= DEFAULTS.dtiLimit;
+  const dstiOk = dstiValue <= dstiLimitVal;
+  const dtiOk = dtiValue <= dtiLimitVal;
 
   const reasons: string[] = [];
   if (!ltvOk) reasons.push(`LTV ${(ltvValue * 100).toFixed(1)} % prekracuje limit ${(ltvLimit * 100).toFixed(0)} % - navyste vlastni zdroje`);
-  if (!dstiOk) reasons.push(`DSTI ${(dstiValue * 100).toFixed(1)} % prekracuje limit 45 % - splatka je prilis vysoka vuci prijmu`);
-  if (!dtiOk) reasons.push(`DTI ${dtiValue.toFixed(1)}x prekracuje limit 9,5 - celkovy dluh je prilis vysoky`);
+  if (!dstiOk) reasons.push(`DSTI ${(dstiValue * 100).toFixed(1)} % prekracuje limit ${(dstiLimitVal * 100).toFixed(0)} % - splatka je prilis vysoka vuci prijmu`);
+  if (!dtiOk) reasons.push(`DTI ${dtiValue.toFixed(1)}x prekracuje limit ${dtiLimitVal} - celkovy dluh je prilis vysoky`);
 
   return {
     ltvValue, ltvLimit, ltvOk,
-    dstiValue, dstiLimit: DEFAULTS.dstiLimit, dstiOk,
-    dtiValue, dtiLimit: DEFAULTS.dtiLimit, dtiOk,
+    dstiValue, dstiLimit: dstiLimitVal, dstiOk,
+    dtiValue, dtiLimit: dtiLimitVal, dtiOk,
     allOk: ltvOk && dstiOk && dtiOk,
     monthlyPayment,
     loanAmount,
@@ -228,23 +242,31 @@ export interface AffordabilityResult {
 export function calculateAffordability(
   monthlyIncome: number,
   equity: number,
-  isYoung = false
+  isYoung = false,
+  limits?: CnbLimitsOverride,
+  rateOverride?: number
 ): AffordabilityResult {
-  // Max payment based on DSTI 45%
-  const maxPayment = monthlyIncome * DEFAULTS.dstiLimit;
+  const dstiLimitVal = limits?.dstiLimit ?? DEFAULTS.dstiLimit;
+  const dtiLimitVal = limits?.dtiLimit ?? DEFAULTS.dtiLimit;
+  const rateVal = rateOverride ?? DEFAULTS.rate;
 
-  // Max loan based on DTI 9.5
-  const maxLoanDTI = monthlyIncome * 12 * DEFAULTS.dtiLimit;
+  // Max payment based on DSTI
+  const maxPayment = monthlyIncome * dstiLimitVal;
+
+  // Max loan based on DTI
+  const maxLoanDTI = monthlyIncome * 12 * dtiLimitVal;
 
   // Max loan based on DSTI (reverse annuity)
-  const r = DEFAULTS.rate / 12;
+  const r = rateVal / 12;
   const n = DEFAULTS.months;
   const maxLoanDSTI = maxPayment * (Math.pow(1 + r, n) - 1) / (r * Math.pow(1 + r, n));
 
   const maxLoan = Math.min(maxLoanDTI, maxLoanDSTI);
 
   // Max property price based on LTV
-  const ltvLimit = isYoung ? DEFAULTS.ltvLimitYoung : DEFAULTS.ltvLimit;
+  const ltvLimit = isYoung
+    ? (limits?.ltvLimitYoung ?? DEFAULTS.ltvLimitYoung)
+    : (limits?.ltvLimit ?? DEFAULTS.ltvLimit);
   const maxPropertyFromLTV = (equity + maxLoan) > 0 ? equity / (1 - ltvLimit) : 0;
   const maxPropertyFromLoan = equity + maxLoan;
   const maxPropertyPrice = Math.min(maxPropertyFromLTV, maxPropertyFromLoan);

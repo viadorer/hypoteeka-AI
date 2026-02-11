@@ -7,11 +7,13 @@ interface Props {
   propertyPrice: number;
   equity: number;
   rate?: number;
+  rpsn?: number;
   years?: number;
 }
 
-export function PaymentWidget({ propertyPrice, equity, rate, years }: Props) {
+export function PaymentWidget({ propertyPrice, equity, rate, rpsn, years }: Props) {
   const rateVal = rate ?? DEFAULTS.rate;
+  const rpsnVal = rpsn ?? rateVal * 1.04;
   const yearsVal = years ?? DEFAULTS.years;
   const loanAmount = propertyPrice - equity;
   const monthly = calculateAnnuity(loanAmount, rateVal, yearsVal * 12);
@@ -38,7 +40,7 @@ export function PaymentWidget({ propertyPrice, equity, rate, years }: Props) {
         </div>
         <div className="flex justify-between text-sm">
           <span className="text-gray-500">RPSN</span>
-          <span className="font-medium text-gray-900">{formatPercent(DEFAULTS.rpsn)}</span>
+          <span className="font-medium text-gray-900">{formatPercent(rpsnVal)}</span>
         </div>
         <div className="flex justify-between text-sm">
           <span className="text-gray-500">Splatnost</span>

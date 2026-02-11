@@ -15,6 +15,7 @@ import { getRecommendedWidgets, getNextQuestion } from './conversation-state';
 import type { LeadScore } from './lead-scoring';
 import { shouldOfferLeadCapture } from './lead-scoring';
 import { getRatesContext } from '../data/rates';
+import { getCnbLimits } from '../data/cnb-limits';
 import { getBasePromptParts, getPhaseInstruction, getToolInstruction } from './prompt-service';
 
 export async function buildAgentPrompt(
@@ -27,8 +28,15 @@ export async function buildAgentPrompt(
   const baseParts = await getBasePromptParts(tenantId);
   const parts: string[] = [...baseParts];
 
-  // Aktuální sazby trhu (live z ČNB API)
-  parts.push('\n---\n' + await getRatesContext());
+  // Aktuální sazby trhu (live z ČNB API + bank spreads z DB)
+  parts.push('\n---\n' + await getRatesContext(tenantId));
+
+  // Aktuální limity ČNB (z DB nebo fallback)
+  const cnbLimits = await getCnbLimits(tenantId);
+  parts.push(`\nAKTUÁLNÍ LIMITY ČNB (platné od ${cnbLimits.validFrom}, zdroj: ${cnbLimits.source}):
+- LTV: max ${(cnbLimits.ltvLimit * 100).toFixed(0)} % (${(cnbLimits.ltvLimitYoung * 100).toFixed(0)} % pro žadatele do ${cnbLimits.youngAgeLimit} let)
+- DSTI: max ${(cnbLimits.dstiLimit * 100).toFixed(0)} % čistého měsíčního příjmu
+- DTI: max ${cnbLimits.dtiLimit}x ročního čistého příjmu`);
 
   // Fáze konverzace (z DB)
   const phaseInstruction = await getPhaseInstruction(state.phase, tenantId);
