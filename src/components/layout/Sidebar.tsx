@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
-import { Menu, X, Plus, MessageSquare, BarChart3, FolderPlus, LogIn, UserPlus, LogOut, KeyRound, ChevronRight, User, Trash2 } from 'lucide-react';
+import { Menu, X, Plus, MessageSquare, BarChart3, FolderPlus, LogIn, UserPlus, LogOut, KeyRound, ChevronRight, User, Trash2, Newspaper } from 'lucide-react';
 import { useAuth } from '@/lib/auth/auth-context';
 
 interface SessionSummary {
@@ -239,6 +239,15 @@ export function Sidebar({ activeSessionId, currentView, onSelectSession, onConti
               <span className="ml-auto text-[10px] bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded-full">{projects.length}</span>
             )}
           </button>
+          <a
+            href="https://hypoteeka.cz/novinky"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-[15px] font-medium text-gray-600 hover:bg-gray-50/80 transition-all"
+          >
+            <Newspaper className="w-5 h-5" />
+            Novinky
+          </a>
         </div>
 
         {/* Projects section */}
