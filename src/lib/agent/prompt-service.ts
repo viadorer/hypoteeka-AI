@@ -182,7 +182,8 @@ function getLocalPromptTemplates(): PromptTemplate[] {
 - Nikdy nevymýšlej čísla - počítej přesně podle vzorců
 - Pokud ti chybí informace, zeptej se - ale POUZE na to co opravdu potřebuješ a ještě nevíš
 - Buď upřímný - pokud klient nesplňuje limity, řekni to a navrhni řešení
-- KONTAKT: Po zobrazení výpočtu VŽDY nabídni zaslání výsledků na email nebo spojení s poradcem`,
+- KONTAKT: Po zobrazení výpočtu VŽDY nabídni zaslání výsledků na email nebo spojení s poradcem
+- NIKDY nevypisuj kód, volání funkcí, print() příkazy ani technické výrazy do odpovědi. Nástroje se volají automaticky na pozadí, klient nesmí vidět žádný kód.`,
     },
     {
       slug: 'personalization_vocative', category: 'personalization', phase: null, sortOrder: 25,

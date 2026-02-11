@@ -317,13 +317,13 @@ export function ChatArea({ initialSessionId = null }: ChatAreaProps) {
                       );
                     }
                     if (part.type.startsWith('tool-') || part.type === 'dynamic-tool') {
-                      const p = part as { type: string; toolName?: string; state: string; input?: Record<string, unknown> };
+                      const p = part as { type: string; toolName?: string; state: string; input?: Record<string, unknown>; output?: Record<string, unknown> };
                       const toolName = p.toolName ?? part.type.replace(/^tool-/, '');
                       if (toolName === 'update_profile' || toolName === 'step-start') return null;
                       return (
                         <div key={index} className="w-full min-w-0 overflow-hidden">
                           <WidgetRenderer
-                            toolInvocation={{ toolName, state: p.state, args: (p.input ?? {}) as Record<string, unknown> }}
+                            toolInvocation={{ toolName, state: p.state, args: (p.input ?? {}) as Record<string, unknown>, output: p.output }}
                             sessionId={sessionId}
                           />
                         </div>

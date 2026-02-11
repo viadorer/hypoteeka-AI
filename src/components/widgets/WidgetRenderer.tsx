@@ -15,6 +15,7 @@ interface ToolInvocation {
   toolName: string;
   state: string;
   args: Record<string, unknown>;
+  output?: Record<string, unknown>;
 }
 
 const TOOL_LABELS: Record<string, string> = {
@@ -151,7 +152,9 @@ export function WidgetRenderer({ toolInvocation, sessionId }: { toolInvocation: 
         />
       );
     case 'send_email_summary': {
-      const sent = args.sent as boolean | undefined;
+      const out = toolInvocation.output;
+      if (!out) return <WidgetSkeleton toolName={toolName} />;
+      const sent = out.sent as boolean | undefined;
       return (
         <div className="bg-white rounded-2xl p-4 md:p-6 shadow-sm border border-gray-100 animate-in slide-in-from-bottom-4 duration-500 overflow-hidden w-full min-w-0">
           <div className={`w-8 h-[3px] rounded-full ${sent ? 'bg-emerald-500' : 'bg-red-400'} mb-4`} />
@@ -161,13 +164,15 @@ export function WidgetRenderer({ toolInvocation, sessionId }: { toolInvocation: 
           <p className="text-sm text-gray-600">
             {sent
               ? `Shrnutí kalkulace bylo odesláno na ${args.email as string}.`
-              : `Nepodařilo se odeslat email. ${(args.error as string) ?? ''}`}
+              : `Nepodařilo se odeslat email. ${(out.error as string) ?? ''}`}
           </p>
         </div>
       );
     }
     case 'send_whatsapp_link': {
-      const url = args.whatsappUrl as string | undefined;
+      const out = toolInvocation.output;
+      if (!out) return <WidgetSkeleton toolName={toolName} />;
+      const url = out.whatsappUrl as string | undefined;
       return (
         <div className="bg-white rounded-2xl p-4 md:p-6 shadow-sm border border-gray-100 animate-in slide-in-from-bottom-4 duration-500 overflow-hidden w-full min-w-0">
           <div className="w-8 h-[3px] rounded-full bg-green-500 mb-4" />
