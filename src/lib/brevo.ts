@@ -27,7 +27,7 @@ export async function sendBrevoEmail(params: EmailParams): Promise<{ success: bo
   const body = {
     sender: {
       name: params.senderName ?? 'Hypoteeka AI',
-      email: params.senderEmail ?? 'info@hypoteeka.cz',
+      email: params.senderEmail ?? 'info@ptf.cz',
     },
     to: [{ email: params.to, name: params.toName ?? params.to }],
     subject: params.subject,
