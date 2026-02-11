@@ -17,6 +17,7 @@ interface AuthContextType {
   signup: (email: string, password: string, name?: string) => Promise<{ error?: string; needsConfirmation?: boolean }>;
   logout: () => Promise<void>;
   changePassword: (password: string) => Promise<{ error?: string }>;
+  forgotPassword: (email: string) => Promise<{ error?: string; message?: string }>;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -102,8 +103,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return {};
   }, []);
 
+  const forgotPassword = useCallback(async (email: string) => {
+    const res = await fetch('/api/auth/forgot-password', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email }),
+    });
+    const data = await res.json();
+    if (!res.ok) return { error: data.error };
+    return { message: data.message };
+  }, []);
+
   return (
-    <AuthContext.Provider value={{ user, loading, login, signup, logout, changePassword }}>
+    <AuthContext.Provider value={{ user, loading, login, signup, logout, changePassword, forgotPassword }}>
       {children}
     </AuthContext.Provider>
   );
