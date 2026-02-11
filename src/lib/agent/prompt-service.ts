@@ -187,10 +187,57 @@ function getLocalPromptTemplates(): PromptTemplate[] {
     {
       slug: 'personalization_vocative', category: 'personalization', phase: null, sortOrder: 25,
       content: `PERSONALIZACE - OSLOVENÍ KLIENTA:
-- Pokud znáš jméno klienta, oslovuj ho v 5. pádu (vokativ) českého jazyka
-- Příklady: David -> Davide, Adam -> Adame, Jiří -> Jiří, Dominik -> Dominiku, Petr -> Petře, Jan -> Jane, Eva -> Evo, Marie -> Marie, Tomáš -> Tomáši, Martin -> Martine, Lukáš -> Lukáši, Jakub -> Jakube, Pavel -> Pavle, Michal -> Michale, Ondřej -> Ondřeji, Karel -> Karle, Marek -> Marku, Filip -> Filipe, Tereza -> Terezo, Kateřina -> Kateřino, Lucie -> Lucie, Anna -> Anno
-- U méně běžných jmen odvoď vokativ podle české gramatiky (vzory: pán, muž, předseda, soudce, žena, růže, píseň, kost)
-- Oslovuj přirozeně, ne v každé větě - občas stačí bez jména`,
+- Pokud znáš jméno klienta, oslovuj ho v 5. pádu (vokativ) českého jazyka.
+- Oslovuj přirozeně, ne v každé větě - občas stačí bez jména.
+
+MUŽSKÁ JMÉNA (jméno -> vokativ):
+Adam -> Adame, Alan -> Alane, Albert -> Alberte, Aleš -> Aleši, Alexandr -> Alexandre, Alexej -> Alexeji, Alois -> Aloisi, Ambrož -> Ambroži, Antonín -> Antoníne, Arnošt -> Arnošte, Augustýn -> Augustýne,
+Bedřich -> Bedřichu, Benjamin -> Benjamine, Bernard -> Bernarde, Blahoslav -> Blahoslave, Bohdan -> Bohdane, Bohumil -> Bohumile, Bohumír -> Bohumíre, Bohuslav -> Bohuslave, Boleslav -> Boleslave, Bonifác -> Bonifáci, Boris -> Borisi, Bořek -> Bořku, Bořivoj -> Bořivoji, Bronislav -> Bronislave, Bruno -> Bruno, Břetislav -> Břetislave,
+Cecil -> Cecile, Ctibor -> Ctibore, Cyril -> Cyrile, Čeněk -> Čeňku, Čestmír -> Čestmíre,
+Dalibor -> Dalibore, Dalimil -> Dalimile, Daniel -> Danieli, David -> Davide, Denis -> Denisi, Dimitrij -> Dimitriji, Drahomír -> Drahomíre, Drahoslav -> Drahoslave, Dušan -> Dušane,
+Edmund -> Edmunde, Eduard -> Eduarde, Emanuel -> Emanueli, Emil -> Emile, Erik -> Eriku, Ervín -> Ervíne, Evžen -> Evžene,
+Felix -> Felixi, Ferdinand -> Ferdinande, Filip -> Filipe, František -> Františku, Fridolín -> Fridolíne,
+Gabriel -> Gabrieli, Gustav -> Gustave,
+Hanuš -> Hanuši, Havel -> Havle, Herbert -> Herberte, Heřman -> Heřmane, Horymír -> Horymíre, Hubert -> Huberte, Hugo -> Hugo, Hynek -> Hynku,
+Ignác -> Ignáci, Igor -> Igore, Ilya -> Ilyo, Ilja -> Iljo, Ivan -> Ivane, Ivo -> Ivo,
+Jakub -> Jakube, Jan -> Jane, Jáchym -> Jáchyme, Jaromír -> Jaromíre, Jaroslav -> Jaroslave, Jindřich -> Jindřichu, Jiří -> Jiří, Josef -> Josefe, Jozef -> Jozefe, Julius -> Julie,
+Kamil -> Kamile, Karel -> Karle, Kazimír -> Kazimíre, Klement -> Klemente, Koloman -> Kolomane, Konrád -> Konráde, Konstantin -> Konstantine, Kornel -> Kornele, Kryštof -> Kryštofe, Květoslav -> Květoslave,
+Ladislav -> Ladislave, Leoš -> Leoši, Leopold -> Leopolde, Libor -> Libore, Lubomír -> Lubomíre, Luboš -> Luboši, Luděk -> Luďku, Ludvík -> Ludvíku, Lukáš -> Lukáši,
+Marcel -> Marceli, Marek -> Marku, Martin -> Martine, Matěj -> Matěji, Matouš -> Matouši, Maxmilián -> Maxmiliáne, Medard -> Medarde, Metoděj -> Metoději, Michael -> Michaeli, Michal -> Michale, Mikuláš -> Mikuláši, Milan -> Milane, Miloslav -> Miloslave, Miloš -> Miloši, Miroslav -> Miroslave, Mojmír -> Mojmíre, Moris -> Morisi,
+Nikola -> Nikolo, Nikolas -> Nikolasi, Norbert -> Norberte,
+Oldřich -> Oldřichu, Oliver -> Olivere, Ondřej -> Ondřeji, Oskar -> Oskare, Otakar -> Otakare, Oto -> Oto, Otomar -> Otomáre,
+Patrik -> Patriku, Pavel -> Pavle, Petr -> Petře, Přemysl -> Přemysle,
+Radek -> Radku, Radim -> Radime, Radislav -> Radislave, Radomír -> Radomíre, Radovan -> Radovane, Rafael -> Rafaeli, Rastislav -> Rastislave, René -> René, Richard -> Richarde, Robert -> Roberte, Robin -> Robine, Roland -> Rolande, Roman -> Romane, Rostislav -> Rostislave, Rudolf -> Rudolfe, Řehoř -> Řehoři,
+Samuel -> Samueli, Slavoj -> Slavoji, Slavomír -> Slavomíre, Stanislav -> Stanislave, Svatopluk -> Svatopluku, Svatoslav -> Svatoslave, Šimon -> Šimone, Štefan -> Štefane, Štěpán -> Štěpáne,
+Tadeáš -> Tadeáši, Teodor -> Teodore, Tibor -> Tibore, Tichon -> Tichone, Timotej -> Timoteji, Tomáš -> Tomáši,
+Václav -> Václave, Valentin -> Valentine, Valér -> Valéře, Vavřinec -> Vavřince, Věroslav -> Věroslave, Viktor -> Viktore, Vilém -> Viléme, Vincenc -> Vincenci, Vít -> Víte, Vítězslav -> Vítězslave, Vladimír -> Vladimíre, Vladislav -> Vladislave, Vlastimil -> Vlastimile, Vlastislav -> Vlastislave, Vladan -> Vladane, Vojtěch -> Vojtěchu, Vratislav -> Vratislave,
+Zbyněk -> Zbyňku, Zdeněk -> Zdeňku, Zdislav -> Zdislave, Zikmund -> Zikmunde, Zlatan -> Zlatane, Zoltán -> Zoltáne, Zoran -> Zorane,
+
+ŽENSKÁ JMÉNA (jméno -> vokativ):
+Adéla -> Adélo, Adriana -> Adriano, Agáta -> Agáto, Alena -> Aleno, Alexandra -> Alexandro, Alice -> Alice, Alžběta -> Alžběto, Amálie -> Amálie, Anděla -> Andělo, Andrea -> Andreo, Aneta -> Aneto, Anežka -> Anežko, Anna -> Anno, Antonie -> Antonie,
+Barbora -> Barboro, Bedřiška -> Bedřiško, Běla -> Bělo, Berenika -> Bereniko, Blanka -> Blanko, Blažena -> Blaženo, Bohdana -> Bohdano, Bohumila -> Bohumilo, Bohuna -> Bohuno, Bohuslava -> Bohuslavo, Boleslava -> Boleslavo, Božena -> Boženo, Bronislava -> Bronislavo, Bruna -> Bruno,
+Cecílie -> Cecílie, Ctislava -> Ctislavo,
+Dagmar -> Dagmar, Dana -> Dano, Daniela -> Danielo, Darina -> Darino, Denisa -> Deniso, Diana -> Diano, Dita -> Dito, Dobromila -> Dobromilo, Dobroslava -> Dobroslavo, Dominika -> Dominiko, Dora -> Doro, Doubravka -> Doubravko, Drahomíra -> Drahomíro, Drahoslava -> Drahoslavo, Dušana -> Dušano,
+Edita -> Edito, Ela -> Elo, Elena -> Eleno, Eliška -> Eliško, Elvíra -> Elvíro, Emílie -> Emílie, Emma -> Emmo, Eva -> Evo,
+Františka -> Františko,
+Gabriela -> Gabrielo, Gerta -> Gerto, Gita -> Gito,
+Halina -> Halino, Hana -> Hano, Hedvika -> Hedviko, Helena -> Heleno, Hermína -> Hermíno, Herta -> Herto,
+Ida -> Ido, Ilona -> Ilono, Ingrid -> Ingrid, Irena -> Ireno, Iva -> Ivo, Ivana -> Ivano, Iveta -> Iveto, Ivona -> Ivono,
+Jana -> Jano, Jarmila -> Jarmilo, Jaroslava -> Jaroslavo, Jindřiška -> Jindřiško, Jiřina -> Jiřino, Jitka -> Jitko, Johana -> Johano, Jolana -> Jolano, Julie -> Julie, Justýna -> Justýno,
+Kamila -> Kamilo, Karolína -> Karolíno, Kateřina -> Kateřino, Klára -> Kláro, Klaudie -> Klaudie, Kristýna -> Kristýno, Květa -> Květo, Květoslava -> Květoslavo, Květuše -> Květuše,
+Laura -> Lauro, Lada -> Lado, Lenka -> Lenko, Leona -> Leono, Libuše -> Libuše, Lída -> Líďo, Liliana -> Liliano, Linda -> Lindo, Ljuba -> Ljubo, Lucie -> Lucie, Ludmila -> Ludmilo, Luisa -> Luiso,
+Magdaléna -> Magdaléno, Mahulena -> Mahuleno, Marcela -> Marcelo, Mariana -> Mariano, Marie -> Marie, Markéta -> Markéto, Marta -> Marto, Martina -> Martino, Matylda -> Matyldo, Michaela -> Michaelo, Milada -> Milado, Milena -> Mileno, Miloslava -> Miloslavo, Miluše -> Miluše, Miriam -> Miriam, Miroslava -> Miroslavo, Monika -> Moniko,
+Naděžda -> Naděždo, Natálie -> Natálie, Nela -> Nelo, Nicole -> Nicole, Nina -> Nino, Nora -> Noro,
+Olga -> Olgo, Oldřiška -> Oldřiško, Otýlie -> Otýlie,
+Patricie -> Patricie, Pavla -> Pavlo, Pavlína -> Pavlíno, Petra -> Petro, Prokopa -> Prokopo,
+Radana -> Radano, Radka -> Radko, Radmila -> Radmilo, Radoslava -> Radoslavo, Radomíra -> Radomíro, Regina -> Regino, Renáta -> Renáto, Romana -> Romano, Rostislava -> Rostislavo, Rozálie -> Rozálie, Růžena -> Růženo,
+Sabina -> Sabino, Sandra -> Sandro, Simona -> Simono, Slavěna -> Slavěno, Slávka -> Slávko, Soňa -> Soňo, Stanislava -> Stanislavo, Stella -> Stello, Svatava -> Svatavo, Světlana -> Světlano, Šárka -> Šárko, Štefánie -> Štefánie, Štěpánka -> Štěpánko,
+Tamara -> Tamaro, Taťána -> Taťáno, Tereza -> Terezo, Terezie -> Terezie,
+Václava -> Václavo, Valerie -> Valerie, Vendula -> Vendulo, Věra -> Věro, Veronika -> Veroniko, Viktorie -> Viktorie, Vilma -> Vilmo, Viola -> Violo, Vladimíra -> Vladimíro, Vladislava -> Vladislavo, Vlasta -> Vlasto, Vlastimila -> Vlastimilo,
+Xenie -> Xenie,
+Zdena -> Zdeno, Zdenka -> Zdenko, Zdislava -> Zdislavo, Zlata -> Zlato, Zora -> Zoro, Zuzana -> Zuzano, Žaneta -> Žaneto, Žofie -> Žofie,
+
+- U jmen která nejsou v seznamu odvoď vokativ podle české gramatiky (vzory: pán, muž, předseda, soudce, žena, růže, píseň, kost).`,
     },
     {
       slug: 'guardrail_topic', category: 'guardrail', phase: null, sortOrder: 30,
