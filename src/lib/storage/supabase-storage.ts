@@ -47,30 +47,36 @@ export class SupabaseStorage implements StorageProvider {
         toolCalls: m.tool_calls,
         timestamp: m.created_at,
       })),
+      uiMessages: data.ui_messages ?? undefined,
       createdAt: data.created_at,
       updatedAt: data.updated_at,
     };
   }
 
   async saveSession(session: SessionData): Promise<void> {
+    const upsertData: Record<string, unknown> = {
+      id: session.id,
+      tenant_id: session.tenantId,
+      phase: session.state.phase,
+      lead_score: session.state.leadScore,
+      lead_qualified: session.state.leadQualified,
+      lead_captured: session.state.leadCaptured,
+      turn_count: session.state.turnCount,
+      client_profile: session.profile,
+      conversation_state: {
+        widgetsShown: session.state.widgetsShown,
+        questionsAsked: session.state.questionsAsked,
+        dataCollected: session.state.dataCollected,
+      },
+      updated_at: new Date().toISOString(),
+    };
+    // Only update ui_messages if provided (avoid overwriting with empty on step saves)
+    if (session.uiMessages && session.uiMessages.length > 0) {
+      upsertData.ui_messages = session.uiMessages;
+    }
     const { error } = await this.db
       .from('sessions')
-      .upsert({
-        id: session.id,
-        tenant_id: session.tenantId,
-        phase: session.state.phase,
-        lead_score: session.state.leadScore,
-        lead_qualified: session.state.leadQualified,
-        lead_captured: session.state.leadCaptured,
-        turn_count: session.state.turnCount,
-        client_profile: session.profile,
-        conversation_state: {
-          widgetsShown: session.state.widgetsShown,
-          questionsAsked: session.state.questionsAsked,
-          dataCollected: session.state.dataCollected,
-        },
-        updated_at: new Date().toISOString(),
-      }, { onConflict: 'id' });
+      .upsert(upsertData, { onConflict: 'id' });
 
     if (error) {
       console.error('[SupabaseStorage] saveSession error:', error.message);

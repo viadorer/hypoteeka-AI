@@ -104,7 +104,7 @@ export async function POST(req: Request) {
 
     console.log(`[Agent] Tenant: ${tenantId}, Session: ${sessionId}, Phase: ${state.phase}, Score: ${leadScore.score}/${leadScore.temperature}, Fields: ${collectedFields.join(',')}`);
 
-    // Save session before streaming (captures current state)
+    // Save session before streaming (captures current state + full UI messages for restore)
     await storage.saveSession({
       id: sessionId,
       tenantId,
@@ -115,6 +115,7 @@ export async function POST(req: Request) {
         content: m.parts?.filter((p: AnyPart) => p.type === 'text').map((p: AnyPart) => p.text).join('') ?? '',
         timestamp: new Date().toISOString(),
       })),
+      uiMessages: messages, // Complete UI messages for conversation restore
       createdAt: existing?.createdAt ?? new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     });

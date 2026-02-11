@@ -42,8 +42,10 @@ export async function buildAgentPrompt(
   const phaseInstruction = await getPhaseInstruction(state.phase, tenantId);
   parts.push('\n---\n' + phaseInstruction);
 
-  // Profil klienta
-  parts.push(`\nDATA KLIENTA:\n${profileSummary(profile)}`);
+  // Profil klienta - KLÍČOVÁ SEKCE pro kontinuitu
+  const summary = profileSummary(profile);
+  parts.push(`\n---\nDATA KLIENTA (toto už víš, NEPTEJ SE na to znovu):\n${summary}`);
+  parts.push(`\nKRITICKÉ PRAVIDLO KONTINUITY:\n- Výše uvedená data klienta jsou FAKTA z konverzace. NIKDY se na ně neptej znovu.\n- Pokud máš dostatek dat pro výpočet, OKAMŽITĚ ho proveď a ukaž widget. Neptej se, jestli to má klient zájem vidět.\n- Pokud klient zadá více údajů najednou (např. "byt za 5 mil, mám 1 mil a beru 60 tisíc"), zpracuj VŠECHNY najednou - zavolej update_profile + všechny relevantní widgety v jednom kroku.\n- Neříkej "teď vám spočítám" - prostě to spočítej a ukaž.\n- Neptej se "chcete vidět splátku?" - prostě ji ukaž.\n- Jednej, nemluv o tom co budeš dělat.`);
 
   // Lead score
   parts.push(`\nLEAD SCORE: ${leadScore.score}/100 (${leadScore.temperature})`);
@@ -54,13 +56,15 @@ export async function buildAgentPrompt(
   // Doporučené widgety
   const recommended = getRecommendedWidgets(state.phase, state.dataCollected, state.widgetsShown);
   if (recommended.length > 0) {
-    parts.push(`\nDOPORUČENÉ WIDGETY K ZOBRAZENÍ: ${recommended.join(', ')}`);
+    parts.push(`\nDOPORUČENÉ WIDGETY K ZOBRAZENÍ (zavolej je HNED, neptej se): ${recommended.join(', ')}`);
   }
 
-  // Další otázka
-  const nextQ = getNextQuestion(state.phase, state.dataCollected, state.questionsAsked);
-  if (nextQ) {
-    parts.push(`\nDALŠÍ DOPORUČENÁ OTÁZKA: Zeptej se na "${nextQ}"`);
+  // Další otázka - jen pokud NEMÁME doporučené widgety (akce má přednost)
+  if (recommended.length === 0) {
+    const nextQ = getNextQuestion(state.phase, state.dataCollected, state.questionsAsked);
+    if (nextQ) {
+      parts.push(`\nJEDINÝ CHYBĚJÍCÍ ÚDAJ: ${nextQ} - zeptej se na něj (ale jen pokud ho opravdu nemáš v datech klienta výše)`);
+    }
   }
 
   // Lead capture

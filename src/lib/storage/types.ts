@@ -23,6 +23,7 @@ export interface SessionData {
   profile: ClientProfile;
   state: ConversationState;
   messages: MessageRecord[];
+  uiMessages?: unknown[]; // Complete AI SDK UIMessage[] for conversation restore
   createdAt: string;
   updatedAt: string;
 }

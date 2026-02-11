@@ -68,7 +68,7 @@ interface ChatAreaProps {
 
 export function ChatArea({ initialSessionId = null }: ChatAreaProps) {
   const sessionId = useMemo(() => getSessionId(initialSessionId), [initialSessionId]);
-  const { messages, sendMessage, status, error, clearError } = useChat({
+  const { messages, setMessages, sendMessage, status, error, clearError } = useChat({
     transport: new DefaultChatTransport({
       api: '/api/chat',
       body: { sessionId },
@@ -76,27 +76,44 @@ export function ChatArea({ initialSessionId = null }: ChatAreaProps) {
   });
   const [inputValue, setInputValue] = useState('');
   const [visitorName, setVisitorName] = useState<string | null>(null);
+  const [historyLoaded, setHistoryLoaded] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const hasStarted = messages.length > 0;
   const isLoading = status === 'submitted' || status === 'streaming';
 
-  // Load visitor name from session API (for personalized greeting)
+  // Load conversation history for existing session
   useEffect(() => {
+    if (historyLoaded) return;
+    setHistoryLoaded(true);
+    fetch(`/api/sessions/${sessionId}/messages`)
+      .then(r => { if (r.ok) return r.json(); throw new Error('no session'); })
+      .then((data: { uiMessages?: unknown[]; profile?: { name?: string } }) => {
+        if (data.uiMessages && Array.isArray(data.uiMessages) && data.uiMessages.length > 0) {
+          setMessages(data.uiMessages as Parameters<typeof setMessages>[0]);
+        }
+        if (data.profile?.name) {
+          setVisitorName(data.profile.name.split(' ')[0]);
+        }
+      })
+      .catch(() => {});
+  }, [sessionId, historyLoaded, setMessages]);
+
+  // Load visitor name from any session (for new chats)
+  useEffect(() => {
+    if (visitorName) return;
     fetch('/api/sessions')
       .then(r => r.json())
       .then((sessions: Array<{ profile: { name?: string } }>) => {
         for (const s of sessions) {
           if (s.profile.name) {
-            // Extract first name only
-            const firstName = s.profile.name.split(' ')[0];
-            setVisitorName(firstName);
+            setVisitorName(s.profile.name.split(' ')[0]);
             break;
           }
         }
       })
       .catch(() => {});
-  }, []);
+  }, [visitorName]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });

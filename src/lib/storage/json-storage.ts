@@ -42,6 +42,13 @@ export class JsonFileStorage implements StorageProvider {
   async saveSession(session: SessionData): Promise<void> {
     ensureDirs();
     session.updatedAt = new Date().toISOString();
+    // Preserve existing uiMessages if not provided (e.g. from onStepFinish)
+    if (!session.uiMessages) {
+      const existing = await this.getSession(session.id);
+      if (existing?.uiMessages) {
+        session.uiMessages = existing.uiMessages;
+      }
+    }
     fs.writeFileSync(sessionPath(session.id), JSON.stringify(session, null, 2), 'utf-8');
   }
 
