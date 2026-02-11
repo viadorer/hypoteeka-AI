@@ -7,7 +7,7 @@
 
 import fs from 'fs';
 import path from 'path';
-import type { StorageProvider, SessionData, LeadRecord, WidgetEventRecord, PropertyRecord, ProjectRecord } from './types';
+import type { StorageProvider, SessionData, LeadRecord, WidgetEventRecord, PropertyRecord, ProjectRecord, NewsRecord } from './types';
 
 const DATA_DIR = path.join(process.cwd(), 'data');
 const SESSIONS_DIR = path.join(DATA_DIR, 'sessions');
@@ -145,5 +145,47 @@ export class JsonFileStorage implements StorageProvider {
   async deleteProject(projectId: string): Promise<void> {
     const p = projectPath(projectId);
     if (fs.existsSync(p)) fs.unlinkSync(p);
+  }
+
+  async listNews(_tenantId?: string): Promise<NewsRecord[]> {
+    // Local dev seed data
+    return [
+      {
+        id: 'news-1',
+        tenantId: 'hypoteeka',
+        title: 'CNB snizila zakladni sazbu na 3,75 %',
+        slug: 'cnb-sazba-2025-02',
+        summary: 'Ceska narodni banka snizila repo sazbu o 0,25 procentniho bodu. Co to znamena pro hypoteky?',
+        content: '## CNB snizila zakladni sazbu na 3,75 %\n\nCeska narodni banka na svem poslednim zasedani rozhodla o snizeni repo sazby o 0,25 procentniho bodu na **3,75 %**.\n\n### Co to znamena pro hypoteky?\n\n- **Nizsi urokove sazby** -- banky postupne snizuji nabidkove sazby hypotek\n- **Prumerna sazba** nove hypoteky klesla na priblizne 4,8 %\n- **Dostupnost bydleni** se mirne zlepsuje\n\n### Doporuceni\n\nPokud zvazujete hypoteku, je vhodne:\n\n1. Porovnat nabidky vice bank\n2. Zvazit delsi fixaci (5 let) pro jistotu nizke sazby\n3. Nechat si spocitat bonitu -- nase AI vam s tim pomuze',
+        published: true,
+        publishedAt: '2025-02-05T10:00:00+01:00',
+        createdAt: '2025-02-05T10:00:00+01:00',
+        updatedAt: '2025-02-05T10:00:00+01:00',
+      },
+      {
+        id: 'news-2',
+        tenantId: 'hypoteeka',
+        title: 'Nove limity CNB pro rok 2025',
+        slug: 'cnb-limity-2025',
+        summary: 'Od ledna 2025 plati nove limity pro ukazatele LTV, DSTI a DTI. Shrnujeme zmeny.',
+        content: '## Nove limity CNB pro rok 2025\n\nOd **1. ledna 2025** plati aktualizovane limity Ceske narodni banky.\n\n### Aktualni limity\n\n| Ukazatel | Limit | Poznamka |\n|----------|-------|----------|\n| **LTV** | max 80 % | Pro osoby do 36 let az 90 % |\n| **DSTI** | max 45 % | Pomer splatky k prijmu |\n| **DTI** | max 8,5x | Pomer dluhu k rocnimu prijmu |\n\n### Co to znamena v praxi?\n\n- Pri koupi bytu za **5 000 000 Kc** potrebujete minimalne **1 000 000 Kc** vlastnich zdroju\n- Mladi do 36 let mohou mit vlastni zdroje pouze **500 000 Kc**',
+        published: true,
+        publishedAt: '2025-01-15T09:00:00+01:00',
+        createdAt: '2025-01-15T09:00:00+01:00',
+        updatedAt: '2025-01-15T09:00:00+01:00',
+      },
+      {
+        id: 'news-3',
+        tenantId: 'hypoteeka',
+        title: 'Nova funkce: srovnani najmu a hypoteky',
+        slug: 'nova-funkce-najem-vs-hypo',
+        summary: 'Pridali jsme novou funkci pro srovnani mesicnich nakladu na najem a hypoteku.',
+        content: '## Nova funkce: Najem vs. hypoteka\n\nPridali jsme do nasi AI kalkulacky novou funkci -- **srovnani najmu a hypoteky**.\n\n### Jak to funguje?\n\n1. Zadejte cenu nemovitosti a vasi aktualni vysi najmu\n2. AI spocita mesicni splatku hypoteky\n3. Porovnate celkove naklady za 30 let\n4. Zjistite, kdy se hypoteka zacne vyplacet (break-even bod)',
+        published: true,
+        publishedAt: '2025-01-28T14:00:00+01:00',
+        createdAt: '2025-01-28T14:00:00+01:00',
+        updatedAt: '2025-01-28T14:00:00+01:00',
+      },
+    ];
   }
 }

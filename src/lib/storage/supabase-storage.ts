@@ -6,7 +6,7 @@
  */
 
 import type { SupabaseClient } from '@supabase/supabase-js';
-import type { StorageProvider, SessionData, LeadRecord, WidgetEventRecord, PropertyRecord, ProjectRecord } from './types';
+import type { StorageProvider, SessionData, LeadRecord, WidgetEventRecord, PropertyRecord, ProjectRecord, NewsRecord } from './types';
 
 export class SupabaseStorage implements StorageProvider {
   constructor(private db: SupabaseClient) {}
@@ -321,5 +321,34 @@ export class SupabaseStorage implements StorageProvider {
     if (error) {
       console.error('[SupabaseStorage] deleteProject error:', error.message);
     }
+  }
+
+  async listNews(tenantId?: string): Promise<NewsRecord[]> {
+    let query = this.db
+      .from('news')
+      .select('*')
+      .eq('published', true)
+      .order('published_at', { ascending: false })
+      .limit(20);
+
+    if (tenantId) {
+      query = query.eq('tenant_id', tenantId);
+    }
+
+    const { data, error } = await query;
+    if (error || !data) return [];
+
+    return data.map(row => ({
+      id: row.id,
+      tenantId: row.tenant_id,
+      title: row.title,
+      slug: row.slug,
+      summary: row.summary ?? undefined,
+      content: row.content,
+      published: row.published,
+      publishedAt: row.published_at,
+      createdAt: row.created_at,
+      updatedAt: row.updated_at,
+    }));
   }
 }

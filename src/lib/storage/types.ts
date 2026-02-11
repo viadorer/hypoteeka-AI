@@ -89,6 +89,19 @@ export interface ProjectRecord {
   updatedAt: string;
 }
 
+export interface NewsRecord {
+  id: string;
+  tenantId: string;
+  title: string;
+  slug: string;
+  summary?: string;
+  content: string;
+  published: boolean;
+  publishedAt: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface StorageProvider {
   // Sessions
   getSession(sessionId: string): Promise<SessionData | null>;
@@ -110,6 +123,9 @@ export interface StorageProvider {
   saveProject(project: ProjectRecord): Promise<void>;
   listProjects(tenantId?: string): Promise<ProjectRecord[]>;
   deleteProject(projectId: string): Promise<void>;
+
+  // News
+  listNews(tenantId?: string): Promise<NewsRecord[]>;
 
   // Cleanup
   deleteSession(sessionId: string): Promise<void>;

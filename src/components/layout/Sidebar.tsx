@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { Menu, X, Plus, MessageSquare, BarChart3, FolderPlus, LogIn, UserPlus, LogOut, KeyRound, ChevronRight, User, Trash2, Newspaper } from 'lucide-react';
 import { useAuth } from '@/lib/auth/auth-context';
+import ReactMarkdown from 'react-markdown';
 
 interface SessionSummary {
   id: string;
@@ -36,6 +37,15 @@ interface ProjectSummary {
   description?: string;
   sessionCount: number;
   updatedAt: string;
+}
+
+interface NewsSummary {
+  id: string;
+  title: string;
+  slug: string;
+  summary?: string;
+  content: string;
+  publishedAt: string;
 }
 
 interface SidebarProps {
@@ -91,6 +101,9 @@ export function Sidebar({ activeSessionId, currentView, onSelectSession, onConti
   const [newProjectName, setNewProjectName] = useState('');
   const [newProjectDesc, setNewProjectDesc] = useState('');
   const [projectsExpanded, setProjectsExpanded] = useState(false);
+  const [newsExpanded, setNewsExpanded] = useState(false);
+  const [newsItems, setNewsItems] = useState<NewsSummary[]>([]);
+  const [openArticle, setOpenArticle] = useState<string | null>(null);
   const [authView, setAuthView] = useState<AuthView>('none');
   const [authEmail, setAuthEmail] = useState('');
   const [authPassword, setAuthPassword] = useState('');
@@ -115,6 +128,16 @@ export function Sidebar({ activeSessionId, currentView, onSelectSession, onConti
       .then((data: ProjectSummary[]) => { if (Array.isArray(data)) setProjects(data); })
       .catch(() => setProjects([]));
   }, []);
+
+  // Load news
+  useEffect(() => {
+    if (newsExpanded && newsItems.length === 0) {
+      fetch('/api/news')
+        .then(r => r.json())
+        .then((data: NewsSummary[]) => { if (Array.isArray(data)) setNewsItems(data); })
+        .catch(() => setNewsItems([]));
+    }
+  }, [newsExpanded, newsItems.length]);
 
   const createProject = async () => {
     if (!newProjectName.trim()) return;
@@ -239,16 +262,55 @@ export function Sidebar({ activeSessionId, currentView, onSelectSession, onConti
               <span className="ml-auto text-[10px] bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded-full">{projects.length}</span>
             )}
           </button>
-          <a
-            href="https://hypoteeka.cz/novinky"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-[15px] font-medium text-gray-600 hover:bg-gray-50/80 transition-all"
+          <button
+            onClick={() => { setNewsExpanded(!newsExpanded); if (!newsExpanded) setOpenArticle(null); }}
+            className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-[15px] font-medium transition-all ${
+              newsExpanded ? 'bg-blue-50/80 text-[#0A1E5C]' : 'text-gray-600 hover:bg-gray-50/80'
+            }`}
           >
             <Newspaper className="w-5 h-5" />
             Novinky
-          </a>
+          </button>
         </div>
+
+        {/* News section */}
+        {newsExpanded && (
+          <div className="px-4 py-2 border-t border-gray-100/50 space-y-1 max-h-[280px] overflow-y-auto">
+            {newsItems.length === 0 && (
+              <p className="text-xs text-gray-300 px-1 py-1">Nacitam...</p>
+            )}
+            {newsItems.map(n => (
+              <div key={n.id}>
+                <button
+                  onClick={() => setOpenArticle(openArticle === n.id ? null : n.id)}
+                  className={`w-full text-left px-3 py-2 rounded-xl transition-all ${
+                    openArticle === n.id ? 'bg-[#E91E63]/5' : 'hover:bg-gray-50/80'
+                  }`}
+                >
+                  <p className={`text-sm font-medium truncate ${openArticle === n.id ? 'text-[#E91E63]' : 'text-gray-800'}`}>
+                    {n.title}
+                  </p>
+                  <p className="text-[10px] text-gray-400">
+                    {new Date(n.publishedAt).toLocaleDateString('cs-CZ')}
+                  </p>
+                </button>
+                {openArticle === n.id && (
+                  <div className="px-3 pb-3 prose prose-sm prose-gray max-w-none
+                    [&_h2]:text-sm [&_h2]:font-bold [&_h2]:text-[#0A1E5C] [&_h2]:mt-3 [&_h2]:mb-1
+                    [&_h3]:text-xs [&_h3]:font-semibold [&_h3]:text-gray-700 [&_h3]:mt-2 [&_h3]:mb-1
+                    [&_p]:text-xs [&_p]:text-gray-600 [&_p]:leading-relaxed [&_p]:my-1
+                    [&_li]:text-xs [&_li]:text-gray-600
+                    [&_strong]:text-gray-800
+                    [&_table]:text-xs [&_th]:px-2 [&_th]:py-1 [&_td]:px-2 [&_td]:py-1 [&_th]:bg-gray-50
+                    [&_blockquote]:border-l-2 [&_blockquote]:border-[#E91E63] [&_blockquote]:pl-3 [&_blockquote]:text-xs [&_blockquote]:text-gray-500
+                  ">
+                    <ReactMarkdown>{n.content}</ReactMarkdown>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
 
         {/* Projects section */}
         {projectsExpanded && (
