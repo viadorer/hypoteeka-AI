@@ -52,13 +52,13 @@ const BANKS = [
 function getSessionId(initialId: string | null): string {
   if (typeof window === 'undefined') return 'ssr';
   // If we have an explicit session to load, use it
-  if (initialId) return initialId;
-  // Otherwise generate/reuse a session ID
-  let id = sessionStorage.getItem('hypoteeka_session');
-  if (!id) {
-    id = uuidv4();
-    sessionStorage.setItem('hypoteeka_session', id);
+  if (initialId) {
+    sessionStorage.setItem('hypoteeka_session', initialId);
+    return initialId;
   }
+  // New chat - always generate a fresh session ID
+  const id = uuidv4();
+  sessionStorage.setItem('hypoteeka_session', id);
   return id;
 }
 
@@ -77,10 +77,25 @@ export function ChatArea({ initialSessionId = null }: ChatAreaProps) {
   const [inputValue, setInputValue] = useState('');
   const [visitorName, setVisitorName] = useState<string | null>(null);
   const [historyLoaded, setHistoryLoaded] = useState(false);
+  const prevStatusRef = useRef(status);
   const inputRef = useRef<HTMLInputElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const hasStarted = messages.length > 0;
   const isLoading = status === 'submitted' || status === 'streaming';
+
+  // Save uiMessages after AI response completes
+  useEffect(() => {
+    const wasStreaming = prevStatusRef.current === 'streaming' || prevStatusRef.current === 'submitted';
+    const isNowReady = status === 'ready';
+    prevStatusRef.current = status;
+    if (wasStreaming && isNowReady && messages.length > 0) {
+      fetch(`/api/sessions/${sessionId}/messages`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ uiMessages: messages }),
+      }).catch(() => {});
+    }
+  }, [status, messages, sessionId]);
 
   // Load conversation history for existing session
   useEffect(() => {
