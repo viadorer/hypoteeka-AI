@@ -31,7 +31,7 @@ const TOOL_LABELS: Record<string, string> = {
 function WidgetSkeleton({ toolName }: { toolName: string }) {
   const label = TOOL_LABELS[toolName] ?? 'Načítám...';
   return (
-    <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 animate-pulse">
+    <div className="bg-white rounded-2xl p-4 md:p-6 shadow-sm border border-gray-100 animate-pulse overflow-hidden w-full min-w-0">
       <div className="w-8 h-[3px] rounded-full bg-gray-200 mb-4" />
       <p className="text-[11px] font-semibold uppercase tracking-wider text-gray-300 mb-3">
         {label}

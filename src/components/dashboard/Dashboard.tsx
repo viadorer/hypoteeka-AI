@@ -109,7 +109,7 @@ export function Dashboard({ sessionId, onContinueChat, onNewChat }: DashboardPro
 
   if (loading) {
     return (
-      <div className="flex-1 md:ml-[260px] flex items-center justify-center min-h-screen pt-14 md:pt-0">
+      <div className="flex-1 md:ml-[260px] flex items-center justify-center min-h-screen pt-16 md:pt-0 overflow-x-hidden">
         <p className="text-gray-400 text-sm">Načítám...</p>
       </div>
     );
@@ -117,7 +117,7 @@ export function Dashboard({ sessionId, onContinueChat, onNewChat }: DashboardPro
 
   if (!session) {
     return (
-      <div className="flex-1 md:ml-[260px] flex flex-col items-center justify-center min-h-screen pt-14 md:pt-0 px-4">
+      <div className="flex-1 md:ml-[260px] flex flex-col items-center justify-center min-h-screen pt-16 md:pt-0 px-4 overflow-x-hidden">
         <p className="text-gray-500 text-base mb-4">Analýza nebyla nalezena.</p>
         <button onClick={onNewChat} className="px-4 py-2 bg-[#E91E63] text-white rounded-xl text-sm font-medium hover:bg-[#C2185B] transition-colors">
           Nová kalkulace
@@ -134,27 +134,28 @@ export function Dashboard({ sessionId, onContinueChat, onNewChat }: DashboardPro
   const ltv = (loanAmount && p.propertyPrice) ? (loanAmount / p.propertyPrice * 100) : null;
 
   return (
-    <div className="flex-1 md:ml-[260px] min-h-screen pt-14 md:pt-0 overflow-y-auto">
-      <div className="max-w-[800px] mx-auto px-4 py-8 md:py-12">
+    <div className="flex-1 md:ml-[260px] min-h-screen pt-16 md:pt-0 overflow-y-auto overflow-x-hidden min-w-0 w-full">
+      <div className="max-w-[800px] mx-auto px-4 py-6 md:py-12 w-full min-w-0">
 
         {/* Header */}
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900 mb-1">
+        <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 md:mb-8 gap-3">
+          <div className="min-w-0">
+            <h1 className="text-xl md:text-2xl font-bold text-gray-900 mb-1 truncate">
               {p.propertyPrice ? `Nemovitost ${fmt(p.propertyPrice)} Kč` : `Analýza ${sessionId.slice(0, 8)}`}
             </h1>
-            <p className="text-sm text-gray-400">
+            <p className="text-xs md:text-sm text-gray-400 truncate">
               {formatDate(session.createdAt)}
               {session.updatedAt !== session.createdAt && ` -- aktualizováno ${formatDate(session.updatedAt)}`}
             </p>
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-shrink-0">
             <button
               onClick={() => onContinueChat(sessionId)}
               className="inline-flex items-center gap-2 px-4 py-2.5 bg-[#E91E63] text-white rounded-xl text-sm font-medium hover:bg-[#C2185B] transition-colors"
             >
               <MessageSquare className="w-4 h-4" />
-              Pokračovat v chatu
+              <span className="hidden sm:inline">Pokračovat v chatu</span>
+              <span className="sm:hidden">Chat</span>
             </button>
             <button
               onClick={onNewChat}

@@ -90,14 +90,14 @@ export function Sidebar({ activeSessionId, currentView, onSelectSession, onNewCh
   return (
     <>
       {/* Mobile header bar */}
-      <div className="md:hidden fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-xl border-b border-white/40 px-4 py-3 flex items-center gap-3">
-        <button onClick={() => setMobileOpen(true)} className="p-1">
-          <Menu className="w-5 h-5 text-gray-700" />
+      <div className="md:hidden fixed top-0 left-0 right-0 z-50 bg-white/90 backdrop-blur-xl border-b border-gray-200/60 px-4 py-2.5 flex items-center gap-3" style={{ paddingTop: 'max(0.625rem, env(safe-area-inset-top))' }}>
+        <button onClick={() => setMobileOpen(true)} className="p-2 -ml-1 rounded-xl active:bg-gray-100 transition-colors">
+          <Menu className="w-6 h-6 text-gray-700" />
         </button>
-        <div className="w-8 h-8 rounded-full bg-pink-50 flex items-center justify-center flex-shrink-0">
-          <Image src="/logo.png" alt="Hypoteeka" width={20} height={20} className="object-contain" />
+        <div className="w-11 h-11 rounded-full bg-white shadow-sm border border-gray-100 flex items-center justify-center flex-shrink-0">
+          <Image src="/logo.png" alt="Hypoteeka" width={28} height={28} className="object-contain" />
         </div>
-        <h1 className="text-sm font-bold text-[#0047FF] tracking-tight">Hypoteeka AI</h1>
+        <h1 className="text-lg font-extrabold text-[#0A1E5C] tracking-tight">Hypoteeka AI</h1>
       </div>
 
       {/* Mobile overlay */}
@@ -115,10 +115,10 @@ export function Sidebar({ activeSessionId, currentView, onSelectSession, onNewCh
         {/* Header */}
         <div className="flex items-center justify-between p-5 pb-4">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-pink-50 flex items-center justify-center flex-shrink-0">
-              <Image src="/logo.png" alt="Hypoteeka" width={26} height={26} className="object-contain" />
+            <div className="w-12 h-12 rounded-full bg-white shadow-sm border border-gray-100 flex items-center justify-center flex-shrink-0">
+              <Image src="/logo.png" alt="Hypoteeka" width={30} height={30} className="object-contain" />
             </div>
-            <h1 className="text-lg font-bold text-[#0047FF] tracking-tight">Hypoteeka AI</h1>
+            <h1 className="text-xl font-extrabold text-[#0A1E5C] tracking-tight">Hypoteeka AI</h1>
           </div>
           <button onClick={() => setMobileOpen(false)} className="md:hidden p-1">
             <X className="w-5 h-5 text-gray-400" />
@@ -129,7 +129,7 @@ export function Sidebar({ activeSessionId, currentView, onSelectSession, onNewCh
         <div className="px-4 mb-3">
           <button
             onClick={() => { onNewChat(); setTab('chat'); setMobileOpen(false); }}
-            className="w-full flex items-center gap-2 px-3 py-2.5 rounded-xl text-sm font-medium bg-[#E91E63] text-white hover:bg-[#C2185B] transition-colors"
+            className="w-full flex items-center gap-2 px-4 py-3 rounded-xl text-[15px] font-semibold bg-[#E91E63] text-white hover:bg-[#C2185B] transition-colors shadow-sm"
           >
             <Plus className="w-4 h-4" />
             Nová kalkulace
@@ -141,20 +141,20 @@ export function Sidebar({ activeSessionId, currentView, onSelectSession, onNewCh
           <div className="flex gap-1 bg-gray-100/60 rounded-lg p-0.5">
             <button
               onClick={() => setTab('chat')}
-              className={`flex-1 flex items-center justify-center gap-1.5 px-2 py-1.5 rounded-md text-xs font-medium transition-all ${
+              className={`flex-1 flex items-center justify-center gap-1.5 px-2 py-2 rounded-lg text-sm font-medium transition-all ${
                 tab === 'chat' ? 'bg-white shadow-sm text-gray-900' : 'text-gray-500 hover:text-gray-700'
               }`}
             >
-              <Home className="w-3.5 h-3.5" />
+              <Home className="w-4 h-4" />
               Chat
             </button>
             <button
               onClick={() => setTab('analyses')}
-              className={`flex-1 flex items-center justify-center gap-1.5 px-2 py-1.5 rounded-md text-xs font-medium transition-all ${
+              className={`flex-1 flex items-center justify-center gap-1.5 px-2 py-2 rounded-lg text-sm font-medium transition-all ${
                 tab === 'analyses' ? 'bg-white shadow-sm text-gray-900' : 'text-gray-500 hover:text-gray-700'
               }`}
             >
-              <FolderOpen className="w-3.5 h-3.5" />
+              <FolderOpen className="w-4 h-4" />
               Moje analýzy
             </button>
           </div>
@@ -164,11 +164,11 @@ export function Sidebar({ activeSessionId, currentView, onSelectSession, onNewCh
         <div className="flex-1 overflow-y-auto px-4 py-2">
           {tab === 'chat' && (
             <div className="space-y-1.5">
-              <p className="text-[11px] font-semibold uppercase tracking-wider text-gray-400 mb-2 px-1">Aktivní chat</p>
-              <div className={`px-3 py-3 rounded-xl text-sm font-semibold flex items-center gap-2.5 ${
-                currentView === 'chat' ? 'bg-blue-50/80 text-[#0047FF]' : 'text-gray-600 hover:bg-gray-50/80'
+              <p className="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2 px-1">Aktivní chat</p>
+              <div className={`px-3 py-3 rounded-xl text-[15px] font-semibold flex items-center gap-2.5 ${
+                currentView === 'chat' ? 'bg-blue-50/80 text-[#0A1E5C]' : 'text-gray-600 hover:bg-gray-50/80'
               }`}>
-                <MessageSquare className="w-4.5 h-4.5" />
+                <MessageSquare className="w-5 h-5" />
                 Kalkulace hypotéky
               </div>
             </div>
@@ -176,7 +176,7 @@ export function Sidebar({ activeSessionId, currentView, onSelectSession, onNewCh
 
           {tab === 'analyses' && (
             <div className="space-y-2">
-              <p className="text-[11px] font-semibold uppercase tracking-wider text-gray-400 mb-3 px-1">
+              <p className="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-3 px-1">
                 Uložené analýzy ({sessions.length})
               </p>
 
@@ -213,7 +213,7 @@ export function Sidebar({ activeSessionId, currentView, onSelectSession, onNewCh
                     }`}
                   >
                     <div className="flex items-center justify-between mb-1">
-                      <span className={`font-semibold text-sm truncate ${isActive ? 'text-[#E91E63]' : 'text-gray-900'}`}>
+                      <span className={`font-semibold text-[15px] truncate ${isActive ? 'text-[#E91E63]' : 'text-gray-900'}`}>
                         {title}
                       </span>
                       <span className="text-[11px] text-gray-400 flex-shrink-0 ml-2">
@@ -249,7 +249,7 @@ export function Sidebar({ activeSessionId, currentView, onSelectSession, onNewCh
 
         {/* Footer */}
         <div className="p-4 pt-2 border-t border-gray-100/50">
-          <p className="text-[11px] text-gray-400">Hypoteeka AI v0.2</p>
+          <p className="text-xs text-gray-400">Hypoteeka AI v0.3</p>
         </div>
       </aside>
     </>

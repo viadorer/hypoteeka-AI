@@ -13,12 +13,12 @@ export function AffordabilityWidget({ monthlyIncome, equity, isYoung }: Props) {
   const result = calculateAffordability(monthlyIncome, equity, isYoung);
 
   return (
-    <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 animate-in slide-in-from-bottom-4 duration-500">
+    <div className="bg-white rounded-2xl p-4 md:p-6 shadow-sm border border-gray-100 animate-in slide-in-from-bottom-4 duration-500 overflow-hidden w-full min-w-0">
       <div className="w-8 h-[3px] rounded-full bg-violet-500 mb-4" />
       <p className="text-[11px] font-semibold uppercase tracking-wider text-gray-400 mb-3">
         Kolik si můžete dovolit
       </p>
-      <p className="text-3xl font-bold text-gray-900 tracking-tight">
+      <p className="text-2xl md:text-3xl font-bold text-gray-900 tracking-tight truncate">
         {formatCZK(result.maxPropertyPrice)}
       </p>
       <p className="text-sm text-gray-400 mt-1">maximální cena nemovitosti</p>

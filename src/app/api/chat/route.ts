@@ -132,16 +132,45 @@ export async function POST(req: Request) {
       onStepFinish: ({ toolResults }) => {
         if (toolResults) {
           for (const tr of toolResults) {
-            if (typeof tr.toolName === 'string' && tr.toolName.startsWith('show_')) {
-              if (!state.widgetsShown.includes(tr.toolName)) {
-                state.widgetsShown.push(tr.toolName);
+            const toolName = typeof tr.toolName === 'string' ? tr.toolName : '';
+            const input = ('input' in tr && tr.input && typeof tr.input === 'object')
+              ? tr.input as Record<string, unknown>
+              : {};
+
+            // Track shown widgets
+            if (toolName.startsWith('show_')) {
+              if (!state.widgetsShown.includes(toolName)) {
+                state.widgetsShown.push(toolName);
               }
+              // Save widget event to DB
+              storage.saveWidgetEvent({
+                tenantId,
+                sessionId,
+                widgetType: toolName.replace('show_', ''),
+                inputData: input,
+              }).catch(err => console.error('[Storage] Widget event save error:', err));
             }
-            if (tr.toolName === 'show_lead_capture') {
+
+            if (toolName === 'show_lead_capture') {
               state.leadCaptured = true;
             }
-            if (tr.toolName === 'update_profile' && 'input' in tr && tr.input && typeof tr.input === 'object') {
-              const input = tr.input as Record<string, unknown>;
+
+            // Save property record when property-related widgets are shown
+            if (toolName === 'show_property' || toolName === 'show_payment' || toolName === 'show_eligibility') {
+              storage.saveProperty({
+                tenantId,
+                sessionId,
+                price: input.propertyPrice as number | undefined,
+                propertyType: input.propertyType as string | undefined,
+                location: input.location as string | undefined,
+                equity: input.equity as number | undefined,
+                interestRate: input.rate as number | undefined,
+                fixationYears: input.years as number | undefined,
+              }).catch(err => console.error('[Storage] Property save error:', err));
+            }
+
+            // Update profile from update_profile tool
+            if (toolName === 'update_profile' && Object.keys(input).length > 0) {
               Object.assign(profile, Object.fromEntries(
                 Object.entries(input).filter(([, v]) => v !== undefined)
               ));

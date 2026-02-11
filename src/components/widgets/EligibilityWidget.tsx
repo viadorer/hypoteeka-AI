@@ -24,7 +24,7 @@ export function EligibilityWidget({ propertyPrice, equity, monthlyIncome, isYoun
   const result = checkEligibility(propertyPrice, equity, monthlyIncome, isYoung);
 
   return (
-    <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 animate-in slide-in-from-bottom-4 duration-500">
+    <div className="bg-white rounded-2xl p-4 md:p-6 shadow-sm border border-gray-100 animate-in slide-in-from-bottom-4 duration-500 overflow-hidden w-full min-w-0">
       <div className={`w-8 h-[3px] rounded-full mb-4 ${result.allOk ? 'bg-emerald-500' : 'bg-red-500'}`} />
       <p className="text-[11px] font-semibold uppercase tracking-wider text-gray-400 mb-3">
         Bonita CNB

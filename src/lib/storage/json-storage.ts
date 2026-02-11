@@ -7,7 +7,7 @@
 
 import fs from 'fs';
 import path from 'path';
-import type { StorageProvider, SessionData, LeadRecord } from './types';
+import type { StorageProvider, SessionData, LeadRecord, WidgetEventRecord, PropertyRecord } from './types';
 
 const DATA_DIR = path.join(process.cwd(), 'data');
 const SESSIONS_DIR = path.join(DATA_DIR, 'sessions');
@@ -79,6 +79,14 @@ export class JsonFileStorage implements StorageProvider {
     }
     sessions.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
     return sessions;
+  }
+
+  async saveWidgetEvent(event: WidgetEventRecord): Promise<void> {
+    console.log(`[JsonStorage] Widget event: ${event.widgetType} (session: ${event.sessionId})`);
+  }
+
+  async saveProperty(property: PropertyRecord): Promise<void> {
+    console.log(`[JsonStorage] Property saved: ${property.price} ${property.propertyType ?? ''} (session: ${property.sessionId})`);
   }
 
   async deleteSession(sessionId: string): Promise<void> {

@@ -14,21 +14,21 @@ export function RefinanceWidget({ remainingBalance, currentRate, newRate, remain
   const result = calculateRefinance(remainingBalance, currentRate, newRate ?? DEFAULTS.rate, remainingYears);
 
   return (
-    <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 animate-in slide-in-from-bottom-4 duration-500">
+    <div className="bg-white rounded-2xl p-4 md:p-6 shadow-sm border border-gray-100 animate-in slide-in-from-bottom-4 duration-500 overflow-hidden w-full min-w-0">
       <div className="w-8 h-[3px] rounded-full bg-cyan-500 mb-4" />
       <p className="text-[11px] font-semibold uppercase tracking-wider text-gray-400 mb-3">
         Refinancování
       </p>
 
-      <div className="grid grid-cols-2 gap-4 mb-4">
-        <div className="bg-gray-50 rounded-xl p-4">
+      <div className="grid grid-cols-2 gap-2 md:gap-4 mb-4">
+        <div className="bg-gray-50 rounded-xl p-3 md:p-4 min-w-0">
           <p className="text-xs text-gray-400 mb-1">Stávající splátka</p>
-          <p className="text-xl font-bold text-gray-900">{formatCZK(result.currentPayment)}</p>
+          <p className="text-lg md:text-xl font-bold text-gray-900 truncate">{formatCZK(result.currentPayment)}</p>
           <p className="text-xs text-gray-400 mt-1">{formatPercent(currentRate)} p.a.</p>
         </div>
-        <div className="bg-gray-50 rounded-xl p-4">
+        <div className="bg-gray-50 rounded-xl p-3 md:p-4 min-w-0">
           <p className="text-xs text-gray-400 mb-1">Nová splátka</p>
-          <p className="text-xl font-bold text-emerald-600">{formatCZK(result.newPayment)}</p>
+          <p className="text-lg md:text-xl font-bold text-emerald-600 truncate">{formatCZK(result.newPayment)}</p>
           <p className="text-xs text-gray-400 mt-1">{formatPercent(newRate ?? DEFAULTS.rate)} p.a.</p>
         </div>
       </div>

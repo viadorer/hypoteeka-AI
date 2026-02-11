@@ -13,20 +13,20 @@ export function RentVsBuyWidget({ propertyPrice, equity, monthlyRent }: Props) {
   const result = compareRentVsBuy(propertyPrice, equity, monthlyRent);
 
   return (
-    <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 animate-in slide-in-from-bottom-4 duration-500">
-      <div className="w-8 h-[3px] rounded-full bg-[#0047FF] mb-4" />
+    <div className="bg-white rounded-2xl p-4 md:p-6 shadow-sm border border-gray-100 animate-in slide-in-from-bottom-4 duration-500 overflow-hidden w-full min-w-0">
+      <div className="w-8 h-[3px] rounded-full bg-[#0A1E5C] mb-4" />
       <p className="text-[11px] font-semibold uppercase tracking-wider text-gray-400 mb-3">
         Nájem vs. Hypotéka
       </p>
 
-      <div className="grid grid-cols-2 gap-4 mb-4">
-        <div className="bg-gray-50 rounded-xl p-4">
+      <div className="grid grid-cols-2 gap-2 md:gap-4 mb-4">
+        <div className="bg-gray-50 rounded-xl p-3 md:p-4 min-w-0">
           <p className="text-xs text-gray-400 mb-1">Měsíční nájem</p>
-          <p className="text-xl font-bold text-gray-900">{formatCZK(result.monthlyRent)}</p>
+          <p className="text-lg md:text-xl font-bold text-gray-900 truncate">{formatCZK(result.monthlyRent)}</p>
         </div>
-        <div className="bg-gray-50 rounded-xl p-4">
+        <div className="bg-gray-50 rounded-xl p-3 md:p-4 min-w-0">
           <p className="text-xs text-gray-400 mb-1">Měsíční splátka</p>
-          <p className="text-xl font-bold text-gray-900">{formatCZK(result.monthlyMortgage)}</p>
+          <p className="text-lg md:text-xl font-bold text-gray-900 truncate">{formatCZK(result.monthlyMortgage)}</p>
         </div>
       </div>
 

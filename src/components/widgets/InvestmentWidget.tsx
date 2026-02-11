@@ -14,22 +14,22 @@ export function InvestmentWidget({ purchasePrice, equity, monthlyRentalIncome, m
   const result = calculateInvestment(purchasePrice, equity, monthlyRentalIncome, monthlyExpenses);
 
   return (
-    <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 animate-in slide-in-from-bottom-4 duration-500">
+    <div className="bg-white rounded-2xl p-4 md:p-6 shadow-sm border border-gray-100 animate-in slide-in-from-bottom-4 duration-500 overflow-hidden w-full min-w-0">
       <div className="w-8 h-[3px] rounded-full bg-amber-500 mb-4" />
       <p className="text-[11px] font-semibold uppercase tracking-wider text-gray-400 mb-3">
         Investiční analýza
       </p>
 
-      <div className="grid grid-cols-2 gap-4 mb-4">
-        <div className="bg-gray-50 rounded-xl p-4">
+      <div className="grid grid-cols-2 gap-2 md:gap-4 mb-4">
+        <div className="bg-gray-50 rounded-xl p-3 md:p-4 min-w-0">
           <p className="text-xs text-gray-400 mb-1">Měsíční cash flow</p>
-          <p className={`text-xl font-bold ${result.monthlyCashFlow >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
+          <p className={`text-lg md:text-xl font-bold truncate ${result.monthlyCashFlow >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
             {result.monthlyCashFlow >= 0 ? '+' : ''}{formatCZK(result.monthlyCashFlow)}
           </p>
         </div>
-        <div className="bg-gray-50 rounded-xl p-4">
+        <div className="bg-gray-50 rounded-xl p-3 md:p-4 min-w-0">
           <p className="text-xs text-gray-400 mb-1">Roční cash flow</p>
-          <p className={`text-xl font-bold ${result.annualCashFlow >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
+          <p className={`text-lg md:text-xl font-bold truncate ${result.annualCashFlow >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
             {result.annualCashFlow >= 0 ? '+' : ''}{formatCZK(result.annualCashFlow)}
           </p>
         </div>

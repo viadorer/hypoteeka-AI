@@ -18,14 +18,14 @@ export function PaymentWidget({ propertyPrice, equity, rate, years }: Props) {
   const totalInterest = calculateTotalInterest(monthly, loanAmount, yearsVal * 12);
 
   return (
-    <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 animate-in slide-in-from-bottom-4 duration-500">
+    <div className="bg-white rounded-2xl p-4 md:p-6 shadow-sm border border-gray-100 animate-in slide-in-from-bottom-4 duration-500 overflow-hidden w-full min-w-0">
       <div className="w-8 h-[3px] rounded-full bg-gray-900 mb-4" />
       <p className="text-[11px] font-semibold uppercase tracking-wider text-gray-400 mb-3">
         Splátka hypotéky
       </p>
-      <p className="text-3xl font-bold text-gray-900 tracking-tight">
+      <p className="text-2xl md:text-3xl font-bold text-gray-900 tracking-tight truncate">
         {formatCZK(Math.round(monthly))}
-        <span className="text-base font-normal text-gray-400 ml-1">/ měsíc</span>
+        <span className="text-sm md:text-base font-normal text-gray-400 ml-1">/ měsíc</span>
       </p>
       <div className="mt-4 space-y-2">
         <div className="flex justify-between text-sm">

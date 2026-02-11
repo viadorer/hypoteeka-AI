@@ -144,24 +144,24 @@ export function ChatArea({ initialSessionId = null }: ChatAreaProps) {
 
   // --- INPUT BAR (shared between welcome and chat) ---
   const inputBar = (
-    <form onSubmit={onSubmit} className={`flex items-center rounded-2xl px-5 py-2 transition-all focus-within:bg-white/80 focus-within:shadow-xl focus-within:border-white/60 ${glass}`}>
+    <form onSubmit={onSubmit} className={`flex items-center rounded-2xl px-4 md:px-5 py-2 transition-all focus-within:bg-white/80 focus-within:shadow-xl focus-within:border-white/60 ${glass}`}>
       <input
         ref={inputRef}
         type="text"
         value={inputValue}
         onChange={(e) => setInputValue(e.target.value)}
         onKeyDown={(e) => { if (e.key === 'Escape') setInputValue(''); }}
-        placeholder="Napište cenu nemovitosti nebo svůj dotaz..."
-        className="flex-1 bg-transparent border-none outline-none text-sm text-gray-900 placeholder:text-gray-400 py-2.5"
+        placeholder="Napište cenu nemovitosti nebo dotaz..."
+        className="flex-1 bg-transparent border-none outline-none text-base md:text-[15px] text-gray-900 placeholder:text-gray-400 py-3 md:py-2.5"
         autoComplete="off"
         disabled={isLoading}
       />
       <button
         type="submit"
         disabled={isLoading || !inputValue.trim()}
-        className="w-10 h-10 rounded-xl bg-[#E91E63] hover:bg-[#C2185B] disabled:bg-gray-200 flex items-center justify-center transition-all flex-shrink-0 ml-2"
+        className="w-11 h-11 md:w-10 md:h-10 rounded-xl bg-[#E91E63] hover:bg-[#C2185B] disabled:bg-gray-200 flex items-center justify-center transition-all flex-shrink-0 ml-2"
       >
-        <Send className="w-4 h-4 text-white" />
+        <Send className="w-[18px] h-[18px] md:w-4 md:h-4 text-white" />
       </button>
     </form>
   );
@@ -171,17 +171,17 @@ export function ChatArea({ initialSessionId = null }: ChatAreaProps) {
   // =============================================
   if (!hasStarted) {
     return (
-      <div className="flex-1 md:ml-[260px] flex flex-col min-h-screen pt-14 md:pt-0 overflow-y-auto">
-        <div className="flex-1 flex flex-col items-center px-4 py-8 md:py-12">
+      <div className="flex-1 md:ml-[260px] flex flex-col min-h-screen pt-16 md:pt-0 overflow-x-hidden overflow-y-auto min-w-0 w-full">
+        <div className="flex-1 flex flex-col items-center px-4 md:px-4 py-8 md:py-12 w-full min-w-0">
 
           {/* Hero */}
           <div className="text-center mb-8 max-w-lg">
-            <h1 className="text-3xl md:text-4xl font-bold text-gray-900 tracking-tight mb-3">
+            <h1 className="text-[28px] md:text-4xl font-extrabold text-[#0A1E5C] tracking-tight mb-3">
               {visitorName
                 ? `Vítejte zpět, ${visitorName}`
                 : 'Hypoteční poradce'}
             </h1>
-            <p className="text-gray-500 text-base leading-relaxed">
+            <p className="text-gray-500 text-base md:text-lg leading-relaxed">
               {visitorName
                 ? 'Pokračujte tam, kde jste skončili, nebo začněte novou kalkulaci. Porovnáme nabídky bank a ověříme bonitu podle pravidel ČNB 2026.'
                 : 'Zjistěte za minutu, zda dosáhnete na hypotéku. Porovnáme nabídky bank, spočítáme splátku a ověříme bonitu podle pravidel ČNB 2026.'}
@@ -189,7 +189,7 @@ export function ChatArea({ initialSessionId = null }: ChatAreaProps) {
           </div>
 
           {/* Centered input */}
-          <div className="w-full max-w-[560px] mb-6">
+          <div className="w-full max-w-[560px] mb-6 min-w-0">
             {inputBar}
             <p className="text-center text-[11px] text-gray-400 mt-2.5">
               Napište přirozeně, např. &quot;Kupuji byt za 5 mil, mám 1 mil a beru 60 tisíc&quot;
@@ -203,7 +203,7 @@ export function ChatArea({ initialSessionId = null }: ChatAreaProps) {
                 key={label}
                 onClick={() => useBadge(label)}
                 disabled={isLoading}
-                className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm text-gray-600 transition-all disabled:opacity-50 ${glass} ${glassHover} hover:text-[#E91E63]`}
+                className={`inline-flex items-center gap-2 px-4 py-3 md:py-2.5 rounded-xl text-[15px] md:text-sm text-gray-600 transition-all disabled:opacity-50 active:scale-[0.97] ${glass} ${glassHover} hover:text-[#E91E63]`}
               >
                 <Icon className="w-4 h-4" />
                 {label}
@@ -213,14 +213,14 @@ export function ChatArea({ initialSessionId = null }: ChatAreaProps) {
           </div>
 
           {/* Feature cards - glass style */}
-          <div className="w-full max-w-[700px] grid grid-cols-1 md:grid-cols-2 gap-3 mb-10">
+          <div className="w-full max-w-[700px] grid grid-cols-1 md:grid-cols-2 gap-3 mb-10 min-w-0">
             {FEATURES.map((f) => (
               <div key={f.title} className={`rounded-2xl p-5 transition-all ${glass} ${glassHover}`}>
-                <p className="text-sm font-semibold text-gray-900 mb-1.5">{f.title}</p>
-                <p className="text-xs text-gray-500 leading-relaxed mb-3">{f.desc}</p>
-                <div className="space-y-1.5">
+                <p className="text-[15px] md:text-sm font-semibold text-gray-900 mb-1.5">{f.title}</p>
+                <p className="text-sm md:text-xs text-gray-500 leading-relaxed mb-3">{f.desc}</p>
+                <div className="space-y-2 md:space-y-1.5">
                   {f.items.map((item) => (
-                    <div key={item} className="flex items-center gap-2 text-xs text-gray-600">
+                    <div key={item} className="flex items-center gap-2 text-sm md:text-xs text-gray-600">
                       <CheckCircle2 className="w-3.5 h-3.5 text-[#E91E63] flex-shrink-0" />
                       {item}
                     </div>
@@ -231,7 +231,7 @@ export function ChatArea({ initialSessionId = null }: ChatAreaProps) {
           </div>
 
           {/* Bank logos strip */}
-          <div className="w-full max-w-[700px] mb-8">
+          <div className="w-full max-w-[700px] mb-8 min-w-0">
             <p className="text-center text-[11px] text-gray-400 uppercase tracking-wider mb-4 font-medium">
               Porovnáváme nabídky bank
             </p>
@@ -258,15 +258,15 @@ export function ChatArea({ initialSessionId = null }: ChatAreaProps) {
   // CHAT VIEW (after conversation starts)
   // =============================================
   return (
-    <div className="flex-1 md:ml-[260px] flex flex-col min-h-screen pt-14 md:pt-0">
-      <div className="flex-1 overflow-y-auto">
-        <div className="max-w-[640px] mx-auto px-4 pt-6 md:pt-8 pb-40">
+    <div className="flex-1 md:ml-[260px] flex flex-col min-h-screen pt-16 md:pt-0 overflow-x-hidden min-w-0 w-full">
+      <div className="flex-1 overflow-y-auto overflow-x-hidden min-w-0">
+        <div className="max-w-[640px] mx-auto px-4 md:px-4 pt-4 md:pt-8 pb-44 md:pb-40 w-full min-w-0">
           {/* Messages */}
           {messages.map((message: UIMessage) => (
             <div key={message.id} className="mb-4 animate-in">
               {message.role === 'user' && (
                 <div className="flex justify-end mb-2">
-                  <div className="bg-[#E91E63]/90 backdrop-blur-sm text-white px-4 py-2.5 rounded-2xl rounded-br-md max-w-[85%] text-sm leading-relaxed shadow-lg shadow-pink-500/10">
+                  <div className="bg-[#E91E63]/90 backdrop-blur-sm text-white px-4 py-3 md:py-2.5 rounded-2xl rounded-br-md max-w-[85%] text-base md:text-[15px] leading-relaxed shadow-lg shadow-pink-500/10 break-words overflow-hidden">
                     {getTextContent(message)}
                   </div>
                 </div>
@@ -278,7 +278,7 @@ export function ChatArea({ initialSessionId = null }: ChatAreaProps) {
                     if (part.type === 'text' && part.text) {
                       return (
                         <div key={index} className="flex justify-start mb-2">
-                          <div className={`text-gray-900 px-4 py-2.5 rounded-2xl rounded-bl-md max-w-[85%] text-sm leading-relaxed whitespace-pre-wrap ${glass}`}>
+                          <div className={`text-gray-900 px-4 py-3 md:py-2.5 rounded-2xl rounded-bl-md max-w-[85%] text-base md:text-[15px] leading-relaxed whitespace-pre-wrap break-words overflow-hidden ${glass}`}>
                             {part.text}
                           </div>
                         </div>
@@ -289,7 +289,7 @@ export function ChatArea({ initialSessionId = null }: ChatAreaProps) {
                       const toolName = p.toolName ?? part.type.replace(/^tool-/, '');
                       if (toolName === 'update_profile' || toolName === 'step-start') return null;
                       return (
-                        <div key={index} className="max-w-full">
+                        <div key={index} className="w-full min-w-0 overflow-hidden">
                           <WidgetRenderer
                             toolInvocation={{ toolName, state: p.state, args: (p.input ?? {}) as Record<string, unknown> }}
                             sessionId={sessionId}
@@ -347,9 +347,9 @@ export function ChatArea({ initialSessionId = null }: ChatAreaProps) {
       {/* Bottom input bar - glass */}
       <div className="fixed bottom-0 right-0 md:left-[260px] left-0 z-50">
         <div className="bg-gradient-to-t from-[#F5F7FA] via-[#F5F7FA]/95 to-transparent backdrop-blur-md">
-          <div className="max-w-[640px] mx-auto px-4 pt-4 pb-4">
+          <div className="max-w-[640px] mx-auto px-4 pt-4 pb-4" style={{ paddingBottom: 'max(1rem, env(safe-area-inset-bottom))' }}>
             {inputBar}
-            <p className="text-center text-[10px] text-gray-400 mt-2">
+            <p className="text-center text-[11px] text-gray-400 mt-2">
               Hypoteeka AI -- metodika ČNB 2026, live PRIBOR. Výsledky jsou orientační.
             </p>
           </div>

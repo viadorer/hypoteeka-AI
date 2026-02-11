@@ -48,6 +48,33 @@ export interface LeadRecord {
   createdAt: string;
 }
 
+export interface WidgetEventRecord {
+  tenantId: string;
+  sessionId: string;
+  widgetType: string;
+  inputData: Record<string, unknown>;
+  outputData?: Record<string, unknown>;
+  interaction?: string;
+}
+
+export interface PropertyRecord {
+  tenantId: string;
+  sessionId: string;
+  price?: number;
+  propertyType?: string;
+  location?: string;
+  purpose?: string;
+  equity?: number;
+  loanAmount?: number;
+  ltv?: number;
+  monthlyPayment?: number;
+  interestRate?: number;
+  fixationYears?: number;
+  expectedRentalIncome?: number;
+  rentalYield?: number;
+  details?: Record<string, unknown>;
+}
+
 export interface StorageProvider {
   // Sessions
   getSession(sessionId: string): Promise<SessionData | null>;
@@ -57,6 +84,12 @@ export interface StorageProvider {
   // Leads
   saveLead(lead: LeadRecord): Promise<void>;
   getLeads(tenantId?: string): Promise<LeadRecord[]>;
+
+  // Widget events
+  saveWidgetEvent(event: WidgetEventRecord): Promise<void>;
+
+  // Properties
+  saveProperty(property: PropertyRecord): Promise<void>;
 
   // Cleanup
   deleteSession(sessionId: string): Promise<void>;

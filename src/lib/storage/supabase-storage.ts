@@ -6,7 +6,7 @@
  */
 
 import type { SupabaseClient } from '@supabase/supabase-js';
-import type { StorageProvider, SessionData, LeadRecord } from './types';
+import type { StorageProvider, SessionData, LeadRecord, WidgetEventRecord, PropertyRecord } from './types';
 
 export class SupabaseStorage implements StorageProvider {
   constructor(private db: SupabaseClient) {}
@@ -181,6 +181,49 @@ export class SupabaseStorage implements StorageProvider {
       leadTemperature: row.lead_temperature,
       createdAt: row.created_at,
     }));
+  }
+
+  async saveWidgetEvent(event: WidgetEventRecord): Promise<void> {
+    const { error } = await this.db
+      .from('widget_events')
+      .insert({
+        tenant_id: event.tenantId,
+        session_id: event.sessionId,
+        widget_type: event.widgetType,
+        input_data: event.inputData,
+        output_data: event.outputData ?? {},
+        interaction: event.interaction ?? null,
+      });
+
+    if (error) {
+      console.error('[SupabaseStorage] saveWidgetEvent error:', error.message);
+    }
+  }
+
+  async saveProperty(property: PropertyRecord): Promise<void> {
+    const { error } = await this.db
+      .from('properties')
+      .insert({
+        tenant_id: property.tenantId,
+        session_id: property.sessionId,
+        price: property.price ?? null,
+        property_type: property.propertyType ?? null,
+        location: property.location ?? null,
+        purpose: property.purpose ?? null,
+        equity: property.equity ?? null,
+        loan_amount: property.loanAmount ?? null,
+        ltv: property.ltv ?? null,
+        monthly_payment: property.monthlyPayment ?? null,
+        interest_rate: property.interestRate ?? null,
+        fixation_years: property.fixationYears ?? null,
+        expected_rental_income: property.expectedRentalIncome ?? null,
+        rental_yield: property.rentalYield ?? null,
+        details: property.details ?? {},
+      });
+
+    if (error) {
+      console.error('[SupabaseStorage] saveProperty error:', error.message);
+    }
   }
 
   async deleteSession(sessionId: string): Promise<void> {
