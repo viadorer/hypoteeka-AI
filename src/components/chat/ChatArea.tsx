@@ -1,0 +1,357 @@
+'use client';
+
+import { useChat } from '@ai-sdk/react';
+import { useRef, useEffect, useState, useMemo } from 'react';
+import { v4 as uuidv4 } from 'uuid';
+import { Send, AlertCircle, RotateCcw, Calculator, ShieldCheck, TrendingUp, Users, ArrowRight, CheckCircle2 } from 'lucide-react';
+import { WidgetRenderer } from '../widgets/WidgetRenderer';
+import type { UIMessage } from 'ai';
+
+const QUICK_ACTIONS = [
+  { label: 'Spočítat splátku', icon: Calculator },
+  { label: 'Ověřit bonitu', icon: ShieldCheck },
+  { label: 'Kolik si můžu dovolit?', icon: TrendingUp },
+  { label: 'Nájem vs. hypotéka', icon: Users },
+];
+
+const FEATURES = [
+  {
+    title: 'Výpočet splátky a bonity',
+    desc: 'Přesný výpočet měsíční splátky, celkových nákladů a ověření bonity podle limitů ČNB.',
+    items: ['Měsíční splátka', 'Celkové úroky', 'RPSN', 'Ověření DSTI a DTI'],
+  },
+  {
+    title: 'Porovnání sazeb bank',
+    desc: 'Orientační přehled aktuálních sazeb na trhu. Konkrétní nabídku připraví poradce na míru.',
+    items: ['Live sazby z ČNB', 'Porovnání 8+ bank', 'Fixace 3, 5 i 10 let'],
+  },
+  {
+    title: 'Pravidla ČNB 2026',
+    desc: 'Počítáme podle aktuálních doporučení České národní banky.',
+    items: ['LTV do 80 % (90 % do 36 let)', 'DSTI do 45 %', 'DTI do 9,5'],
+  },
+  {
+    title: 'Najdeme cestu k hypotéce',
+    desc: 'I když nesplňujete podmínky, navrhneme konkrétní kroky jak to změnit.',
+    items: ['Navýšení vlastních zdrojů', 'Spolužadatel', 'Alternativní banky', 'Refinancování'],
+  },
+];
+
+const BANKS = [
+  'Hypoteční banka',
+  'Česká spořitelna',
+  'Komerční banka',
+  'ČSOB',
+  'Raiffeisenbank',
+  'mBank',
+  'UniCredit',
+  'Moneta',
+];
+
+function getSessionId(initialId: string | null): string {
+  if (typeof window === 'undefined') return 'ssr';
+  // If we have an explicit session to load, use it
+  if (initialId) return initialId;
+  // Otherwise generate/reuse a session ID
+  let id = sessionStorage.getItem('hypoteeka_session');
+  if (!id) {
+    id = uuidv4();
+    sessionStorage.setItem('hypoteeka_session', id);
+  }
+  return id;
+}
+
+interface ChatAreaProps {
+  initialSessionId?: string | null;
+}
+
+export function ChatArea({ initialSessionId = null }: ChatAreaProps) {
+  const sessionId = useMemo(() => getSessionId(initialSessionId), [initialSessionId]);
+  const { messages, sendMessage, status, error, clearError } = useChat({
+    api: '/api/chat',
+    body: { sessionId },
+  });
+  const [inputValue, setInputValue] = useState('');
+  const [visitorName, setVisitorName] = useState<string | null>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const hasStarted = messages.length > 0;
+  const isLoading = status === 'submitted' || status === 'streaming';
+
+  // Load visitor name from session API (for personalized greeting)
+  useEffect(() => {
+    fetch('/api/sessions')
+      .then(r => r.json())
+      .then((sessions: Array<{ profile: { name?: string } }>) => {
+        for (const s of sessions) {
+          if (s.profile.name) {
+            // Extract first name only
+            const firstName = s.profile.name.split(' ')[0];
+            setVisitorName(firstName);
+            break;
+          }
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages, isLoading]);
+
+  useEffect(() => {
+    if (!isLoading) inputRef.current?.focus();
+  }, [isLoading]);
+
+  const onSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!inputValue.trim() || isLoading) return;
+    const text = inputValue;
+    setInputValue('');
+    try { await sendMessage({ text }); } catch { /* useChat handles */ }
+  };
+
+  const useBadge = async (text: string) => {
+    setInputValue('');
+    try { await sendMessage({ text }); } catch { /* useChat handles */ }
+  };
+
+  const handleRetry = () => {
+    clearError();
+    const lastUserMsg = [...messages].reverse().find(m => m.role === 'user');
+    if (lastUserMsg) {
+      const text = getTextContent(lastUserMsg);
+      if (text) sendMessage({ text });
+    }
+  };
+
+  const getTextContent = (message: UIMessage): string => {
+    if (message.parts) {
+      return message.parts
+        .filter((p): p is { type: 'text'; text: string } => p.type === 'text')
+        .map((p) => p.text)
+        .join('');
+    }
+    return '';
+  };
+
+  // --- GLASS STYLE CLASSES ---
+  const glass = 'bg-white/60 backdrop-blur-xl border border-white/40 shadow-lg shadow-black/[0.03]';
+  const glassHover = 'hover:bg-white/80 hover:shadow-xl hover:shadow-black/[0.05] hover:border-white/60';
+
+  // --- INPUT BAR (shared between welcome and chat) ---
+  const inputBar = (
+    <form onSubmit={onSubmit} className={`flex items-center rounded-2xl px-5 py-2 transition-all focus-within:bg-white/80 focus-within:shadow-xl focus-within:border-white/60 ${glass}`}>
+      <input
+        ref={inputRef}
+        type="text"
+        value={inputValue}
+        onChange={(e) => setInputValue(e.target.value)}
+        onKeyDown={(e) => { if (e.key === 'Escape') setInputValue(''); }}
+        placeholder="Napište cenu nemovitosti nebo svůj dotaz..."
+        className="flex-1 bg-transparent border-none outline-none text-sm text-gray-900 placeholder:text-gray-400 py-2.5"
+        autoComplete="off"
+        disabled={isLoading}
+      />
+      <button
+        type="submit"
+        disabled={isLoading || !inputValue.trim()}
+        className="w-10 h-10 rounded-xl bg-[#E91E63] hover:bg-[#C2185B] disabled:bg-gray-200 flex items-center justify-center transition-all flex-shrink-0 ml-2"
+      >
+        <Send className="w-4 h-4 text-white" />
+      </button>
+    </form>
+  );
+
+  // =============================================
+  // WELCOME SCREEN (before chat starts)
+  // =============================================
+  if (!hasStarted) {
+    return (
+      <div className="flex-1 md:ml-[260px] flex flex-col min-h-screen pt-14 md:pt-0 overflow-y-auto">
+        <div className="flex-1 flex flex-col items-center px-4 py-8 md:py-12">
+
+          {/* Hero */}
+          <div className="text-center mb-8 max-w-lg">
+            <h1 className="text-3xl md:text-4xl font-bold text-gray-900 tracking-tight mb-3">
+              {visitorName
+                ? `Vítejte zpět, ${visitorName}`
+                : 'Hypoteční poradce'}
+            </h1>
+            <p className="text-gray-500 text-base leading-relaxed">
+              {visitorName
+                ? 'Pokračujte tam, kde jste skončili, nebo začněte novou kalkulaci. Porovnáme nabídky bank a ověříme bonitu podle pravidel ČNB 2026.'
+                : 'Zjistěte za minutu, zda dosáhnete na hypotéku. Porovnáme nabídky bank, spočítáme splátku a ověříme bonitu podle pravidel ČNB 2026.'}
+            </p>
+          </div>
+
+          {/* Centered input */}
+          <div className="w-full max-w-[560px] mb-6">
+            {inputBar}
+            <p className="text-center text-[11px] text-gray-400 mt-2.5">
+              Napište přirozeně, např. &quot;Kupuji byt za 5 mil, mám 1 mil a beru 60 tisíc&quot;
+            </p>
+          </div>
+
+          {/* Quick action badges */}
+          <div className="flex flex-wrap gap-2 justify-center mb-10">
+            {QUICK_ACTIONS.map(({ label, icon: Icon }) => (
+              <button
+                key={label}
+                onClick={() => useBadge(label)}
+                disabled={isLoading}
+                className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm text-gray-600 transition-all disabled:opacity-50 ${glass} ${glassHover} hover:text-[#E91E63]`}
+              >
+                <Icon className="w-4 h-4" />
+                {label}
+                <ArrowRight className="w-3 h-3 opacity-0 -ml-1 group-hover:opacity-100 transition-opacity" />
+              </button>
+            ))}
+          </div>
+
+          {/* Feature cards - glass style */}
+          <div className="w-full max-w-[700px] grid grid-cols-1 md:grid-cols-2 gap-3 mb-10">
+            {FEATURES.map((f) => (
+              <div key={f.title} className={`rounded-2xl p-5 transition-all ${glass} ${glassHover}`}>
+                <p className="text-sm font-semibold text-gray-900 mb-1.5">{f.title}</p>
+                <p className="text-xs text-gray-500 leading-relaxed mb-3">{f.desc}</p>
+                <div className="space-y-1.5">
+                  {f.items.map((item) => (
+                    <div key={item} className="flex items-center gap-2 text-xs text-gray-600">
+                      <CheckCircle2 className="w-3.5 h-3.5 text-[#E91E63] flex-shrink-0" />
+                      {item}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Bank logos strip */}
+          <div className="w-full max-w-[700px] mb-8">
+            <p className="text-center text-[11px] text-gray-400 uppercase tracking-wider mb-4 font-medium">
+              Porovnáváme nabídky bank
+            </p>
+            <div className="flex flex-wrap justify-center gap-x-6 gap-y-2">
+              {BANKS.map((bank) => (
+                <span key={bank} className="text-xs text-gray-400 font-medium whitespace-nowrap">
+                  {bank}
+                </span>
+              ))}
+            </div>
+          </div>
+
+          {/* Footer info */}
+          <div className={`rounded-xl px-6 py-3 text-center text-[11px] text-gray-400 max-w-lg ${glass}`}>
+            <p>Hypoteeka AI používá metodiku ČNB 2026 a live data z PRIBOR. Výsledky jsou orientační.</p>
+            <p className="mt-1">Vaše data zpracováváme pouze pro účely kalkulace a nejsou sdílena třetím stranám.</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // =============================================
+  // CHAT VIEW (after conversation starts)
+  // =============================================
+  return (
+    <div className="flex-1 md:ml-[260px] flex flex-col min-h-screen pt-14 md:pt-0">
+      <div className="flex-1 overflow-y-auto">
+        <div className="max-w-[640px] mx-auto px-4 pt-6 md:pt-8 pb-40">
+          {/* Messages */}
+          {messages.map((message: UIMessage) => (
+            <div key={message.id} className="mb-4 animate-in">
+              {message.role === 'user' && (
+                <div className="flex justify-end mb-2">
+                  <div className="bg-[#E91E63]/90 backdrop-blur-sm text-white px-4 py-2.5 rounded-2xl rounded-br-md max-w-[85%] text-sm leading-relaxed shadow-lg shadow-pink-500/10">
+                    {getTextContent(message)}
+                  </div>
+                </div>
+              )}
+
+              {message.role === 'assistant' && (
+                <div className="space-y-3">
+                  {message.parts?.map((part, index: number) => {
+                    if (part.type === 'text' && part.text) {
+                      return (
+                        <div key={index} className="flex justify-start mb-2">
+                          <div className={`text-gray-900 px-4 py-2.5 rounded-2xl rounded-bl-md max-w-[85%] text-sm leading-relaxed whitespace-pre-wrap ${glass}`}>
+                            {part.text}
+                          </div>
+                        </div>
+                      );
+                    }
+                    if (part.type.startsWith('tool-') || part.type === 'dynamic-tool') {
+                      const p = part as { type: string; toolName?: string; state: string; input?: Record<string, unknown> };
+                      const toolName = p.toolName ?? part.type.replace(/^tool-/, '');
+                      if (toolName === 'update_profile' || toolName === 'step-start') return null;
+                      return (
+                        <div key={index} className="max-w-full">
+                          <WidgetRenderer
+                            toolInvocation={{ toolName, state: p.state, args: (p.input ?? {}) as Record<string, unknown> }}
+                            sessionId={sessionId}
+                          />
+                        </div>
+                      );
+                    }
+                    return null;
+                  })}
+                </div>
+              )}
+            </div>
+          ))}
+
+          {/* Loading */}
+          {isLoading && (
+            <div className="flex justify-start mb-2 animate-in">
+              <div className={`text-gray-400 px-4 py-3 rounded-2xl rounded-bl-md text-sm ${glass}`}>
+                <span className="inline-flex gap-1 items-center">
+                  <span className="w-1.5 h-1.5 bg-gray-300 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                  <span className="w-1.5 h-1.5 bg-gray-300 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                  <span className="w-1.5 h-1.5 bg-gray-300 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                </span>
+              </div>
+            </div>
+          )}
+
+          {/* Error */}
+          {error && (
+            <div className="flex justify-start mb-2 animate-in">
+              <div className="bg-red-50/80 backdrop-blur-xl text-red-700 px-4 py-3 rounded-2xl rounded-bl-md max-w-[85%] text-sm shadow-lg border border-red-100/50">
+                <div className="flex items-start gap-2">
+                  <AlertCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                  <div>
+                    <p className="font-medium mb-1">Chyba při zpracování</p>
+                    <p className="text-red-600 text-xs">
+                      {error.message.includes('API key')
+                        ? 'Chybí API klíč. Nastavte GOOGLE_GENERATIVE_AI_API_KEY v .env.local'
+                        : 'Zkuste to prosím znovu.'}
+                    </p>
+                    <button onClick={handleRetry} className="mt-2 inline-flex items-center gap-1.5 text-xs font-medium text-red-700 hover:text-red-800 transition-colors">
+                      <RotateCcw className="w-3 h-3" />
+                      Zkusit znovu
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          <div ref={messagesEndRef} />
+        </div>
+      </div>
+
+      {/* Bottom input bar - glass */}
+      <div className="fixed bottom-0 right-0 md:left-[260px] left-0 z-50">
+        <div className="bg-gradient-to-t from-[#F5F7FA] via-[#F5F7FA]/95 to-transparent backdrop-blur-md">
+          <div className="max-w-[640px] mx-auto px-4 pt-4 pb-4">
+            {inputBar}
+            <p className="text-center text-[10px] text-gray-400 mt-2">
+              Hypoteeka AI -- metodika ČNB 2026, live PRIBOR. Výsledky jsou orientační.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
