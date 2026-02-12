@@ -4,8 +4,12 @@ import { useEffect, useRef, useState } from 'react';
 
 declare global {
   interface Window {
-    RealvisorWidget?: {
+    RealVisor?: {
       createContactForm: (
+        container: HTMLElement,
+        config: Record<string, unknown>
+      ) => void;
+      createValuoForm: (
         container: HTMLElement,
         config: Record<string, unknown>
       ) => void;
@@ -34,9 +38,9 @@ export function ValuationWidget({ context }: Props) {
 
     const initWidget = () => {
       if (cancelled || !containerRef.current) return;
-      if (!window.RealvisorWidget) return;
+      if (!window.RealVisor) return;
       try {
-        window.RealvisorWidget.createContactForm(containerRef.current, {
+        window.RealVisor.createValuoForm(containerRef.current, {
           apiUrl: API_URL,
           formCode: FORM_CODE,
           primaryColor: PRIMARY_COLOR,
@@ -52,7 +56,7 @@ export function ValuationWidget({ context }: Props) {
 
     const pollForWidget = (attempts = 0) => {
       if (cancelled) return;
-      if (window.RealvisorWidget) {
+      if (window.RealVisor) {
         initWidget();
         return;
       }
@@ -64,7 +68,7 @@ export function ValuationWidget({ context }: Props) {
     };
 
     // Check if already available
-    if (window.RealvisorWidget) {
+    if (window.RealVisor) {
       initWidget();
       return;
     }
