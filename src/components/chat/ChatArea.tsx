@@ -1,13 +1,15 @@
 'use client';
 
 import { useChat } from '@ai-sdk/react';
-import { useRef, useEffect, useState, useMemo } from 'react';
+import { useRef, useEffect, useState, useMemo, useCallback } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { Send, AlertCircle, RotateCcw, Calculator, ShieldCheck, TrendingUp, Users, BarChart3, RefreshCw, Home, PiggyBank, Percent, HelpCircle, ArrowDownUp, Search } from 'lucide-react';
 import { WidgetRenderer } from '../widgets/WidgetRenderer';
 import ReactMarkdown from 'react-markdown';
 import { DefaultChatTransport } from 'ai';
 import type { UIMessage } from 'ai';
+import { CtaIntensityDial } from './CtaIntensityDial';
+import type { CtaIntensity } from './CtaIntensityDial';
 
 const QUICK_ACTIONS = [
   { label: 'Spočítat splátku', icon: Calculator, prompt: 'Chci si spočítat splátku hypotéky.' },
@@ -52,12 +54,17 @@ interface ChatAreaProps {
 
 export function ChatArea({ initialSessionId = null }: ChatAreaProps) {
   const sessionId = useMemo(() => getSessionId(initialSessionId), [initialSessionId]);
-  const { messages, setMessages, sendMessage, status, error, clearError } = useChat({
-    transport: new DefaultChatTransport({
-      api: '/api/chat',
-      body: { sessionId, tenantId: process.env.NEXT_PUBLIC_TENANT_ID ?? 'hypoteeka' },
+  const ctaIntensityRef = useRef<CtaIntensity>('medium');
+  const transport = useMemo(() => new DefaultChatTransport({
+    api: '/api/chat',
+    body: { sessionId, tenantId: process.env.NEXT_PUBLIC_TENANT_ID ?? 'hypoteeka' },
+    prepareSendMessagesRequest: ({ body, ...rest }) => ({
+      ...rest,
+      body: { ...body, ctaIntensity: ctaIntensityRef.current },
     }),
-  });
+  }), [sessionId]);
+  const { messages, setMessages, sendMessage, status, error, clearError } = useChat({ transport });
+  const handleCtaChange = useCallback((v: CtaIntensity) => { ctaIntensityRef.current = v; }, []);
   const [inputValue, setInputValue] = useState('');
   const [visitorName, setVisitorName] = useState<string | null>(null);
   const [visitorNameVocative, setVisitorNameVocative] = useState<string | null>(null);
@@ -466,9 +473,12 @@ export function ChatArea({ initialSessionId = null }: ChatAreaProps) {
         <div className="bg-gradient-to-t from-[#F5F7FA] via-[#F5F7FA]/95 to-transparent backdrop-blur-md">
           <div className="max-w-[640px] mx-auto px-4 md:px-6 pt-4 pb-4" style={{ paddingBottom: 'max(1rem, env(safe-area-inset-bottom))' }}>
             {inputBar}
-            <p className="text-center text-[11px] text-gray-400 mt-2">
-              Hypoteeka AI -- metodika ČNB 2026, live REPO, data z ČNB. Výsledky jsou orientační.
-            </p>
+            <div className="flex items-center justify-between mt-2">
+              <CtaIntensityDial onChange={handleCtaChange} />
+              <p className="text-[11px] text-gray-400">
+                Hypoteeka AI -- metodika ČNB 2026, live REPO, data z ČNB. Výsledky jsou orientační.
+              </p>
+            </div>
           </div>
         </div>
       </div>

@@ -17,15 +17,20 @@ import { shouldOfferLeadCapture } from './lead-scoring';
 import { getRatesContext } from '../data/rates';
 import { getCnbLimits } from '../data/cnb-limits';
 import { getBasePromptParts, getPhaseInstruction, getToolInstruction, getRelevantKnowledge } from './prompt-service';
-import { getDefaultTenantId } from '../tenant/config';
+import { getDefaultTenantId, getTenantConfig } from '../tenant/config';
+
+export type CtaIntensity = 'low' | 'medium' | 'high';
 
 export async function buildAgentPrompt(
   profile: ClientProfile,
   state: ConversationState,
   leadScore: LeadScore,
   tenantId: string = getDefaultTenantId(),
-  lastUserMessage?: string
+  lastUserMessage?: string,
+  ctaIntensityOverride?: CtaIntensity
 ): Promise<string> {
+  const tenantConfig = getTenantConfig(tenantId);
+  const ctaIntensity: CtaIntensity = ctaIntensityOverride ?? tenantConfig.features.ctaIntensity;
   // Base prompt z DB (nebo lokální fallback)
   const baseParts = await getBasePromptParts(tenantId);
   const parts: string[] = [...baseParts];
@@ -69,32 +74,64 @@ export async function buildAgentPrompt(
     }
   }
 
-  // Contact status - AGRESIVNÍ výzva
+  // Contact / CTA section - driven by ctaIntensity setting
   const hasEmail = !!profile.email;
   const hasPhone = !!profile.phone;
   const widgetCount = state.widgetsShown.length;
-  if (!hasEmail && !hasPhone) {
-    if (widgetCount >= 1) {
-      parts.push('\n*** POVINNÁ AKCE - KONTAKT ***\nUž jsi ukázal výpočty. MUSÍŠ v této odpovědi nabídnout:\n"Mohu vám výsledky poslat na e-mail, abyste se k nim mohli vrátit. Stačí zadat adresu. Nebo vás mohu spojit s naším specialistou na bezplatnou konzultaci."\nToto je POVINNÉ - neignoruj to.');
+
+  if (ctaIntensity === 'low') {
+    // LOW: only mention contact when client explicitly asks or after qualification
+    parts.push('\nKONTAKT (režim: nízká intenzita):');
+    parts.push('- Nabízej email/poradce POUZE když se klient sám zeptá nebo když je ve fázi kvalifikace/konverze.');
+    parts.push('- Jinak se soustřeď na výpočty a odpovědi. Klient si řekne sám.');
+    if (hasEmail) parts.push(`- Máš email: ${profile.email}`);
+    if (hasPhone) parts.push(`- Máš telefon: ${profile.phone}`);
+  } else if (ctaIntensity === 'medium') {
+    // MEDIUM: offer contact once after 2+ widgets, not repeatedly
+    parts.push('\nKONTAKT (režim: střední intenzita):');
+    if (!hasEmail && !hasPhone) {
+      if (widgetCount >= 2) {
+        parts.push('- Už jsi ukázal 2+ widgety. Můžeš JEDNOU nabídnout: "Chcete, abych vám poslal shrnutí na email?" Pokud klient nereaguje, NENABÍZEJ znovu.');
+      } else {
+        parts.push('- Zatím se soustřeď na výpočty. Kontakt nabídni až po zobrazení alespoň 2 widgetů.');
+      }
     } else {
-      parts.push('\nKONTAKT: Ještě NEMÁŠ email ani telefon. Po prvním výpočtu NABÍDNI zaslání na email.');
+      if (hasEmail) parts.push(`- Máš email: ${profile.email}`);
+      if (hasPhone) parts.push(`- Máš telefon: ${profile.phone}`);
+      if (state.phase === 'qualification' || state.phase === 'conversion') {
+        parts.push('- Klient je kvalifikovaný. Nabídni bezplatnou schůzku se specialistou.');
+      }
     }
-  } else if (!hasEmail) {
-    parts.push(`\nKONTAKT: Máš telefon (${profile.phone}), ale NEMÁŠ email. Nabídni: "Mohu vám výsledky poslat i na e-mail."`);
-  } else if (!hasPhone) {
-    parts.push(`\nKONTAKT: Máš email (${profile.email}), ale NEMÁŠ telefon. Nabídni: "Chcete, abych vás spojil s poradcem přes WhatsApp nebo telefon?"`);
   } else {
-    parts.push('\nKONTAKT: Máš email i telefon. Nabídni sjednání bezplatné schůzky s poradcem.');
+    // HIGH: proactive contact offers
+    parts.push('\nKONTAKT (režim: vysoká intenzita):');
+    if (!hasEmail && !hasPhone) {
+      if (widgetCount >= 1) {
+        parts.push('- Nabídni zaslání výsledků na email nebo spojení se specialistou.');
+      }
+    } else if (!hasEmail) {
+      parts.push(`- Máš telefon (${profile.phone}), nabídni i email pro zaslání shrnutí.`);
+    } else if (!hasPhone) {
+      parts.push(`- Máš email (${profile.email}), nabídni spojení přes WhatsApp nebo telefon.`);
+    } else {
+      parts.push('- Máš email i telefon. Nabídni sjednání bezplatné schůzky.');
+    }
   }
 
-  // Lead capture
+  // Lead capture - respect intensity
   if (shouldOfferLeadCapture(leadScore, state)) {
-    parts.push('\nDOPORUČENÍ: Nabídni klientovi kontaktní formulář (show_lead_capture). Je kvalifikovaný.');
+    if (ctaIntensity === 'low') {
+      parts.push('\nKlient je kvalifikovaný. Pokud se zeptá na další kroky, nabídni show_lead_capture.');
+    } else {
+      parts.push('\nKlient je kvalifikovaný. Nabídni kontaktní formulář (show_lead_capture).');
+    }
   }
 
-  // Schůzka - po kvalifikaci
-  if (state.phase === 'qualification' || state.phase === 'conversion' || state.phase === 'followup') {
-    parts.push('\nSCHŮZKA: Nabídni sjednání bezplatné schůzky s hypotečním specialistou. Řekni: "Chcete, abych vám domluvil bezplatnou konzultaci s naším specialistou? Pomůže vám s celým procesem od A do Z."');
+  // Schůzka - only in conversion phases, respect intensity
+  if (state.phase === 'conversion' || state.phase === 'followup') {
+    if (ctaIntensity !== 'low') {
+      parts.push('\nSCHŮZKA: Nabídni bezplatnou konzultaci se specialistou.');
+    }
   }
 
   // Widgety které už byly zobrazeny
@@ -122,10 +159,21 @@ export async function buildAgentPrompt(
 
   // Závěrečné připomenutí (Gemini lépe dodržuje instrukce na konci promptu)
   parts.push('\n*** ZÁVĚREČNÁ PRAVIDLA ***');
-  parts.push('- JAZYK: Piš VÝHRADNĚ česky LATINKOU s háčky a čárkami. NIKDY nepoužívej azbuku (cyrilici), ruštinu ani jiný jazyk. Pokud si nejsi jistý slovem, použij jiné české slovo.');
+  parts.push('- JAZYK: Piš VÝHRADNĚ česky LATINKOU s háčky a čárkami. NIKDY nepoužívej azbuku (cyrilici), ruštinu ani jiný jazyk.');
   parts.push('- FORMÁT MĚNY: Vždy "Kč" (s háčkem), nikdy "Kc".');
-  parts.push('- KONTAKT: Pokud jsi v této odpovědi ukázal widget a klient ještě nezadal email, MUSÍŠ nabídnout zaslání na email.');
-  parts.push('- SCHŮZKA: Po výpočtu bonity vždy nabídni bezplatnou konzultaci se specialistou.');
+
+  // NEVER REJECT guardrail
+  parts.push(`
+*** NIKDY NEODMÍTEJ KLIENTA ***
+- NIKDY neříkej "nesplňujete podmínky" nebo "na hypotéku nedosáhnete" jako konečný verdikt.
+- Pokud klient nesplňuje limit (LTV, DSTI, DTI), VŽDY ukaž KONKRÉTNÍ CESTU K ŘEŠENÍ:
+  - LTV překročeno? -> "Potřebujete navýšit vlastní zdroje o X Kč. Možnosti: spoření, dar od rodiny, stavební spoření, zástava jiné nemovitosti."
+  - DSTI překročeno? -> "Splátka je příliš vysoká vzhledem k příjmu. Řešení: delší splatnost, nižší úvěr, přidání spolužadatele, zvýšení příjmu."
+  - DTI překročeno? -> "Celkový dluh je vysoký. Řešení: splatit jiné úvěry, přidat spolužadatele, snížit požadovanou částku."
+- Nemá vlastní zdroje? -> Spočítej splátku pro ilustraci, vysvětli kolik potřebuje naspořit, nabídni plán spoření.
+- VŽDY konči pozitivně: "Náš specialista vám pomůže najít optimální řešení pro vaši situaci."
+- Specialista z Hypoteeky dokáže vyřešit i složité případy - vždy ho nabídni jako cestu vpřed.
+- Tón: povzbuzující, konstruktivní. Nikdy pesimistický nebo odmítavý.`);
 
   return parts.join('\n');
 }

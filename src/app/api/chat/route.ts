@@ -6,6 +6,7 @@ import { createInitialState, determinePhase } from '@/lib/agent/conversation-sta
 import type { ConversationState } from '@/lib/agent/conversation-state';
 import { calculateLeadScore } from '@/lib/agent/lead-scoring';
 import { buildAgentPrompt } from '@/lib/agent/prompt-builder';
+import type { CtaIntensity } from '@/lib/agent/prompt-builder';
 import { storage } from '@/lib/storage';
 import { getTenantConfig, getTenantApiKey, getDefaultTenantId } from '@/lib/tenant/config';
 import { submitLeadToRealvisor, buildRealvisorPayload } from '@/lib/realvisor';
@@ -67,6 +68,7 @@ export async function POST(req: Request) {
     const { messages } = body;
     const sessionId: string = body.sessionId ?? 'default';
     const tenantId: string = body.tenantId ?? getDefaultTenantId();
+    const ctaIntensity: CtaIntensity | undefined = body.ctaIntensity;
 
     const tenantConfig = getTenantConfig(tenantId);
     const apiKey = getTenantApiKey(tenantId);
@@ -105,7 +107,7 @@ export async function POST(req: Request) {
     const lastUserMessage = [...messages].reverse().find((m: { role: string }) => m.role === 'user')?.content as string | undefined;
 
     // Build dynamic prompt (async - fetches live rates from ČNB API + knowledge base)
-    const systemPrompt = await buildAgentPrompt(profile, state, leadScore, tenantId, lastUserMessage);
+    const systemPrompt = await buildAgentPrompt(profile, state, leadScore, tenantId, lastUserMessage, ctaIntensity);
 
     console.log(`[Agent] Tenant: ${tenantId}, Session: ${sessionId}, Phase: ${state.phase}, Score: ${leadScore.score}/${leadScore.temperature}, Fields: ${collectedFields.join(',')}`);
 

@@ -29,6 +29,7 @@ export interface TenantConfig {
     vocativeGreeting: boolean;
     leadCapture: boolean;
     knowledgeBaseRag: boolean;
+    ctaIntensity: 'low' | 'medium' | 'high';
   };
 }
 
@@ -55,6 +56,7 @@ const TENANT_CONFIGS: Record<string, TenantConfig> = {
       vocativeGreeting: true,
       leadCapture: true,
       knowledgeBaseRag: false,
+      ctaIntensity: 'medium',
     },
   },
   odhad: {
@@ -79,6 +81,7 @@ const TENANT_CONFIGS: Record<string, TenantConfig> = {
       vocativeGreeting: true,
       leadCapture: true,
       knowledgeBaseRag: false,
+      ctaIntensity: 'medium',
     },
   },
 };
