@@ -12,7 +12,7 @@ declare global {
       createValuoForm: (
         container: HTMLElement,
         config: Record<string, unknown>
-      ) => void;
+      ) => Promise<void>;
     };
   }
 }
@@ -36,11 +36,11 @@ export function ValuationWidget({ context }: Props) {
     let cancelled = false;
     let pollTimer: ReturnType<typeof setTimeout>;
 
-    const initWidget = () => {
+    const initWidget = async () => {
       if (cancelled || !containerRef.current) return;
       if (!window.RealVisor) return;
       try {
-        window.RealVisor.createValuoForm(containerRef.current, {
+        await window.RealVisor.createValuoForm(containerRef.current, {
           apiUrl: API_URL,
           formCode: FORM_CODE,
           primaryColor: PRIMARY_COLOR,
@@ -48,9 +48,10 @@ export function ValuationWidget({ context }: Props) {
           maxWidth: '100%',
           shadow: 'none',
         });
-        setLoaded(true);
-      } catch {
-        setError(true);
+        if (!cancelled) setLoaded(true);
+      } catch (err) {
+        console.error('[ValuationWidget] init error:', err);
+        if (!cancelled) setError(true);
       }
     };
 
@@ -70,20 +71,19 @@ export function ValuationWidget({ context }: Props) {
     // Check if already available
     if (window.RealVisor) {
       initWidget();
-      return;
-    }
-
-    // Load script if not present
-    const existing = document.querySelector(`script[src="${WIDGET_SCRIPT_URL}"]`);
-    if (!existing) {
-      const script = document.createElement('script');
-      script.src = WIDGET_SCRIPT_URL;
-      script.async = true;
-      script.onload = () => pollForWidget(0);
-      script.onerror = () => setError(true);
-      document.head.appendChild(script);
     } else {
-      pollForWidget(0);
+      // Load script if not present
+      const existing = document.querySelector(`script[src="${WIDGET_SCRIPT_URL}"]`);
+      if (!existing) {
+        const script = document.createElement('script');
+        script.src = WIDGET_SCRIPT_URL;
+        script.async = true;
+        script.onload = () => pollForWidget(0);
+        script.onerror = () => { if (!cancelled) setError(true); };
+        document.body.appendChild(script);
+      } else {
+        pollForWidget(0);
+      }
     }
 
     return () => {
