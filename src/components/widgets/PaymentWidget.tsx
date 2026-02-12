@@ -72,7 +72,7 @@ export function PaymentWidget({ propertyPrice, equity, rate, rpsn, years, scenar
       <div className="grid grid-cols-3 gap-2 md:gap-3">
         {/* High rate - muted */}
         <ScenarioCard
-          label="Bez vyjednávání"
+          label="Nejvyšší na trhu"
           rate={high.rate}
           monthly={high.monthly}
           totalInterest={high.totalInterest}
@@ -86,9 +86,9 @@ export function PaymentWidget({ propertyPrice, equity, rate, rpsn, years, scenar
           totalInterest={avg.totalInterest}
           variant="default"
         />
-        {/* Our rate - highlighted */}
+        {/* Lowest rate - highlighted */}
         <ScenarioCard
-          label="S naším poradcem"
+          label="Nejnižší na trhu"
           rate={our.rate}
           monthly={our.monthly}
           totalInterest={our.totalInterest}
@@ -100,10 +100,10 @@ export function PaymentWidget({ propertyPrice, equity, rate, rpsn, years, scenar
       {(saving ?? 0) > 0 && (
         <div className="mt-4 bg-emerald-50 border border-emerald-100 rounded-xl p-3">
           <p className="text-sm font-semibold text-emerald-800">
-            Úspora s odborníkem: {formatCZK(monthlySaving ?? 0)}/měsíc
+            Rozdíl mezi nejhorší a nejlepší sazbou: {formatCZK(monthlySaving ?? 0)}/měsíc
           </p>
           <p className="text-xs text-emerald-600 mt-0.5">
-            Celkem {formatCZK(saving ?? 0)} za dobu splácení
+            To je {formatCZK(saving ?? 0)} za celou dobu splácení
           </p>
         </div>
       )}
@@ -111,8 +111,8 @@ export function PaymentWidget({ propertyPrice, equity, rate, rpsn, years, scenar
       {/* CTA message */}
       <div className="mt-4 pt-3 border-t border-gray-100">
         <p className="text-xs text-gray-500 leading-relaxed">
-          Konečná sazba závisí na mnoha faktorech -- výše úvěru, LTV, typ příjmu, nemovitost, pojištění.
-          Zkušený poradce vyjedná podmínky, které v online kalkulačce nenajdete.
+          V praxi se zkušený poradce dokáže dostat i pod nejnižší uvedenou sazbu.
+          Záleží na osobních vazbách, zkušenostech s vyjednáváním a celkovém nastavení úvěru -- nejen na sazbě samotné.
         </p>
       </div>
     </div>

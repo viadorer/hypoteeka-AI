@@ -465,7 +465,7 @@ export function ChatArea({ initialSessionId = null }: ChatAreaProps) {
           <div className="max-w-[640px] mx-auto px-4 md:px-6 pt-4 pb-4" style={{ paddingBottom: 'max(1rem, env(safe-area-inset-bottom))' }}>
             {inputBar}
             <p className="text-center text-[11px] text-gray-400 mt-2">
-              Hypoteeka AI -- metodika ČNB 2026, live PRIBOR. Výsledky jsou orientační.
+              Hypoteeka AI -- metodika ČNB 2026, live REPO, data z ČNB. Výsledky jsou orientační.
             </p>
           </div>
         </div>

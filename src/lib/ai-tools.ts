@@ -29,54 +29,59 @@ export const toolDefinitions = {
   },
 
   show_payment: {
-    description: 'Zobraz vypocet mesicni splatky hypoteky s porovnanim sazeb (nejvyssi/prumerna/nase vyjednana). Pouzij kdyz mas cenu nemovitosti a vlastni zdroje.',
+    description: 'Zobraz vypocet mesicni splatky hypoteky s porovnanim sazeb (nejvyssi/prumerna/nejnizsi na trhu). Pouzij kdyz mas cenu nemovitosti a vlastni zdroje.',
     inputSchema: z.object({
       propertyPrice: z.number().describe('Cena nemovitosti v CZK'),
       equity: z.number().describe('Vlastni zdroje v CZK'),
       years: z.number().optional().describe('Doba splatnosti v letech. Pokud klient neuvedl, NEZADAVEJ - system pouzije 30 let.'),
     }),
     execute: async ({ propertyPrice, equity, years }: { propertyPrice: number; equity: number; years?: number }) => {
-      const [rates, bankRates] = await Promise.all([
-        getMarketRates(),
-        getBankRates(),
-      ]);
+      const rates = await getMarketRates();
       const y = years ?? DEFAULTS.years;
       const loan = propertyPrice - equity;
 
-      // Highest rate: fix 1y or avg + 0.5pp (worst case scenario)
-      const highRate = rates.mortgageRateFix1y > 0
-        ? rates.mortgageRateFix1y / 100
+      // Collect all available fixation rates to find min/max
+      const fixRates = [
+        rates.mortgageRateFix1y,
+        rates.mortgageRateFix5y,
+        rates.mortgageRateFix10y,
+        rates.mortgageRateFix10yPlus,
+      ].filter(r => r > 0);
+
+      // Highest rate on market
+      const highRate = fixRates.length > 0
+        ? Math.max(...fixRates) / 100
         : (rates.mortgageAvgRate > 0 ? (rates.mortgageAvgRate + 0.5) / 100 : DEFAULTS.rate + 0.01);
-      // Average market rate from ČNB
+      // Average market rate
       const avgRate = rates.mortgageRateFix5y > 0
         ? rates.mortgageRateFix5y / 100
         : (rates.mortgageAvgRate > 0 ? rates.mortgageAvgRate / 100 : DEFAULTS.rate);
-      // Our negotiated rate (best case)
-      const ourRate = bankRates.ourRates
-        ? bankRates.ourRates.fix5y / 100
-        : avgRate - 0.005; // fallback: avg - 0.5pp
+      // Lowest rate on market
+      const lowRate = fixRates.length > 0
+        ? Math.min(...fixRates) / 100
+        : avgRate - 0.005;
 
       const highMonthly = calculateAnnuity(loan, highRate, y * 12);
       const avgMonthly = calculateAnnuity(loan, avgRate, y * 12);
-      const ourMonthly = calculateAnnuity(loan, ourRate, y * 12);
+      const lowMonthly = calculateAnnuity(loan, lowRate, y * 12);
 
       const highInterest = calculateTotalInterest(highMonthly, loan, y * 12);
       const avgInterest = calculateTotalInterest(avgMonthly, loan, y * 12);
-      const ourInterest = calculateTotalInterest(ourMonthly, loan, y * 12);
+      const lowInterest = calculateTotalInterest(lowMonthly, loan, y * 12);
 
       return {
         loanAmount: loan,
         years: y,
         scenarios: {
-          high: { rate: highRate, monthly: Math.round(highMonthly), totalInterest: Math.round(highInterest), label: 'Bez vyjednavani' },
+          high: { rate: highRate, monthly: Math.round(highMonthly), totalInterest: Math.round(highInterest), label: 'Nejvyssi na trhu' },
           avg: { rate: avgRate, monthly: Math.round(avgMonthly), totalInterest: Math.round(avgInterest), label: 'Prumer trhu' },
-          our: { rate: ourRate, monthly: Math.round(ourMonthly), totalInterest: Math.round(ourInterest), label: 'S nasim poradcem' },
+          our: { rate: lowRate, monthly: Math.round(lowMonthly), totalInterest: Math.round(lowInterest), label: 'Nejnizsi na trhu' },
         },
-        saving: Math.round(highInterest - ourInterest),
-        monthlySaving: Math.round(highMonthly - ourMonthly),
+        saving: Math.round(highInterest - lowInterest),
+        monthlySaving: Math.round(highMonthly - lowMonthly),
         rate: avgRate,
         rpsn: rates.mortgageRpsn > 0 ? rates.mortgageRpsn / 100 : avgRate * 1.04,
-        summary: `Splatka: ${formatCZK(Math.round(avgMonthly))}/mes (prumer trhu ${formatPercent(avgRate)}). S nasim poradcem od ${formatCZK(Math.round(ourMonthly))}/mes (${formatPercent(ourRate)}). Uspora az ${formatCZK(Math.round(highInterest - ourInterest))} za celou dobu.`,
+        summary: `Splatka: ${formatCZK(Math.round(avgMonthly))}/mes (prumer ${formatPercent(avgRate)}). Rozsah trhu: ${formatPercent(lowRate)} az ${formatPercent(highRate)}. Rozdil az ${formatCZK(Math.round(highInterest - lowInterest))} za celou dobu. V praxi se zkuseny poradce dokaze dostat i pod nejnizsi sazbu.`,
         displayed: true,
       };
     },
