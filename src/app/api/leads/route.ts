@@ -1,6 +1,7 @@
 import { storage } from '@/lib/storage';
 import { v4 as uuidv4 } from 'uuid';
 import { submitLeadToRealvisor, buildRealvisorPayload } from '@/lib/realvisor';
+import { getDefaultTenantId } from '@/lib/tenant/config';
 
 export async function POST(req: Request) {
   try {
@@ -16,7 +17,7 @@ export async function POST(req: Request) {
 
     // Load session to get profile and score
     const session = sessionId ? await storage.getSession(sessionId) : null;
-    const tid = tenantId ?? session?.tenantId ?? 'hypoteeka';
+    const tid = tenantId ?? session?.tenantId ?? getDefaultTenantId();
     const profile = session?.profile ?? {};
     const score = session?.state.leadScore ?? 0;
     const temperature = session?.state.leadQualified ? 'qualified' : (score >= 40 ? 'hot' : (score >= 20 ? 'warm' : 'cold'));

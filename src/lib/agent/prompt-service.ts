@@ -7,6 +7,7 @@
 
 import { supabase, isSupabaseConfigured } from '../supabase/client';
 import type { ConversationPhase } from './conversation-state';
+import { getDefaultTenantId } from '../tenant/config';
 
 export interface PromptTemplate {
   slug: string;
@@ -31,7 +32,7 @@ const CACHE_TTL = 5 * 60 * 1000; // 5 minut
  * Načte prompt templates z DB pro daného tenanta.
  * Fallback na lokální data pokud Supabase není dostupný.
  */
-export async function getPromptTemplates(tenantId: string = 'hypoteeka'): Promise<PromptTemplate[]> {
+export async function getPromptTemplates(tenantId: string = getDefaultTenantId()): Promise<PromptTemplate[]> {
   // Check cache
   if (promptCache && promptCache.tenantId === tenantId && Date.now() - promptCache.timestamp < CACHE_TTL) {
     return promptCache.templates;
@@ -73,7 +74,7 @@ export async function getPromptTemplates(tenantId: string = 'hypoteeka'): Promis
  * Načte komunikační styl z DB.
  * Fallback na default styl.
  */
-export async function getCommunicationStyle(tenantId: string = 'hypoteeka'): Promise<CommunicationStyle> {
+export async function getCommunicationStyle(tenantId: string = getDefaultTenantId()): Promise<CommunicationStyle> {
   if (isSupabaseConfigured() && supabase) {
     try {
       const { data, error } = await supabase
@@ -108,7 +109,7 @@ export async function getCommunicationStyle(tenantId: string = 'hypoteeka'): Pro
 /**
  * Sestaví base prompt z templates (bez phase-specific instrukcí).
  */
-export async function getBasePromptParts(tenantId: string = 'hypoteeka'): Promise<string[]> {
+export async function getBasePromptParts(tenantId: string = getDefaultTenantId()): Promise<string[]> {
   const templates = await getPromptTemplates(tenantId);
   const style = await getCommunicationStyle(tenantId);
 
@@ -125,7 +126,7 @@ export async function getBasePromptParts(tenantId: string = 'hypoteeka'): Promis
 /**
  * Vrátí phase-specific instrukci.
  */
-export async function getPhaseInstruction(phase: ConversationPhase, tenantId: string = 'hypoteeka'): Promise<string> {
+export async function getPhaseInstruction(phase: ConversationPhase, tenantId: string = getDefaultTenantId()): Promise<string> {
   const templates = await getPromptTemplates(tenantId);
   const phaseTemplate = templates.find(t => t.phase === phase && t.category === 'phase_instruction');
   if (phaseTemplate) return phaseTemplate.content;
@@ -137,7 +138,7 @@ export async function getPhaseInstruction(phase: ConversationPhase, tenantId: st
 /**
  * Vrátí tool instrukce.
  */
-export async function getToolInstruction(tenantId: string = 'hypoteeka'): Promise<string> {
+export async function getToolInstruction(tenantId: string = getDefaultTenantId()): Promise<string> {
   const templates = await getPromptTemplates(tenantId);
   const toolTemplate = templates.find(t => t.category === 'tool_instruction');
   if (toolTemplate) return toolTemplate.content;

@@ -83,15 +83,23 @@ const TENANT_CONFIGS: Record<string, TenantConfig> = {
   },
 };
 
-const DEFAULT_TENANT = 'hypoteeka';
+const FALLBACK_TENANT = 'hypoteeka';
+
+/**
+ * Vrátí default tenant ID z env var NEXT_PUBLIC_TENANT_ID.
+ * Fallback na 'hypoteeka' pokud není nastavena.
+ */
+export function getDefaultTenantId(): string {
+  return process.env.NEXT_PUBLIC_TENANT_ID ?? FALLBACK_TENANT;
+}
 
 /**
  * Vrátí konfiguraci tenantu.
  * Později: bude číst z Supabase tabulky `tenants`.
  */
 export function getTenantConfig(tenantId?: string): TenantConfig {
-  const id = tenantId ?? DEFAULT_TENANT;
-  return TENANT_CONFIGS[id] ?? TENANT_CONFIGS[DEFAULT_TENANT];
+  const id = tenantId ?? getDefaultTenantId();
+  return TENANT_CONFIGS[id] ?? TENANT_CONFIGS[FALLBACK_TENANT];
 }
 
 /**

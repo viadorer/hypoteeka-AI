@@ -1,5 +1,6 @@
 import { storage } from '@/lib/storage';
 import { getVocative } from '@/lib/vocative';
+import { getDefaultTenantId } from '@/lib/tenant/config';
 
 export async function GET(req: Request) {
   try {
@@ -8,10 +9,10 @@ export async function GET(req: Request) {
     const sessions = await storage.listSessions(tenantId);
     const summaries = await Promise.all(sessions.map(async s => {
       const firstName = s.profile.name?.split(' ')[0];
-      const nameVocative = firstName ? await getVocative(firstName, s.tenantId ?? 'hypoteeka') : undefined;
+      const nameVocative = firstName ? await getVocative(firstName, s.tenantId ?? getDefaultTenantId()) : undefined;
       return {
       id: s.id,
-      tenantId: s.tenantId ?? 'hypoteeka',
+      tenantId: s.tenantId ?? getDefaultTenantId(),
       profile: {
         propertyPrice: s.profile.propertyPrice,
         propertyType: s.profile.propertyType,

@@ -7,7 +7,7 @@ import type { ConversationState } from '@/lib/agent/conversation-state';
 import { calculateLeadScore } from '@/lib/agent/lead-scoring';
 import { buildAgentPrompt } from '@/lib/agent/prompt-builder';
 import { storage } from '@/lib/storage';
-import { getTenantConfig, getTenantApiKey } from '@/lib/tenant/config';
+import { getTenantConfig, getTenantApiKey, getDefaultTenantId } from '@/lib/tenant/config';
 import { submitLeadToRealvisor, buildRealvisorPayload } from '@/lib/realvisor';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -66,7 +66,7 @@ export async function POST(req: Request) {
     const body = await req.json();
     const { messages } = body;
     const sessionId: string = body.sessionId ?? 'default';
-    const tenantId: string = body.tenantId ?? 'hypoteeka';
+    const tenantId: string = body.tenantId ?? getDefaultTenantId();
 
     const tenantConfig = getTenantConfig(tenantId);
     const apiKey = getTenantApiKey(tenantId);

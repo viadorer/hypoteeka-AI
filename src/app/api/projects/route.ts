@@ -1,5 +1,6 @@
 import { storage } from '@/lib/storage';
 import { v4 as uuidv4 } from 'uuid';
+import { getDefaultTenantId } from '@/lib/tenant/config';
 
 export async function GET(req: Request) {
   try {
@@ -49,7 +50,7 @@ export async function POST(req: Request) {
 
     await storage.saveProject({
       id: projectId,
-      tenantId: tenantId ?? 'hypoteeka',
+      tenantId: tenantId ?? getDefaultTenantId(),
       name: name.trim(),
       description: description?.trim() || undefined,
       profile,

@@ -5,6 +5,7 @@
  */
 
 import { getPromptTemplates } from './agent/prompt-service';
+import { getDefaultTenantId } from './tenant/config';
 
 let vocativeCache: Record<string, string> | null = null;
 
@@ -12,7 +13,7 @@ let vocativeCache: Record<string, string> | null = null;
  * Parsuje vokativní mapu z DB promptu personalization_vocative.
  * Formát v promptu: "Adam -> Adame, Alan -> Alane, ..."
  */
-export async function loadVocativeMap(tenantId = 'hypoteeka'): Promise<Record<string, string>> {
+export async function loadVocativeMap(tenantId = getDefaultTenantId()): Promise<Record<string, string>> {
   if (vocativeCache) return vocativeCache;
 
   const templates = await getPromptTemplates(tenantId);
@@ -35,7 +36,7 @@ export async function loadVocativeMap(tenantId = 'hypoteeka'): Promise<Record<st
 /**
  * Server-side: převede jméno na vokativ z DB mapy.
  */
-export async function getVocative(name: string, tenantId = 'hypoteeka'): Promise<string> {
+export async function getVocative(name: string, tenantId = getDefaultTenantId()): Promise<string> {
   const trimmed = name.trim();
   const map = await loadVocativeMap(tenantId);
   return map[trimmed] ?? trimmed;

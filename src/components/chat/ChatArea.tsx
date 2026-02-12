@@ -54,7 +54,7 @@ export function ChatArea({ initialSessionId = null }: ChatAreaProps) {
   const { messages, setMessages, sendMessage, status, error, clearError } = useChat({
     transport: new DefaultChatTransport({
       api: '/api/chat',
-      body: { sessionId },
+      body: { sessionId, tenantId: process.env.NEXT_PUBLIC_TENANT_ID ?? 'hypoteeka' },
     }),
   });
   const [inputValue, setInputValue] = useState('');

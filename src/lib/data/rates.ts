@@ -14,6 +14,7 @@
  */
 
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import { getDefaultTenantId } from '../tenant/config';
 
 // ---- ARAD config ----
 const ARAD_BASE = 'https://www.cnb.cz/aradb/api/v1';
@@ -287,7 +288,7 @@ export async function refreshRates(): Promise<{ success: boolean; rates?: LiveRa
 // ============================================================
 // Bank spreads from DB
 // ============================================================
-export async function getBankSpreads(tenantId = 'hypoteeka'): Promise<BankSpread[]> {
+export async function getBankSpreads(tenantId = getDefaultTenantId()): Promise<BankSpread[]> {
   if (cachedSpreads && Date.now() - spreadsCacheTs < SPREADS_CACHE_TTL) {
     return cachedSpreads;
   }
@@ -349,7 +350,7 @@ export async function getDynamicDefaultRate(): Promise<{ rate: number; rpsn: num
 // ============================================================
 // getBankRates - compute final rates from repo + spreads
 // ============================================================
-export async function getBankRates(tenantId = 'hypoteeka') {
+export async function getBankRates(tenantId = getDefaultTenantId()) {
   const [rates, spreads] = await Promise.all([
     getMarketRates(),
     getBankSpreads(tenantId),
@@ -379,7 +380,7 @@ export async function getBankRates(tenantId = 'hypoteeka') {
 // ============================================================
 // getRatesContext - text for system prompt (business-oriented)
 // ============================================================
-export async function getRatesContext(tenantId = 'hypoteeka'): Promise<string> {
+export async function getRatesContext(tenantId = getDefaultTenantId()): Promise<string> {
   const [rates, bankRates] = await Promise.all([
     getMarketRates(),
     getBankRates(tenantId),

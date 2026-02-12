@@ -7,6 +7,7 @@
  */
 
 import { createClient } from '@supabase/supabase-js';
+import { getDefaultTenantId } from '../tenant/config';
 
 export interface CnbLimits {
   ltvLimit: number;
@@ -36,7 +37,7 @@ const CACHE_TTL = 60 * 60 * 1000; // 1 hour
  * Get current ČNB limits for a tenant.
  * Tries DB first, falls back to hardcoded defaults.
  */
-export async function getCnbLimits(tenantId = 'hypoteeka'): Promise<CnbLimits> {
+export async function getCnbLimits(tenantId = getDefaultTenantId()): Promise<CnbLimits> {
   if (cachedLimits && Date.now() - cacheTimestamp < CACHE_TTL) {
     return cachedLimits;
   }

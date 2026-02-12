@@ -17,12 +17,13 @@ import { shouldOfferLeadCapture } from './lead-scoring';
 import { getRatesContext } from '../data/rates';
 import { getCnbLimits } from '../data/cnb-limits';
 import { getBasePromptParts, getPhaseInstruction, getToolInstruction, getRelevantKnowledge } from './prompt-service';
+import { getDefaultTenantId } from '../tenant/config';
 
 export async function buildAgentPrompt(
   profile: ClientProfile,
   state: ConversationState,
   leadScore: LeadScore,
-  tenantId: string = 'hypoteeka',
+  tenantId: string = getDefaultTenantId(),
   lastUserMessage?: string
 ): Promise<string> {
   // Base prompt z DB (nebo lokální fallback)
