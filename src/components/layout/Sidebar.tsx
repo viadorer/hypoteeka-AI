@@ -87,6 +87,13 @@ type AuthView = 'none' | 'login' | 'signup' | 'change-password';
 export function Sidebar({ activeSessionId, currentView, onSelectSession, onContinueChat, onNewChat, onShowNews }: SidebarProps) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [sessions, setSessions] = useState<SessionSummary[]>([]);
+  const [hiddenSessions, setHiddenSessions] = useState<Set<string>>(() => {
+    if (typeof window === 'undefined') return new Set();
+    try {
+      const stored = localStorage.getItem('hiddenSessions');
+      return stored ? new Set(JSON.parse(stored)) : new Set();
+    } catch { return new Set(); }
+  });
   const [projects, setProjects] = useState<ProjectSummary[]>([]);
   const [showNewProject, setShowNewProject] = useState(false);
   const [newProjectName, setNewProjectName] = useState('');
@@ -156,8 +163,15 @@ export function Sidebar({ activeSessionId, currentView, onSelectSession, onConti
     setMobileOpen(false);
   };
 
-  // Filter: only sessions with at least 1 turn
-  const chatSessions = sessions.filter(s => s.state.turnCount > 0);
+  const hideSession = (id: string) => {
+    const next = new Set(hiddenSessions);
+    next.add(id);
+    setHiddenSessions(next);
+    try { localStorage.setItem('hiddenSessions', JSON.stringify([...next])); } catch { /* ignore */ }
+  };
+
+  // Filter: only sessions with at least 1 turn and not hidden
+  const chatSessions = sessions.filter(s => s.state.turnCount > 0 && !hiddenSessions.has(s.id));
 
   return (
     <>
@@ -179,7 +193,7 @@ export function Sidebar({ activeSessionId, currentView, onSelectSession, onConti
 
       {/* Sidebar */}
       <aside className={`
-        fixed left-0 top-0 h-screen w-[260px] bg-white/70 backdrop-blur-2xl border-r border-white/40 flex flex-col z-50
+        fixed left-0 top-0 h-screen w-[320px] bg-white/70 backdrop-blur-2xl border-r border-white/40 flex flex-col z-50
         transition-transform duration-300 ease-out
         md:translate-x-0
         ${mobileOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
@@ -359,15 +373,22 @@ export function Sidebar({ activeSessionId, currentView, onSelectSession, onConti
                       <span className="text-[11px] text-gray-300">{s.state.turnCount} zpráv</span>
                     </div>
                   </button>
-                  {/* Quick action: view analysis */}
-                  <div className="hidden group-hover:flex px-3 pb-2 -mt-1">
+                  {/* Quick actions: analyse + delete */}
+                  <div className="hidden group-hover:flex items-center gap-2 px-3 pb-2 -mt-1">
                     <button
                       onClick={() => handleAnalyse(s.id)}
                       className="flex items-center gap-1 text-[11px] text-gray-400 hover:text-[#E91E63] transition-colors"
                     >
                       <BarChart3 className="w-3 h-3" />
-                      Zobrazit analýzu
+                      Analýza
                       <ChevronRight className="w-3 h-3" />
+                    </button>
+                    <button
+                      onClick={(e) => { e.stopPropagation(); hideSession(s.id); }}
+                      className="flex items-center gap-1 text-[11px] text-gray-400 hover:text-red-500 transition-colors ml-auto"
+                    >
+                      <Trash2 className="w-3 h-3" />
+                      Smazat
                     </button>
                   </div>
                 </div>

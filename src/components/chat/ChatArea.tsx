@@ -202,7 +202,7 @@ export function ChatArea({ initialSessionId = null }: ChatAreaProps) {
   // =============================================
   if (!hasStarted) {
     return (
-      <div className="flex-1 md:ml-[260px] flex flex-col min-h-screen pt-16 md:pt-0 overflow-x-hidden overflow-y-auto min-w-0 w-full">
+      <div className="flex-1 md:ml-[320px] flex flex-col min-h-screen pt-16 md:pt-0 overflow-x-hidden overflow-y-auto min-w-0 w-full">
         <div className="flex-1 flex flex-col items-center px-4 md:px-4 py-8 md:py-12 w-full min-w-0">
 
           {/* Test mode banner */}
@@ -362,7 +362,7 @@ export function ChatArea({ initialSessionId = null }: ChatAreaProps) {
   // CHAT VIEW (after conversation starts)
   // =============================================
   return (
-    <div className="flex-1 md:ml-[260px] flex flex-col min-h-screen pt-16 md:pt-0 overflow-x-hidden min-w-0">
+    <div className="flex-1 md:ml-[320px] flex flex-col min-h-screen pt-16 md:pt-0 overflow-x-hidden min-w-0">
       <div className="flex-1 overflow-y-auto overflow-x-hidden min-w-0">
         <div className="max-w-[640px] mx-auto px-4 md:px-6 pt-4 md:pt-8 pb-44 md:pb-40 w-full min-w-0">
           {/* Messages */}
@@ -461,7 +461,7 @@ export function ChatArea({ initialSessionId = null }: ChatAreaProps) {
       </div>
 
       {/* Bottom input bar - glass */}
-      <div className="fixed bottom-0 left-0 right-0 md:left-[260px] z-50">
+      <div className="fixed bottom-0 left-0 right-0 md:left-[320px] z-50">
         <div className="bg-gradient-to-t from-[#F5F7FA] via-[#F5F7FA]/95 to-transparent backdrop-blur-md">
           <div className="max-w-[640px] mx-auto px-4 md:px-6 pt-4 pb-4" style={{ paddingBottom: 'max(1rem, env(safe-area-inset-bottom))' }}>
             {inputBar}

@@ -44,7 +44,7 @@ export function NewsView() {
   // Article detail view
   if (selected) {
     return (
-      <div className="flex-1 md:ml-[260px] min-h-screen bg-[#F5F7FA]">
+      <div className="flex-1 md:ml-[320px] min-h-screen bg-[#F5F7FA]">
         <div className="max-w-[720px] mx-auto px-4 md:px-6 py-8 md:py-12">
           <button
             onClick={() => setSelected(null)}
@@ -99,7 +99,7 @@ export function NewsView() {
 
   // Grid view
   return (
-    <div className="flex-1 md:ml-[260px] min-h-screen bg-[#F5F7FA]">
+    <div className="flex-1 md:ml-[320px] min-h-screen bg-[#F5F7FA]">
       <div className="max-w-[960px] mx-auto px-4 md:px-6 py-8 md:py-12">
         <div className="mb-8">
           <h1 className="text-2xl md:text-3xl font-bold text-[#0A1E5C] mb-2">

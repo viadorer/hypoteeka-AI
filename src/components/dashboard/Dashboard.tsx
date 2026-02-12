@@ -109,7 +109,7 @@ export function Dashboard({ sessionId, onContinueChat, onNewChat }: DashboardPro
 
   if (loading) {
     return (
-      <div className="flex-1 md:ml-[260px] flex items-center justify-center min-h-screen pt-16 md:pt-0 overflow-x-hidden">
+      <div className="flex-1 md:ml-[320px] flex items-center justify-center min-h-screen pt-16 md:pt-0 overflow-x-hidden">
         <p className="text-gray-400 text-sm">Načítám...</p>
       </div>
     );
@@ -117,7 +117,7 @@ export function Dashboard({ sessionId, onContinueChat, onNewChat }: DashboardPro
 
   if (!session) {
     return (
-      <div className="flex-1 md:ml-[260px] flex flex-col items-center justify-center min-h-screen pt-16 md:pt-0 px-4 overflow-x-hidden">
+      <div className="flex-1 md:ml-[320px] flex flex-col items-center justify-center min-h-screen pt-16 md:pt-0 px-4 overflow-x-hidden">
         <p className="text-gray-500 text-base mb-4">Analýza nebyla nalezena.</p>
         <button onClick={onNewChat} className="px-4 py-2 bg-[#E91E63] text-white rounded-xl text-sm font-medium hover:bg-[#C2185B] transition-colors">
           Nová kalkulace
@@ -134,7 +134,7 @@ export function Dashboard({ sessionId, onContinueChat, onNewChat }: DashboardPro
   const ltv = (loanAmount && p.propertyPrice) ? (loanAmount / p.propertyPrice * 100) : null;
 
   return (
-    <div className="flex-1 md:ml-[260px] min-h-screen pt-16 md:pt-0 overflow-y-auto overflow-x-hidden min-w-0 w-full">
+    <div className="flex-1 md:ml-[320px] min-h-screen pt-16 md:pt-0 overflow-y-auto overflow-x-hidden min-w-0 w-full">
       <div className="max-w-[800px] mx-auto px-4 py-6 md:py-12 w-full min-w-0">
 
         {/* Header */}
