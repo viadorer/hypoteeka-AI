@@ -58,8 +58,7 @@ export function ChatArea({ initialSessionId = null }: ChatAreaProps) {
   const transport = useMemo(() => new DefaultChatTransport({
     api: '/api/chat',
     body: { sessionId, tenantId: process.env.NEXT_PUBLIC_TENANT_ID ?? 'hypoteeka' },
-    prepareSendMessagesRequest: ({ body, ...rest }) => ({
-      ...rest,
+    prepareSendMessagesRequest: ({ body }) => ({
       body: { ...body, ctaIntensity: ctaIntensityRef.current },
     }),
   }), [sessionId]);
