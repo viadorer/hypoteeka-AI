@@ -85,6 +85,9 @@ export function WidgetRenderer({ toolInvocation, sessionId }: { toolInvocation: 
           rate={(out?.rate as number | undefined) ?? (args.rate as number | undefined)}
           rpsn={(out?.rpsn as number | undefined) ?? (args.rpsn as number | undefined)}
           years={(out?.years as number | undefined) ?? (args.years as number | undefined)}
+          scenarios={out?.scenarios as { high: { rate: number; monthly: number; totalInterest: number; label: string }; avg: { rate: number; monthly: number; totalInterest: number; label: string }; our: { rate: number; monthly: number; totalInterest: number; label: string } } | undefined}
+          saving={out?.saving as number | undefined}
+          monthlySaving={out?.monthlySaving as number | undefined}
         />
       );
     }
