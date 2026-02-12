@@ -116,7 +116,7 @@ export function getNextQuestion(
   const has = (f: string) => collectedFields.includes(f);
   const asked = (q: string) => questionsAsked.includes(q);
 
-  // Discovery fáze - sbíráme základní data
+  // Discovery fáze - sbíráme základní data (prioritní pořadí)
   if (!has('propertyPrice') && !asked('propertyPrice')) {
     return 'propertyPrice';
   }
@@ -129,9 +129,16 @@ export function getNextQuestion(
     return 'monthlyIncome';
   }
 
-  // Doplňkové otázky
-  if (phase === 'qualification' && has('monthlyIncome')) {
+  // Doplňkové údaje - ptej se postupně po jednom
+  if (has('propertyPrice')) {
+    if (!has('purpose') && !asked('purpose')) return 'purpose';
+    if (!has('propertyType') && !asked('propertyType')) return 'propertyType';
+    if (!has('location') && !asked('location')) return 'location';
+  }
+
+  if (has('monthlyIncome')) {
     if (!has('age') && !asked('age')) return 'age';
+    if (!has('name') && !asked('name')) return 'name';
   }
 
   return null;

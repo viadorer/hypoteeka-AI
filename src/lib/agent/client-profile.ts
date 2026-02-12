@@ -63,7 +63,7 @@ export function getMissingFields(profile: ClientProfile, phase: string): string[
 
   // Pro výpočet splátky
   if (phase === 'analysis' || phase === 'qualification') {
-    if (!profile.equity) missing.push('equity');
+    if (profile.equity === undefined || profile.equity === null) missing.push('equity');
     if (!profile.monthlyIncome && !profile.totalMonthlyIncome) missing.push('monthlyIncome');
   }
 
@@ -85,7 +85,7 @@ export function profileSummary(profile: ClientProfile): string {
   if (profile.propertyType) parts.push(`Typ: ${profile.propertyType}`);
   if (profile.location) parts.push(`Lokalita: ${profile.location}`);
   if (profile.purpose) parts.push(`Účel: ${profile.purpose}`);
-  if (profile.equity) parts.push(`Vlastní zdroje: ${fmt(profile.equity)} Kč`);
+  if (profile.equity !== undefined && profile.equity !== null) parts.push(`Vlastní zdroje: ${fmt(profile.equity)} Kč`);
   if (profile.monthlyIncome) parts.push(`Měsíční příjem: ${fmt(profile.monthlyIncome)} Kč`);
   if (profile.partnerIncome) parts.push(`Příjem partnera: ${fmt(profile.partnerIncome)} Kč`);
   if (profile.totalMonthlyIncome) parts.push(`Celkový příjem: ${fmt(profile.totalMonthlyIncome)} Kč`);

@@ -52,6 +52,37 @@ export async function buildAgentPrompt(
   // Profil klienta - KLÍČOVÁ SEKCE pro kontinuitu
   const summary = profileSummary(profile);
   parts.push(`\n---\nDATA KLIENTA (toto už víš, NEPTEJ SE na to znovu):\n${summary}`);
+
+  // Checklist chybějících dat - Hugo musí aktivně sbírat
+  const allFields: Array<{ key: keyof ClientProfile; label: string; priority: 'high' | 'medium' | 'low' }> = [
+    { key: 'propertyPrice', label: 'Cena nemovitosti', priority: 'high' },
+    { key: 'equity', label: 'Vlastní zdroje', priority: 'high' },
+    { key: 'monthlyIncome', label: 'Měsíční příjem', priority: 'high' },
+    { key: 'purpose', label: 'Účel (vlastní bydlení / investice / refinancování)', priority: 'high' },
+    { key: 'propertyType', label: 'Typ nemovitosti (byt / dům / pozemek)', priority: 'medium' },
+    { key: 'location', label: 'Lokalita / město', priority: 'medium' },
+    { key: 'age', label: 'Věk (důležité pro LTV limit)', priority: 'medium' },
+    { key: 'name', label: 'Jméno', priority: 'low' },
+  ];
+  const missing = allFields.filter(f => {
+    const val = profile[f.key];
+    return val === undefined || val === null;
+  });
+  if (missing.length > 0) {
+    const highMissing = missing.filter(f => f.priority === 'high').map(f => f.label);
+    const medMissing = missing.filter(f => f.priority === 'medium').map(f => f.label);
+    const lowMissing = missing.filter(f => f.priority === 'low').map(f => f.label);
+    parts.push('\nCHYBĚJÍCÍ DATA (aktivně se ptej, po jednom údaji):');
+    if (highMissing.length > 0) parts.push(`  PRIORITNÍ: ${highMissing.join(', ')}`);
+    if (medMissing.length > 0) parts.push(`  DOPLŇKOVÉ: ${medMissing.join(', ')}`);
+    if (lowMissing.length > 0) parts.push(`  VOLITELNÉ: ${lowMissing.join(', ')}`);
+    parts.push('- Ptej se PŘIROZENĚ v kontextu konverzace, ne jako formulář.');
+    parts.push('- Po každém výpočtu se zeptej na JEDEN chybějící údaj.');
+    parts.push('- Účel často vyplyne z kontextu ("investiční" = investice) - odvoď a ulož přes update_profile.');
+  } else {
+    parts.push('\nVŠECHNA KLÍČOVÁ DATA SESBÍRÁNA. Soustřeď se na analýzu a konverzi.');
+  }
+
   parts.push(`\nKRITICKÉ PRAVIDLO KONTINUITY:\n- Výše uvedená data klienta jsou FAKTA z konverzace. NIKDY se na ně neptej znovu.\n- Pokud máš dostatek dat pro výpočet, OKAMŽITĚ ho proveď a ukaž widget. Neptej se, jestli to má klient zájem vidět.\n- Pokud klient zadá více údajů najednou (např. "byt za 5 mil, mám 1 mil a beru 60 tisíc"), zpracuj VŠECHNY najednou - zavolej update_profile + všechny relevantní widgety v jednom kroku.\n- Neříkej "teď vám spočítám" - prostě to spočítej a ukaž.\n- Neptej se "chcete vidět splátku?" - prostě ji ukaž.\n- Jednej, nemluv o tom co budeš dělat.`);
 
   // Lead score
