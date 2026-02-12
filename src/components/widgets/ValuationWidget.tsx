@@ -29,12 +29,12 @@ export function ValuationWidget({ context }: Props) {
 
   useEffect(() => {
     if (!containerRef.current) return;
+    let cancelled = false;
+    let pollTimer: ReturnType<typeof setTimeout>;
 
     const initWidget = () => {
-      if (!window.RealvisorWidget || !containerRef.current) {
-        setError(true);
-        return;
-      }
+      if (cancelled || !containerRef.current) return;
+      if (!window.RealvisorWidget) return;
       try {
         window.RealvisorWidget.createContactForm(containerRef.current, {
           apiUrl: API_URL,
@@ -50,25 +50,42 @@ export function ValuationWidget({ context }: Props) {
       }
     };
 
-    // Check if script already loaded
+    const pollForWidget = (attempts = 0) => {
+      if (cancelled) return;
+      if (window.RealvisorWidget) {
+        initWidget();
+        return;
+      }
+      if (attempts > 50) {
+        setError(true);
+        return;
+      }
+      pollTimer = setTimeout(() => pollForWidget(attempts + 1), 200);
+    };
+
+    // Check if already available
     if (window.RealvisorWidget) {
       initWidget();
       return;
     }
 
-    // Load script
+    // Load script if not present
     const existing = document.querySelector(`script[src="${WIDGET_SCRIPT_URL}"]`);
-    if (existing) {
-      existing.addEventListener('load', initWidget);
-      return;
+    if (!existing) {
+      const script = document.createElement('script');
+      script.src = WIDGET_SCRIPT_URL;
+      script.async = true;
+      script.onload = () => pollForWidget(0);
+      script.onerror = () => setError(true);
+      document.head.appendChild(script);
+    } else {
+      pollForWidget(0);
     }
 
-    const script = document.createElement('script');
-    script.src = WIDGET_SCRIPT_URL;
-    script.async = true;
-    script.onload = initWidget;
-    script.onerror = () => setError(true);
-    document.head.appendChild(script);
+    return () => {
+      cancelled = true;
+      clearTimeout(pollTimer);
+    };
   }, []);
 
   return (
