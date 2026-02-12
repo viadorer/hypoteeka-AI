@@ -121,9 +121,15 @@ export async function POST(req: Request) {
     const profile: ClientProfile = existing?.profile ?? { firstMessageAt: new Date().toISOString(), messageCount: 0 };
     const state: ConversationState = existing?.state ?? createInitialState();
 
-    // Reconstruct profile from message history
+    // Reconstruct profile from message history (only adds fields found in message parts)
     const reconstructed = reconstructProfileFromMessages(messages);
-    Object.assign(profile, reconstructed);
+    // Only merge defined fields from reconstructed (don't overwrite existing with undefined)
+    for (const [key, value] of Object.entries(reconstructed)) {
+      if (value !== undefined) {
+        (profile as Record<string, unknown>)[key] = value;
+      }
+    }
+    console.log(`[Profile] After merge: equity=${profile.equity}, price=${profile.propertyPrice}, purpose=${profile.purpose}, income=${profile.monthlyIncome}, email=${profile.email}`);
     profile.lastMessageAt = new Date().toISOString();
     profile.messageCount = messages.filter((m: { role: string }) => m.role === 'user').length;
 

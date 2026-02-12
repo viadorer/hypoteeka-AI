@@ -130,8 +130,9 @@ export function Dashboard({ sessionId, onContinueChat, onNewChat }: DashboardPro
   const s = session.state;
 
   // Calculate LTV if we have data
-  const loanAmount = (p.propertyPrice && p.equity) ? p.propertyPrice - p.equity : null;
-  const ltv = (loanAmount && p.propertyPrice) ? (loanAmount / p.propertyPrice * 100) : null;
+  const hasEquity = p.equity !== undefined && p.equity !== null;
+  const loanAmount = (p.propertyPrice && hasEquity) ? p.propertyPrice - p.equity! : null;
+  const ltv = (loanAmount !== null && p.propertyPrice) ? (loanAmount / p.propertyPrice * 100) : null;
 
   return (
     <div className="flex-1 md:ml-[320px] min-h-screen pt-16 md:pt-0 overflow-y-auto overflow-x-hidden min-w-0 w-full">
@@ -207,7 +208,7 @@ export function Dashboard({ sessionId, onContinueChat, onNewChat }: DashboardPro
               <Row label="Typ" value={p.propertyType} />
               <Row label="Lokalita" value={p.location} />
               <Row label="Účel" value={purposeLabel(p.purpose)} />
-              <Row label="Vlastní zdroje" value={p.equity ? `${fmt(p.equity)} Kč` : null} />
+              <Row label="Vlastní zdroje" value={hasEquity ? `${fmt(p.equity!)} Kč` : null} />
               {loanAmount && <Row label="Výše úvěru" value={`${fmt(loanAmount)} Kč`} highlight />}
               {ltv !== null && (
                 <Row
