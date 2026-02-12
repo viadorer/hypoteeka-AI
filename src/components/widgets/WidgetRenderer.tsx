@@ -11,6 +11,7 @@ import { AmortizationWidget } from './AmortizationWidget';
 import { StressTestWidget } from './StressTestWidget';
 import { LeadCaptureWidget } from './LeadCaptureWidget';
 import { SpecialistWidget } from './SpecialistWidget';
+import { ValuationWidget } from './ValuationWidget';
 import { NextStepsBar } from './NextStepsBar';
 
 interface ToolInvocation {
@@ -30,6 +31,7 @@ const TOOL_LABELS: Record<string, string> = {
   show_refinance: 'Refinancování',
   show_amortization: 'Průběh splácení',
   show_stress_test: 'Stress test',
+  show_valuation: 'Ocenění nemovitosti',
   show_lead_capture: 'Kontaktní formulář',
   show_specialists: 'Dostupní specialisté',
   send_email_summary: 'Odesílám email',
@@ -174,6 +176,15 @@ export function WidgetRenderer({ toolInvocation, sessionId, onSend }: { toolInvo
             loanAmount={args.loanAmount as number}
             rate={args.rate as number | undefined}
             years={args.years as number | undefined}
+          />
+          {onSend && <NextStepsBar toolName={toolName} onSend={onSend} />}
+        </>
+      );
+    case 'show_valuation':
+      return (
+        <>
+          <ValuationWidget
+            context={args.context as string | undefined}
           />
           {onSend && <NextStepsBar toolName={toolName} onSend={onSend} />}
         </>

@@ -225,6 +225,16 @@ export const toolDefinitions = {
     },
   },
 
+  show_valuation: {
+    description: 'Zobraz formular pro oceneni nemovitosti. Pouzij kdyz klient chce zjistit hodnotu nemovitosti, odhad ceny, trzni cenu, nebo se pta kolik jeho nemovitost stoji.',
+    inputSchema: z.object({
+      context: z.string().optional().describe('Kratky kontext proc klient chce oceneni (napr. "pro ucel hypoteky", "pred prodejem")'),
+    }),
+    execute: async ({ context }: { context?: string }) => {
+      return { context, formDisplayed: true, summary: 'Formular pro oceneni nemovitosti zobrazen.' };
+    },
+  },
+
   show_lead_capture: {
     description: 'Zobraz kontaktni formular. Pouzij kdyz: (1) klient splnuje podminky a chce pokracovat, (2) klient explicitne zada o pomoc specialisty, (3) konverzace dosahla bodu kde by zivý poradce pridal hodnotu. NEZOBRAZUJ prilis brzy.',
     inputSchema: z.object({

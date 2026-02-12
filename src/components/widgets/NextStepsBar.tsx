@@ -50,6 +50,12 @@ const NEXT_STEPS: Record<string, NextStep[]> = {
   show_property: [
     { label: 'Spočítat splátku', message: 'Spočítej mi splátku pro tuto nemovitost.' },
     { label: 'Kolik potřebuji naspořit', message: 'Kolik vlastních zdrojů budu potřebovat?' },
+    { label: 'Ocenění nemovitosti', message: 'Chci zjistit hodnotu nemovitosti.' },
+  ],
+  show_valuation: [
+    { label: 'Spočítat splátku', message: 'Spočítej mi měsíční splátku hypotéky.' },
+    { label: 'Zkontrolovat bonitu', message: 'Chci zkontrolovat, jestli splním podmínky banky.' },
+    { label: 'Konzultace se specialistou', message: 'Chci se spojit se specialistou na bezplatnou konzultaci.' },
   ],
 };
 
