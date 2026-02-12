@@ -3,7 +3,7 @@
 import { useChat } from '@ai-sdk/react';
 import { useRef, useEffect, useState, useMemo } from 'react';
 import { v4 as uuidv4 } from 'uuid';
-import { Send, AlertCircle, RotateCcw, Calculator, ShieldCheck, TrendingUp, Users, BarChart3, RefreshCw, Home, PiggyBank, Percent, HelpCircle, ArrowDownUp } from 'lucide-react';
+import { Send, AlertCircle, RotateCcw, Calculator, ShieldCheck, TrendingUp, Users, BarChart3, RefreshCw, Home, PiggyBank, Percent, HelpCircle, ArrowDownUp, Search } from 'lucide-react';
 import { WidgetRenderer } from '../widgets/WidgetRenderer';
 import ReactMarkdown from 'react-markdown';
 import { DefaultChatTransport } from 'ai';
@@ -18,6 +18,7 @@ const QUICK_ACTIONS = [
   { label: 'Refinancování hypotéky', icon: RefreshCw, prompt: 'Chci refinancovat hypotéku, jaké jsou aktuální podmínky?' },
   { label: 'Koupě první nemovitosti', icon: Home, prompt: 'Kupuji první nemovitost, jak postupovat s hypotékou?' },
   { label: 'Investiční nemovitost', icon: PiggyBank, prompt: 'Chci koupit investiční nemovitost, vyplatí se to?' },
+  { label: 'Ocenění nemovitosti', icon: Search, prompt: 'Chci zjistit hodnotu své nemovitosti.' },
 ];
 
 
