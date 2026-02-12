@@ -22,14 +22,48 @@ function reconstructProfileFromMessages(messages: Array<{ role: string; parts?: 
   for (const msg of messages) {
     if (!msg.parts) continue;
     for (const part of msg.parts) {
-      // AI SDK v6: tool parts are 'tool-update_profile' or 'dynamic-tool' with toolName
-      const isUpdateProfile =
-        part.type === 'tool-update_profile' ||
-        (part.type === 'dynamic-tool' && part.toolName === 'update_profile');
-      if (isUpdateProfile && part.state === 'output-available' && part.input) {
+      // Determine tool name from part
+      let toolName: string | null = null;
+      if (part.type === 'dynamic-tool') {
+        toolName = part.toolName;
+      } else if (typeof part.type === 'string' && part.type.startsWith('tool-')) {
+        toolName = part.type.replace(/^tool-/, '');
+      }
+      if (!toolName || part.state !== 'output-available' || !part.input) continue;
+      const input = part.input as Record<string, unknown>;
+
+      // update_profile: direct merge
+      if (toolName === 'update_profile') {
         Object.assign(profile, Object.fromEntries(
-          Object.entries(part.input as Record<string, unknown>).filter(([, v]) => v !== undefined)
+          Object.entries(input).filter(([, v]) => v !== undefined)
         ));
+      }
+
+      // Auto-extract from show_ widgets (safety net)
+      if (toolName === 'show_property' || toolName === 'show_payment' || toolName === 'show_eligibility') {
+        if (input.propertyPrice !== undefined) profile.propertyPrice = input.propertyPrice as number;
+        if (input.propertyType !== undefined) profile.propertyType = input.propertyType as ClientProfile['propertyType'];
+        if (input.location !== undefined) profile.location = input.location as string;
+        if (input.equity !== undefined) profile.equity = input.equity as number;
+        if (input.monthlyIncome !== undefined) profile.monthlyIncome = input.monthlyIncome as number;
+        if (input.isYoung !== undefined) profile.isYoung = input.isYoung as boolean;
+      }
+      if (toolName === 'show_investment') {
+        if (input.propertyPrice !== undefined) profile.propertyPrice = input.propertyPrice as number;
+        if (input.expectedRentalIncome !== undefined) profile.expectedRentalIncome = input.expectedRentalIncome as number;
+        if (!profile.purpose) profile.purpose = 'investice';
+      }
+      if (toolName === 'show_rent_vs_buy') {
+        if (input.propertyPrice !== undefined) profile.propertyPrice = input.propertyPrice as number;
+        if (input.currentRent !== undefined) profile.currentRent = input.currentRent as number;
+      }
+      if (toolName === 'show_refinance') {
+        if (input.currentBalance !== undefined) profile.existingMortgageBalance = input.currentBalance as number;
+        if (input.currentRate !== undefined) profile.existingMortgageRate = input.currentRate as number;
+        if (!profile.purpose) profile.purpose = 'refinancovani';
+      }
+      if (toolName === 'send_email_summary' && input.email !== undefined) {
+        profile.email = input.email as string;
       }
     }
   }
@@ -175,6 +209,52 @@ export async function POST(req: Request) {
                 interestRate: input.rate as number | undefined,
                 fixationYears: input.years as number | undefined,
               }).catch(err => console.error('[Storage] Property save error:', err));
+
+              // SAFETY NET: auto-extract data from widget inputs into profile
+              // Even if agent doesn't call update_profile, we capture the data
+              const widgetProfileData: Record<string, unknown> = {};
+              if (input.propertyPrice !== undefined) widgetProfileData.propertyPrice = input.propertyPrice;
+              if (input.propertyType !== undefined) widgetProfileData.propertyType = input.propertyType;
+              if (input.location !== undefined) widgetProfileData.location = input.location;
+              if (input.equity !== undefined) widgetProfileData.equity = input.equity;
+              if (input.monthlyIncome !== undefined) widgetProfileData.monthlyIncome = input.monthlyIncome;
+              if (input.isYoung !== undefined) widgetProfileData.isYoung = input.isYoung;
+              if (Object.keys(widgetProfileData).length > 0) {
+                Object.assign(profile, widgetProfileData);
+                console.log(`[Profile] Auto-captured from ${toolName}: ${Object.keys(widgetProfileData).join(', ')}`);
+              }
+            }
+
+            // Auto-capture from other show_ widgets
+            if (toolName === 'show_rent_vs_buy' && input.currentRent !== undefined) {
+              profile.currentRent = input.currentRent as number;
+              if (input.propertyPrice !== undefined) profile.propertyPrice = input.propertyPrice as number;
+              console.log(`[Profile] Auto-captured from show_rent_vs_buy: currentRent`);
+            }
+            if (toolName === 'show_investment') {
+              if (input.propertyPrice !== undefined) profile.propertyPrice = input.propertyPrice as number;
+              if (input.expectedRentalIncome !== undefined) profile.expectedRentalIncome = input.expectedRentalIncome as number;
+              if (!profile.purpose) profile.purpose = 'investice';
+              console.log(`[Profile] Auto-captured from show_investment: purpose=investice`);
+            }
+            if (toolName === 'show_refinance') {
+              if (input.currentBalance !== undefined) profile.existingMortgageBalance = input.currentBalance as number;
+              if (input.currentRate !== undefined) profile.existingMortgageRate = input.currentRate as number;
+              if (!profile.purpose) profile.purpose = 'refinancovani';
+              console.log(`[Profile] Auto-captured from show_refinance: purpose=refinancovani`);
+            }
+            if (toolName === 'send_email_summary' && input.email !== undefined) {
+              if (!profile.email) {
+                profile.email = input.email as string;
+                console.log(`[Profile] Auto-captured email from send_email_summary`);
+              }
+            }
+
+            // After any show_ widget, refresh dataCollected + phase from auto-captured data
+            if (toolName.startsWith('show_') || toolName === 'send_email_summary') {
+              const fields = getCollectedFields(profile);
+              state.dataCollected = fields;
+              state.phase = determinePhase(state, fields);
             }
 
             // Update profile from update_profile tool
