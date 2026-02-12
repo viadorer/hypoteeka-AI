@@ -521,6 +521,7 @@ export function Sidebar({ activeSessionId, currentView, onSelectSession, onConti
             </form>
           )}
           <p className="text-[10px] text-gray-300 text-center">Hypoteeka AI v0.4</p>
+          <p className="text-[10px] text-gray-300 text-center">Created by David Choc</p>
         </div>
       </aside>
     </>
