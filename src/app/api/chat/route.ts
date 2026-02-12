@@ -19,8 +19,9 @@ type AnyPart = Record<string, any>;
 
 function reconstructProfileFromMessages(messages: Array<{ role: string; parts?: AnyPart[] }>): ClientProfile {
   const profile: ClientProfile = {};
+  if (!Array.isArray(messages)) return profile;
   for (const msg of messages) {
-    if (!msg.parts) continue;
+    if (!msg.parts || !Array.isArray(msg.parts)) continue;
     for (const part of msg.parts) {
       // Determine tool name from part
       let toolName: string | null = null;
@@ -78,8 +79,9 @@ function getCollectedFields(profile: ClientProfile): string[] {
 
 function getShownWidgets(messages: Array<{ role: string; parts?: AnyPart[] }>): string[] {
   const widgets: string[] = [];
+  if (!Array.isArray(messages)) return widgets;
   for (const msg of messages) {
-    if (!msg.parts) continue;
+    if (!msg.parts || !Array.isArray(msg.parts)) continue;
     for (const part of msg.parts) {
       // AI SDK v6: tool parts are 'tool-show_payment' etc or 'dynamic-tool'
       let toolName: string | null = null;
@@ -138,7 +140,8 @@ export async function POST(req: Request) {
     state.leadQualified = leadScore.qualified;
 
     // Extract last user message for knowledge base matching
-    const lastUserMessage = [...messages].reverse().find((m: { role: string }) => m.role === 'user')?.content as string | undefined;
+    const msgArray = Array.isArray(messages) ? messages : [];
+    const lastUserMessage = [...msgArray].reverse().find((m: { role: string }) => m.role === 'user')?.content as string | undefined;
 
     // Build dynamic prompt (async - fetches live rates from ČNB API + knowledge base)
     const systemPrompt = await buildAgentPrompt(profile, state, leadScore, tenantId, lastUserMessage, ctaIntensity);
@@ -161,9 +164,18 @@ export async function POST(req: Request) {
       updatedAt: new Date().toISOString(),
     });
 
-    const modelMessages = await convertToModelMessages(messages, {
-      tools: toolDefinitions,
-    });
+    console.log(`[Debug] messages count: ${Array.isArray(messages) ? messages.length : 'NOT_ARRAY'}, types: ${Array.isArray(messages) ? messages.map((m: {role: string}) => m.role).join(',') : 'N/A'}`);
+    let modelMessages;
+    try {
+      modelMessages = await convertToModelMessages(messages, {
+        tools: toolDefinitions,
+      });
+    } catch (convErr) {
+      console.error('[Debug] convertToModelMessages failed:', convErr instanceof Error ? convErr.message : convErr);
+      console.error('[Debug] convertToModelMessages stack:', convErr instanceof Error ? convErr.stack : '');
+      console.error('[Debug] First message sample:', JSON.stringify(messages?.[0])?.slice(0, 500));
+      throw convErr;
+    }
 
     const result = streamText({
       model: createGoogleGenerativeAI({ apiKey })(tenantConfig.aiConfig.model),
@@ -172,7 +184,7 @@ export async function POST(req: Request) {
       tools: toolDefinitions,
       stopWhen: stepCountIs(tenantConfig.aiConfig.maxSteps),
       onStepFinish: ({ toolResults }) => {
-        if (toolResults) {
+        if (toolResults && Array.isArray(toolResults)) {
           for (const tr of toolResults) {
             const toolName = typeof tr.toolName === 'string' ? tr.toolName : '';
             const input = ('input' in tr && tr.input && typeof tr.input === 'object')
@@ -322,7 +334,9 @@ export async function POST(req: Request) {
     return result.toUIMessageStreamResponse();
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Neznama chyba';
+    const stack = error instanceof Error ? error.stack : '';
     console.error('Chat API error:', message);
+    console.error('Chat API stack:', stack);
     return new Response(
       JSON.stringify({ error: message }),
       { status: 500, headers: { 'Content-Type': 'application/json' } }
