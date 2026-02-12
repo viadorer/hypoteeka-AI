@@ -1,0 +1,70 @@
+# Hypoteeka AI - Kompletní dokumentace
+
+> Hypoteeka AI je online hypoteční poradce poháněný umělou inteligencí pro český trh.
+
+## Přehled
+
+Hypoteeka AI je webová aplikace, která využívá AI agenta jménem Hugo k poskytování hypotečního poradenství. Hugo komunikuje česky, počítá splátky, ověřuje bonitu klientů a porovnává nabídky bank. Aplikace využívá live data z České národní banky (ČNB).
+
+## Funkce
+
+### Kalkulačky
+- **Splátka hypotéky**: Výpočet měsíční splátky na základě ceny nemovitosti, vlastních zdrojů, úrokové sazby a doby splácení.
+- **Ověření bonity**: Kontrola DSTI (max 45 %), DTI (max 9,5x) a LTV (max 80 %, 90 % pro mladé do 36 let).
+- **Dostupnost bydlení**: Kolik si klient může dovolit na základě příjmu.
+- **Nájem vs. vlastní**: Porovnání nákladů nájmu a vlastního bydlení.
+- **Investiční analýza**: Výnosnost investiční nemovitosti.
+- **Refinancování**: Úspora při převodu hypotéky.
+- **Amortizační plán**: Rozklad splátek na jistinu a úrok.
+
+### Live data
+- Repo sazba ČNB (denní aktualizace)
+- Průměrné sazby nových hypoték (celkem, fix 1-5 let, fix 5-10 let)
+- RPSN hypoték
+- Objemy nových hypoték
+
+### AI poradce Hugo
+- Konverzační AI poradce
+- Fáze konverzace: pozdrav → zjišťování → analýza → kvalifikace → konverze
+- Lead scoring (0-100, cold/warm/hot/qualified)
+- Automatické nabízení kontaktního formuláře
+- Napojení na CRM (Realvisor)
+
+## Regulatorní limity ČNB
+
+| Ukazatel | Limit | Výjimka |
+|----------|-------|---------|
+| LTV | max 80 % | 90 % pro žadatele do 36 let |
+| DSTI | max 45 % | 5 % objemu nad limit |
+| DTI | max 9,5x | 5 % objemu nad limit |
+
+## Proces získání hypotéky
+
+1. Konzultace a prescoring (ověření bonity) - do 24 hodin
+2. Výběr nemovitosti
+3. Podání žádosti s dokumenty
+4. Odhad nemovitosti (3 000-6 000 Kč)
+5. Schválení bankou (2-4 týdny)
+6. Podpis úvěrové smlouvy
+7. Čerpání úvěru
+
+## Potřebné dokumenty
+
+- Občanský průkaz
+- Potvrzení o příjmu (3 výplatní pásky nebo 2 daňová přiznání pro OSVČ)
+- Kupní smlouva nebo smlouva o smlouvě budoucí
+- Odhad nemovitosti
+
+## Typy hypoték
+
+- **Účelová**: Na konkrétní nemovitost, nejnižší sazba
+- **Neúčelová (americká)**: Na cokoliv se zástavou, vyšší sazba o 1-2 %
+- **Předhypoteční úvěr**: Krátkodobý, na překlenutí doby
+- **Kombinace se stavebním spořením**: Nižší celkové náklady
+
+## Kontakt
+
+- Web: https://hypoteeka.cz
+- Jazyk: čeština
+- Trh: Česká republika
+- Specialisté: Míša a Filip

@@ -1,0 +1,33 @@
+# Hypoteeka AI
+
+> Hypoteeka AI je online hypoteční poradce poháněný umělou inteligencí. Pomáhá uživatelům v České republice s výpočtem hypotéky, ověřením bonity a porovnáním nabídek bank.
+
+## O službě
+
+Hypoteeka AI nabízí bezplatného AI poradce jménem Hugo, který provází klienty procesem získání hypotéky. Hugo spočítá splátku, ověří bonitu (DSTI, DTI, LTV), porovná sazby bank a nabídne bezplatnou konzultaci s hypotečním specialistou.
+
+## Funkce
+
+- Kalkulačka hypoteční splátky
+- Ověření bonity a dosažitelnosti hypotéky
+- Porovnání úrokových sazeb bank
+- Live sazby z České národní banky (ČNB)
+- Analýza nájem vs. vlastní bydlení
+- Investiční kalkulačka nemovitostí
+- Kalkulačka refinancování hypotéky
+- Amortizační plán
+- Bezplatná konzultace s hypotečním specialistou
+
+## Klíčové pojmy
+
+- **LTV (Loan-to-Value)**: Poměr výše úvěru k hodnotě nemovitosti. Max 80 % (90 % pro žadatele do 36 let).
+- **DSTI (Debt Service-to-Income)**: Poměr měsíčních splátek k příjmu. Max 45 %.
+- **DTI (Debt-to-Income)**: Poměr celkového dluhu k ročnímu příjmu. Max 9,5x.
+- **Fixace**: Období garantované úrokové sazby (1-10 let).
+- **Refinancování**: Převod hypotéky k jiné bance za lepších podmínek.
+
+## Kontakt
+
+- Web: https://hypoteeka.cz
+- Jazyk: čeština
+- Trh: Česká republika
