@@ -254,7 +254,7 @@ export function Sidebar({ activeSessionId, currentView, onSelectSession, onConti
               <span className="ml-auto text-[10px] bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded-full">{projects.length}</span>
             )}
           </button> */}
-          <button
+          {/* <button
             onClick={() => { onShowNews(); setMobileOpen(false); }}
             className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-base font-medium transition-all ${
               currentView === 'news' ? 'bg-blue-50/80 text-[#0A1E5C]' : 'text-gray-600 hover:bg-gray-50/80'
@@ -262,7 +262,7 @@ export function Sidebar({ activeSessionId, currentView, onSelectSession, onConti
           >
             <Newspaper className="w-5 h-5" />
             Novinky
-          </button>
+          </button> */}
         </div>
 
         {/* Projects section */}
