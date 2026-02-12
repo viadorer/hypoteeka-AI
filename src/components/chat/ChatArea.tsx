@@ -408,6 +408,7 @@ export function ChatArea({ initialSessionId = null }: ChatAreaProps) {
                           <WidgetRenderer
                             toolInvocation={{ toolName, state: p.state, args: (p.input ?? {}) as Record<string, unknown>, output: p.output }}
                             sessionId={sessionId}
+                            onSend={useBadge}
                           />
                         </div>
                       );

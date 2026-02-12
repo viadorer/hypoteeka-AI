@@ -11,6 +11,7 @@ import { AmortizationWidget } from './AmortizationWidget';
 import { StressTestWidget } from './StressTestWidget';
 import { LeadCaptureWidget } from './LeadCaptureWidget';
 import { SpecialistWidget } from './SpecialistWidget';
+import { NextStepsBar } from './NextStepsBar';
 
 interface ToolInvocation {
   toolName: string;
@@ -52,7 +53,7 @@ function WidgetSkeleton({ toolName }: { toolName: string }) {
   );
 }
 
-export function WidgetRenderer({ toolInvocation, sessionId }: { toolInvocation: ToolInvocation; sessionId?: string }) {
+export function WidgetRenderer({ toolInvocation, sessionId, onSend }: { toolInvocation: ToolInvocation; sessionId?: string; onSend?: (text: string) => void }) {
   const { toolName, args, state } = toolInvocation;
 
   // Show skeleton only while input is still streaming
@@ -70,85 +71,112 @@ export function WidgetRenderer({ toolInvocation, sessionId }: { toolInvocation: 
   switch (toolName) {
     case 'show_property':
       return (
-        <PropertyWidget
-          propertyPrice={args.propertyPrice as number}
-          propertyType={args.propertyType as string | undefined}
-          location={args.location as string | undefined}
-        />
+        <>
+          <PropertyWidget
+            propertyPrice={args.propertyPrice as number}
+            propertyType={args.propertyType as string | undefined}
+            location={args.location as string | undefined}
+          />
+          {onSend && <NextStepsBar toolName={toolName} onSend={onSend} />}
+        </>
       );
     case 'show_payment': {
       const out = toolInvocation.output;
       return (
-        <PaymentWidget
-          propertyPrice={args.propertyPrice as number}
-          equity={args.equity as number}
-          rate={(out?.rate as number | undefined) ?? (args.rate as number | undefined)}
-          rpsn={(out?.rpsn as number | undefined) ?? (args.rpsn as number | undefined)}
-          years={(out?.years as number | undefined) ?? (args.years as number | undefined)}
-          scenarios={out?.scenarios as { high: { rate: number; monthly: number; totalInterest: number; label: string }; avg: { rate: number; monthly: number; totalInterest: number; label: string }; our: { rate: number; monthly: number; totalInterest: number; label: string } } | undefined}
-          saving={out?.saving as number | undefined}
-          monthlySaving={out?.monthlySaving as number | undefined}
-        />
+        <>
+          <PaymentWidget
+            propertyPrice={args.propertyPrice as number}
+            equity={args.equity as number}
+            rate={(out?.rate as number | undefined) ?? (args.rate as number | undefined)}
+            rpsn={(out?.rpsn as number | undefined) ?? (args.rpsn as number | undefined)}
+            years={(out?.years as number | undefined) ?? (args.years as number | undefined)}
+            scenarios={out?.scenarios as { high: { rate: number; monthly: number; totalInterest: number; label: string }; avg: { rate: number; monthly: number; totalInterest: number; label: string }; our: { rate: number; monthly: number; totalInterest: number; label: string } } | undefined}
+            saving={out?.saving as number | undefined}
+            monthlySaving={out?.monthlySaving as number | undefined}
+          />
+          {onSend && <NextStepsBar toolName={toolName} onSend={onSend} />}
+        </>
       );
     }
     case 'show_eligibility':
       return (
-        <EligibilityWidget
-          propertyPrice={args.propertyPrice as number}
-          equity={args.equity as number}
-          monthlyIncome={args.monthlyIncome as number}
-          isYoung={args.isYoung as boolean | undefined}
-        />
+        <>
+          <EligibilityWidget
+            propertyPrice={args.propertyPrice as number}
+            equity={args.equity as number}
+            monthlyIncome={args.monthlyIncome as number}
+            isYoung={args.isYoung as boolean | undefined}
+          />
+          {onSend && <NextStepsBar toolName={toolName} onSend={onSend} />}
+        </>
       );
     case 'show_rent_vs_buy':
       return (
-        <RentVsBuyWidget
-          propertyPrice={args.propertyPrice as number}
-          equity={args.equity as number}
-          monthlyRent={args.monthlyRent as number}
-        />
+        <>
+          <RentVsBuyWidget
+            propertyPrice={args.propertyPrice as number}
+            equity={args.equity as number}
+            monthlyRent={args.monthlyRent as number}
+          />
+          {onSend && <NextStepsBar toolName={toolName} onSend={onSend} />}
+        </>
       );
     case 'show_investment':
       return (
-        <InvestmentWidget
-          purchasePrice={args.purchasePrice as number}
-          equity={args.equity as number}
-          monthlyRentalIncome={args.monthlyRentalIncome as number}
-          monthlyExpenses={args.monthlyExpenses as number | undefined}
-        />
+        <>
+          <InvestmentWidget
+            purchasePrice={args.purchasePrice as number}
+            equity={args.equity as number}
+            monthlyRentalIncome={args.monthlyRentalIncome as number}
+            monthlyExpenses={args.monthlyExpenses as number | undefined}
+          />
+          {onSend && <NextStepsBar toolName={toolName} onSend={onSend} />}
+        </>
       );
     case 'show_affordability':
       return (
-        <AffordabilityWidget
-          monthlyIncome={args.monthlyIncome as number}
-          equity={args.equity as number}
-          isYoung={args.isYoung as boolean | undefined}
-        />
+        <>
+          <AffordabilityWidget
+            monthlyIncome={args.monthlyIncome as number}
+            equity={args.equity as number}
+            isYoung={args.isYoung as boolean | undefined}
+          />
+          {onSend && <NextStepsBar toolName={toolName} onSend={onSend} />}
+        </>
       );
     case 'show_refinance':
       return (
-        <RefinanceWidget
-          remainingBalance={args.remainingBalance as number}
-          currentRate={args.currentRate as number}
-          newRate={args.newRate as number | undefined}
-          remainingYears={args.remainingYears as number}
-        />
+        <>
+          <RefinanceWidget
+            remainingBalance={args.remainingBalance as number}
+            currentRate={args.currentRate as number}
+            newRate={args.newRate as number | undefined}
+            remainingYears={args.remainingYears as number}
+          />
+          {onSend && <NextStepsBar toolName={toolName} onSend={onSend} />}
+        </>
       );
     case 'show_amortization':
       return (
-        <AmortizationWidget
-          loanAmount={args.loanAmount as number}
-          rate={args.rate as number | undefined}
-          years={args.years as number | undefined}
-        />
+        <>
+          <AmortizationWidget
+            loanAmount={args.loanAmount as number}
+            rate={args.rate as number | undefined}
+            years={args.years as number | undefined}
+          />
+          {onSend && <NextStepsBar toolName={toolName} onSend={onSend} />}
+        </>
       );
     case 'show_stress_test':
       return (
-        <StressTestWidget
-          loanAmount={args.loanAmount as number}
-          rate={args.rate as number | undefined}
-          years={args.years as number | undefined}
-        />
+        <>
+          <StressTestWidget
+            loanAmount={args.loanAmount as number}
+            rate={args.rate as number | undefined}
+            years={args.years as number | undefined}
+          />
+          {onSend && <NextStepsBar toolName={toolName} onSend={onSend} />}
+        </>
       );
     case 'show_lead_capture':
       return (
