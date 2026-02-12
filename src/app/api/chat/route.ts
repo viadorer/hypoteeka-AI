@@ -164,18 +164,9 @@ export async function POST(req: Request) {
       updatedAt: new Date().toISOString(),
     });
 
-    console.log(`[Debug] messages count: ${Array.isArray(messages) ? messages.length : 'NOT_ARRAY'}, types: ${Array.isArray(messages) ? messages.map((m: {role: string}) => m.role).join(',') : 'N/A'}`);
-    let modelMessages;
-    try {
-      modelMessages = await convertToModelMessages(messages, {
-        tools: toolDefinitions,
-      });
-    } catch (convErr) {
-      console.error('[Debug] convertToModelMessages failed:', convErr instanceof Error ? convErr.message : convErr);
-      console.error('[Debug] convertToModelMessages stack:', convErr instanceof Error ? convErr.stack : '');
-      console.error('[Debug] First message sample:', JSON.stringify(messages?.[0])?.slice(0, 500));
-      throw convErr;
-    }
+    const modelMessages = await convertToModelMessages(messages, {
+      tools: toolDefinitions,
+    });
 
     const result = streamText({
       model: createGoogleGenerativeAI({ apiKey })(tenantConfig.aiConfig.model),
@@ -184,7 +175,7 @@ export async function POST(req: Request) {
       tools: toolDefinitions,
       stopWhen: stepCountIs(tenantConfig.aiConfig.maxSteps),
       onStepFinish: ({ toolResults }) => {
-        if (toolResults && Array.isArray(toolResults)) {
+        if (toolResults) {
           for (const tr of toolResults) {
             const toolName = typeof tr.toolName === 'string' ? tr.toolName : '';
             const input = ('input' in tr && tr.input && typeof tr.input === 'object')

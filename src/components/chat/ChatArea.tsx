@@ -54,16 +54,13 @@ interface ChatAreaProps {
 
 export function ChatArea({ initialSessionId = null }: ChatAreaProps) {
   const sessionId = useMemo(() => getSessionId(initialSessionId), [initialSessionId]);
-  const ctaIntensityRef = useRef<CtaIntensity>('medium');
+  const [ctaIntensity, setCtaIntensity] = useState<CtaIntensity>('medium');
   const transport = useMemo(() => new DefaultChatTransport({
     api: '/api/chat',
-    body: { sessionId, tenantId: process.env.NEXT_PUBLIC_TENANT_ID ?? 'hypoteeka' },
-    prepareSendMessagesRequest: ({ body }) => ({
-      body: { ...body, ctaIntensity: ctaIntensityRef.current },
-    }),
-  }), [sessionId]);
+    body: { sessionId, tenantId: process.env.NEXT_PUBLIC_TENANT_ID ?? 'hypoteeka', ctaIntensity },
+  }), [sessionId, ctaIntensity]);
   const { messages, setMessages, sendMessage, status, error, clearError } = useChat({ transport });
-  const handleCtaChange = useCallback((v: CtaIntensity) => { ctaIntensityRef.current = v; }, []);
+  const handleCtaChange = useCallback((v: CtaIntensity) => { setCtaIntensity(v); }, []);
   const [inputValue, setInputValue] = useState('');
   const [visitorName, setVisitorName] = useState<string | null>(null);
   const [visitorNameVocative, setVisitorNameVocative] = useState<string | null>(null);
