@@ -224,7 +224,7 @@ export function ChatArea({ initialSessionId = null }: ChatAreaProps) {
             </h1>
             <p className="text-gray-500 text-base md:text-lg leading-relaxed">
               {visitorName
-                ? 'Pokračujte tam, kde jste skončili, nebo začněte novou kalkulaci.'
+                ? 'Pokračujte tam, kde jste skončili, nebo začněte novou konzultaci.'
                 : 'Spočítám splátku, ověřím bonitu a porovnám nabídky bank. Za minutu víte, na co dosáhnete.'}
             </p>
           </div>
