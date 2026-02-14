@@ -94,8 +94,9 @@ export async function buildAgentPrompt(
     { key: 'equity', label: 'Vlastní zdroje', priority: 'high' },
     { key: 'monthlyIncome', label: 'Měsíční příjem', priority: 'high' },
     { key: 'purpose', label: 'Účel (vlastní bydlení / investice / refinancování)', priority: 'high' },
-    { key: 'propertyType', label: 'Typ nemovitosti (byt / dům / pozemek)', priority: 'medium' },
-    { key: 'location', label: 'Lokalita / město', priority: 'medium' },
+    { key: 'propertyType', label: 'Typ nemovitosti (byt / dům / pozemek)', priority: 'high' },
+    { key: 'propertySize', label: 'Dispozice (1+kk, 2+kk, 3+1...)', priority: 'high' },
+    { key: 'location', label: 'Lokalita / město', priority: 'high' },
     { key: 'age', label: 'Věk (důležité pro LTV limit)', priority: 'medium' },
     { key: 'name', label: 'Jméno', priority: 'low' },
   ];
@@ -126,6 +127,11 @@ export async function buildAgentPrompt(
 
   // Lead score (interní, nezobrazuj klientovi)
   parts.push(`\nLEAD: ${leadScore.score}/100 (${leadScore.temperature})`);
+
+  // Proaktivní nabídka ocenění -- když známe typ + lokalitu a ještě jsme neukázali
+  if (profile.propertyType && profile.location && !state.widgetsShown.includes('show_valuation')) {
+    parts.push('\nOCENĚNÍ: Znáš typ a lokalitu nemovitosti. Nabídni klientovi tržní ocenění ZDARMA: "Mimochodem, můžu vám udělat orientační tržní ocenění nemovitosti zdarma. Chcete?"');
+  }
 
   // Doporučené widgety
   const recommended = getRecommendedWidgets(state.phase, state.dataCollected, state.widgetsShown);

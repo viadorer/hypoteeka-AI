@@ -20,6 +20,7 @@ export interface ClientProfile {
   // Nemovitost
   propertyPrice?: number;
   propertyType?: 'byt' | 'dum' | 'pozemek' | 'rekonstrukce';
+  propertySize?: string; // dispozice: 1+kk, 2+kk, 3+1, atd.
   location?: string;
   purpose?: 'vlastni_bydleni' | 'investice' | 'refinancovani';
 
@@ -83,6 +84,7 @@ export function profileSummary(profile: ClientProfile): string {
 
   if (profile.propertyPrice) parts.push(`Cena nemovitosti: ${fmt(profile.propertyPrice)} Kč`);
   if (profile.propertyType) parts.push(`Typ: ${profile.propertyType}`);
+  if (profile.propertySize) parts.push(`Dispozice: ${profile.propertySize}`);
   if (profile.location) parts.push(`Lokalita: ${profile.location}`);
   if (profile.purpose) parts.push(`Účel: ${profile.purpose}`);
   if (profile.equity !== undefined && profile.equity !== null) parts.push(`Vlastní zdroje: ${fmt(profile.equity)} Kč`);
