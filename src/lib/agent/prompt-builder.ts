@@ -83,91 +83,71 @@ export async function buildAgentPrompt(
     parts.push('\nVŠECHNA KLÍČOVÁ DATA SESBÍRÁNA. Soustřeď se na analýzu a konverzi.');
   }
 
-  parts.push(`\nKRITICKÉ PRAVIDLO KONTINUITY:\n- Výše uvedená data klienta jsou FAKTA z konverzace. NIKDY se na ně neptej znovu.\n- Pokud máš dostatek dat pro výpočet, OKAMŽITĚ ho proveď a ukaž widget. Neptej se, jestli to má klient zájem vidět.\n- Pokud klient zadá více údajů najednou (např. "byt za 5 mil, mám 1 mil a beru 60 tisíc"), zpracuj VŠECHNY najednou - zavolej update_profile + všechny relevantní widgety v jednom kroku.\n- Neříkej "teď vám spočítám" - prostě to spočítej a ukaž.\n- Neptej se "chcete vidět splátku?" - prostě ji ukaž.\n- Jednej, nemluv o tom co budeš dělat.`);
+  parts.push(`\nKONTINUITA:
+- Data klienta výše jsou FAKTA. Neptej se na ně znovu.
+- Máš data pro výpočet? Udělej ho HNED. Neptej se jestli chce vidět výsledek.
+- Víc údajů najednou? Zpracuj VŠECHNY najednou (update_profile + widgety).
+- Neříkej co budeš dělat -- prostě to udělej.`);
 
-  // Lead score
-  parts.push(`\nLEAD SCORE: ${leadScore.score}/100 (${leadScore.temperature})`);
-  if (leadScore.missingForQualification.length > 0) {
-    parts.push(`Chybí pro kvalifikaci: ${leadScore.missingForQualification.join(', ')}`);
-  }
+  // Lead score (interní, nezobrazuj klientovi)
+  parts.push(`\nLEAD: ${leadScore.score}/100 (${leadScore.temperature})`);
 
   // Doporučené widgety
   const recommended = getRecommendedWidgets(state.phase, state.dataCollected, state.widgetsShown);
   if (recommended.length > 0) {
-    parts.push(`\nDOPORUČENÉ WIDGETY K ZOBRAZENÍ (zavolej je HNED, neptej se): ${recommended.join(', ')}`);
+    parts.push(`\nZOBRAZ HNED: ${recommended.join(', ')}`);
   }
 
-  // Další otázka - jen pokud NEMÁME doporučené widgety (akce má přednost)
+  // Další otázka
   if (recommended.length === 0) {
     const nextQ = getNextQuestion(state.phase, state.dataCollected, state.questionsAsked);
     if (nextQ) {
-      parts.push(`\nJEDINÝ CHYBĚJÍCÍ ÚDAJ: ${nextQ} - zeptej se na něj (ale jen pokud ho opravdu nemáš v datech klienta výše)`);
+      parts.push(`\nZEPTEJ SE NA: ${nextQ}`);
     }
   }
 
-  // Contact / CTA section - driven by ctaIntensity setting
+  // Kontextové CTA -- nabízej poradce podle SITUACE, ne podle počtu widgetů
   const hasEmail = !!profile.email;
   const hasPhone = !!profile.phone;
-  const widgetCount = state.widgetsShown.length;
+  const hasContact = hasEmail || hasPhone;
 
+  if (hasContact) {
+    if (hasEmail) parts.push(`\nKontakt: email ${profile.email}`);
+    if (hasPhone) parts.push(`Kontakt: telefon ${profile.phone}`);
+  }
+
+  // Kontextové triggery pro CTA (místo mechanického počítání widgetů)
   if (ctaIntensity === 'low') {
-    // LOW: only mention contact when client explicitly asks or after qualification
-    parts.push('\nKONTAKT (režim: nízká intenzita):');
-    parts.push('- Nabízej email/poradce POUZE když se klient sám zeptá nebo když je ve fázi kvalifikace/konverze.');
-    parts.push('- Jinak se soustřeď na výpočty a odpovědi. Klient si řekne sám.');
-    if (hasEmail) parts.push(`- Máš email: ${profile.email}`);
-    if (hasPhone) parts.push(`- Máš telefon: ${profile.phone}`);
-  } else if (ctaIntensity === 'medium') {
-    // MEDIUM: offer contact once after 2+ widgets, not repeatedly
-    parts.push('\nKONTAKT (režim: střední intenzita):');
-    if (!hasEmail && !hasPhone) {
-      if (widgetCount >= 2) {
-        parts.push('- Už jsi ukázal 2+ widgety. Můžeš JEDNOU nabídnout: "Chcete, abych vám poslal shrnutí na email?" Pokud klient nereaguje, NENABÍZEJ znovu.');
-      } else {
-        parts.push('- Zatím se soustřeď na výpočty. Kontakt nabídni až po zobrazení alespoň 2 widgetů.');
-      }
-    } else {
-      if (hasEmail) parts.push(`- Máš email: ${profile.email}`);
-      if (hasPhone) parts.push(`- Máš telefon: ${profile.phone}`);
-      if (state.phase === 'qualification' || state.phase === 'conversion') {
-        parts.push('- Klient je kvalifikovaný. Nabídni bezplatnou schůzku se specialistou.');
-      }
-    }
+    parts.push('\nKONTAKT: Nabízej poradce POUZE když se klient sám zeptá nebo ve fázi konverze.');
   } else {
-    // HIGH: proactive contact offers
-    parts.push('\nKONTAKT (režim: vysoká intenzita):');
-    if (!hasEmail && !hasPhone) {
-      if (widgetCount >= 1) {
-        parts.push('- Nabídni zaslání výsledků na email nebo spojení se specialistou.');
+    // Kontextové situace kdy nabídnout poradce PŘIROZENĚ
+    const ctaTriggers: string[] = [];
+    if (state.widgetsShown.includes('show_eligibility')) {
+      ctaTriggers.push('Po kontrole bonity: "V praxi se zkušený poradce dokáže dostat i na lepší podmínky..."');
+    }
+    if (state.widgetsShown.includes('show_stress_test')) {
+      ctaTriggers.push('Po stress testu: "Správná fixace je klíčová -- poradce vám pomůže vybrat optimální délku."');
+    }
+    if (state.widgetsShown.includes('show_payment') && state.widgetsShown.includes('show_eligibility')) {
+      ctaTriggers.push('Máš splátku i bonitu: "Máte všechno co potřebujete. Teď je ideální čas spojit se s poradcem."');
+    }
+    if (ctaTriggers.length > 0 && !hasContact) {
+      parts.push('\nKDY NABÍDNOUT PORADCE (přirozeně, ne mechanicky):');
+      ctaTriggers.forEach(t => parts.push(`- ${t}`));
+      if (ctaIntensity === 'medium') {
+        parts.push('- Nabídni MAX JEDNOU. Pokud klient nereaguje, pokračuj v analýze.');
       }
-    } else if (!hasEmail) {
-      parts.push(`- Máš telefon (${profile.phone}), nabídni i email pro zaslání shrnutí.`);
-    } else if (!hasPhone) {
-      parts.push(`- Máš email (${profile.email}), nabídni spojení přes WhatsApp nebo telefon.`);
-    } else {
-      parts.push('- Máš email i telefon. Nabídni sjednání bezplatné schůzky.');
     }
   }
 
-  // Lead capture - respect intensity
-  if (shouldOfferLeadCapture(leadScore, state)) {
-    if (ctaIntensity === 'low') {
-      parts.push('\nKlient je kvalifikovaný. Pokud se zeptá na další kroky, nabídni show_lead_capture.');
-    } else {
-      parts.push('\nKlient je kvalifikovaný. Nabídni kontaktní formulář (show_lead_capture).');
-    }
+  // Lead capture
+  if (shouldOfferLeadCapture(leadScore, state) && !hasContact) {
+    parts.push('\nKlient je připravený. Nabídni kontakt PŘIROZENĚ v kontextu konverzace.');
   }
 
-  // Schůzka - only in conversion phases, respect intensity
-  if (state.phase === 'conversion' || state.phase === 'followup') {
-    if (ctaIntensity !== 'low') {
-      parts.push('\nSCHŮZKA: Nabídni bezplatnou konzultaci se specialistou.');
-    }
-  }
-
-  // Widgety které už byly zobrazeny
+  // Již zobrazené widgety
   if (state.widgetsShown.length > 0) {
-    parts.push(`\nJIŽ ZOBRAZENÉ WIDGETY: ${state.widgetsShown.join(', ')} - nezobrazuj je znovu pokud se data nezměnila`);
+    parts.push(`\nUŽ ZOBRAZENO: ${state.widgetsShown.join(', ')} -- nezobrazuj znovu pokud se data nezměnila`);
   }
 
   // Knowledge base - relevantní znalosti z DB
@@ -189,22 +169,13 @@ export async function buildAgentPrompt(
   parts.push('\n' + toolInstruction);
 
   // Závěrečné připomenutí (Gemini lépe dodržuje instrukce na konci promptu)
-  parts.push('\n*** ZÁVĚREČNÁ PRAVIDLA ***');
-  parts.push('- JAZYK: Piš VÝHRADNĚ česky LATINKOU s háčky a čárkami. NIKDY nepoužívej azbuku (cyrilici), ruštinu ani jiný jazyk.');
-  parts.push('- FORMÁT MĚNY: Vždy "Kč" (s háčkem), nikdy "Kc".');
-
-  // NEVER REJECT guardrail
   parts.push(`
-*** NIKDY NEODMÍTEJ KLIENTA ***
-- NIKDY neříkej "nesplňujete podmínky" nebo "na hypotéku nedosáhnete" jako konečný verdikt.
-- Pokud klient nesplňuje limit (LTV, DSTI, DTI), VŽDY ukaž KONKRÉTNÍ CESTU K ŘEŠENÍ:
-  - LTV překročeno? -> "Potřebujete navýšit vlastní zdroje o X Kč. Možnosti: spoření, dar od rodiny, stavební spoření, zástava jiné nemovitosti."
-  - DSTI překročeno? -> "Splátka je příliš vysoká vzhledem k příjmu. Řešení: delší splatnost, nižší úvěr, přidání spolužadatele, zvýšení příjmu."
-  - DTI překročeno? -> "Celkový dluh je vysoký. Řešení: splatit jiné úvěry, přidat spolužadatele, snížit požadovanou částku."
-- Nemá vlastní zdroje? -> Spočítej splátku pro ilustraci, vysvětli kolik potřebuje naspořit, nabídni plán spoření.
-- VŽDY konči pozitivně: "Náš specialista vám pomůže najít optimální řešení pro vaši situaci."
-- Specialista z Hypoteeky dokáže vyřešit i složité případy - vždy ho nabídni jako cestu vpřed.
-- Tón: povzbuzující, konstruktivní. Nikdy pesimistický nebo odmítavý.`);
+*** PŘIPOMENUTÍ ***
+- JAZYK: Výhradně česky latinkou s háčky a čárkami. Nikdy azbuka/cyrilice.
+- MĚNA: Vždy "Kč" (s háčkem).
+- NIKDY NEODMÍTEJ: Nesplňuje limit? Řekni "tady potřebujeme zapracovat na..." a ukaž KONKRÉTNÍ ŘEŠENÍ.
+- TÓN: Povzbuzující, konstruktivní. Jako zkušenější kamarád, ne úředník.
+- DÉLKA: Max 2-3 věty mezi widgety. Žádné zdi textu.`);
 
   return parts.join('\n');
 }

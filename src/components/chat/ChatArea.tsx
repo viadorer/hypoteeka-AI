@@ -11,13 +11,16 @@ import type { UIMessage } from 'ai';
 import { CtaIntensityDial } from './CtaIntensityDial';
 import type { CtaIntensity } from './CtaIntensityDial';
 
-const QUICK_ACTIONS = [
+const QUICK_ACTIONS_PRIMARY = [
   { label: 'Spočítat splátku', icon: Calculator, prompt: 'Chci si spočítat splátku hypotéky.' },
   { label: 'Ověřit bonitu', icon: ShieldCheck, prompt: 'Chci si ověřit, jestli dosáhnu na hypotéku.' },
   { label: 'Kolik si mohu půjčit?', icon: TrendingUp, prompt: 'Kolik si mohu maximálně půjčit na hypotéku?' },
+  { label: 'Refinancování hypotéky', icon: RefreshCw, prompt: 'Chci refinancovat hypotéku, jaké jsou aktuální podmínky?' },
+];
+
+const QUICK_ACTIONS_MORE = [
   { label: 'Nájem vs. hypotéka', icon: ArrowDownUp, prompt: 'Vyplatí se mi víc nájem nebo hypotéka?' },
   { label: 'Nejlepší sazby na trhu', icon: Percent, prompt: 'Jaké jsou aktuální nejlepší sazby hypoték na trhu?' },
-  { label: 'Refinancování hypotéky', icon: RefreshCw, prompt: 'Chci refinancovat hypotéku, jaké jsou aktuální podmínky?' },
   { label: 'Koupě první nemovitosti', icon: Home, prompt: 'Kupuji první nemovitost, jak postupovat s hypotékou?' },
   { label: 'Investiční nemovitost', icon: PiggyBank, prompt: 'Chci koupit investiční nemovitost, vyplatí se to?' },
   { label: 'Ocenění nemovitosti', icon: Search, prompt: 'Chci zjistit hodnotu své nemovitosti.' },
@@ -209,11 +212,6 @@ export function ChatArea({ initialSessionId = null }: ChatAreaProps) {
       <div className="flex-1 md:ml-[320px] flex flex-col min-h-screen pt-16 md:pt-0 overflow-x-hidden overflow-y-auto min-w-0 w-full">
         <div className="flex-1 flex flex-col items-center px-4 md:px-4 py-8 md:py-12 w-full min-w-0">
 
-          {/* Test mode banner */}
-          <div className="mb-6 px-5 py-2.5 rounded-xl bg-amber-50 border border-amber-200 text-amber-700 text-sm font-medium">
-            Testovaci rezim
-          </div>
-
           {/* Hero */}
           <div className="text-center mb-8 max-w-lg">
             {!visitorName && (
@@ -238,9 +236,9 @@ export function ChatArea({ initialSessionId = null }: ChatAreaProps) {
             {inputBar}
           </div>
 
-          {/* Quick action badges */}
-          <div className="flex flex-wrap gap-2 justify-center mb-10">
-            {QUICK_ACTIONS.map(({ label, icon: Icon, prompt }) => (
+          {/* Quick action badges - primary */}
+          <div className="flex flex-wrap gap-2 justify-center mb-3">
+            {QUICK_ACTIONS_PRIMARY.map(({ label, icon: Icon, prompt }) => (
               <button
                 key={label}
                 onClick={() => useBadge(prompt)}
@@ -248,6 +246,20 @@ export function ChatArea({ initialSessionId = null }: ChatAreaProps) {
                 className={`inline-flex items-center gap-2 px-4 py-3 md:py-2.5 rounded-xl text-[15px] md:text-sm text-gray-600 transition-all disabled:opacity-50 active:scale-[0.97] ${glass} ${glassHover} hover:text-[#E91E63]`}
               >
                 <Icon className="w-4 h-4" />
+                {label}
+              </button>
+            ))}
+          </div>
+          {/* Quick action badges - more */}
+          <div className="flex flex-wrap gap-2 justify-center mb-10">
+            {QUICK_ACTIONS_MORE.map(({ label, icon: Icon, prompt }) => (
+              <button
+                key={label}
+                onClick={() => useBadge(prompt)}
+                disabled={isLoading}
+                className={`inline-flex items-center gap-2 px-3 py-2 rounded-lg text-xs text-gray-400 transition-all disabled:opacity-50 active:scale-[0.97] hover:text-gray-600 hover:bg-white/40`}
+              >
+                <Icon className="w-3.5 h-3.5" />
                 {label}
               </button>
             ))}
@@ -289,10 +301,32 @@ export function ChatArea({ initialSessionId = null }: ChatAreaProps) {
             </div>
           )}
 
-          {/* Co všechno tady řešíme */}
+          {/* Social proof */}
+          <div className="w-full max-w-[600px] mb-10 min-w-0">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              <div className={`rounded-xl p-3 text-center ${glass}`}>
+                <p className="text-xl font-bold text-[#0A1E5C]">850+</p>
+                <p className="text-[10px] text-gray-400 mt-0.5">spokojených rodin</p>
+              </div>
+              <div className={`rounded-xl p-3 text-center ${glass}`}>
+                <p className="text-xl font-bold text-[#0A1E5C]">164 000 Kč</p>
+                <p className="text-[10px] text-gray-400 mt-0.5">průměrná úspora</p>
+              </div>
+              <div className={`rounded-xl p-3 text-center ${glass}`}>
+                <p className="text-xl font-bold text-[#0A1E5C]">4.9/5</p>
+                <p className="text-[10px] text-gray-400 mt-0.5">hodnocení klientů</p>
+              </div>
+              <div className={`rounded-xl p-3 text-center ${glass}`}>
+                <p className="text-xl font-bold text-[#0A1E5C]">14 bank</p>
+                <p className="text-[10px] text-gray-400 mt-0.5">porovnáváme</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Co řešíme - zjednodušeno na 4 */}
           <div className="w-full max-w-[700px] mb-10 min-w-0">
             <p className="text-center text-[11px] text-gray-400 uppercase tracking-wider mb-5 font-medium">
-              Co všechno tady řešíme
+              Jak vám pomůžeme
             </p>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
               <div className={`rounded-xl p-4 text-center ${glass}`}>
@@ -309,26 +343,6 @@ export function ChatArea({ initialSessionId = null }: ChatAreaProps) {
                 <RefreshCw className="w-6 h-6 text-[#E91E63] mx-auto mb-2" />
                 <p className="text-sm font-semibold text-gray-800 mb-1">Refinancování</p>
                 <p className="text-xs text-gray-400">Snížení splátky i sazby</p>
-              </div>
-              <div className={`rounded-xl p-4 text-center ${glass}`}>
-                <Home className="w-6 h-6 text-[#E91E63] mx-auto mb-2" />
-                <p className="text-sm font-semibold text-gray-800 mb-1">Koupě nemovitosti</p>
-                <p className="text-xs text-gray-400">Od výběru po podpis</p>
-              </div>
-              <div className={`rounded-xl p-4 text-center ${glass}`}>
-                <PiggyBank className="w-6 h-6 text-[#E91E63] mx-auto mb-2" />
-                <p className="text-sm font-semibold text-gray-800 mb-1">Investice</p>
-                <p className="text-xs text-gray-400">ROI, cash flow, výnos</p>
-              </div>
-              <div className={`rounded-xl p-4 text-center ${glass}`}>
-                <ShieldCheck className="w-6 h-6 text-[#E91E63] mx-auto mb-2" />
-                <p className="text-sm font-semibold text-gray-800 mb-1">Limity ČNB</p>
-                <p className="text-xs text-gray-400">LTV, DSTI, DTI kontrola</p>
-              </div>
-              <div className={`rounded-xl p-4 text-center ${glass}`}>
-                <ArrowDownUp className="w-6 h-6 text-[#E91E63] mx-auto mb-2" />
-                <p className="text-sm font-semibold text-gray-800 mb-1">Nájem vs. koupě</p>
-                <p className="text-xs text-gray-400">Co se víc vyplatí?</p>
               </div>
               <div className={`rounded-xl p-4 text-center ${glass}`}>
                 <Users className="w-6 h-6 text-[#E91E63] mx-auto mb-2" />

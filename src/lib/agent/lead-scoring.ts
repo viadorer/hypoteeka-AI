@@ -30,7 +30,7 @@ interface ScoringRule {
 const SCORING_RULES: ScoringRule[] = [
   // Data completeness (max 40 bodů)
   { name: 'Má cenu nemovitosti', points: 10, condition: (p) => !!p.propertyPrice },
-  { name: 'Má vlastní zdroje', points: 10, condition: (p) => !!p.equity },
+  { name: 'Má vlastní zdroje', points: 10, condition: (p) => p.equity !== undefined && p.equity !== null },
   { name: 'Má příjem', points: 10, condition: (p) => !!(p.monthlyIncome || p.totalMonthlyIncome) },
   { name: 'Má typ nemovitosti', points: 5, condition: (p) => !!p.propertyType },
   { name: 'Má lokalitu', points: 5, condition: (p) => !!p.location },
@@ -44,13 +44,13 @@ const SCORING_RULES: ScoringRule[] = [
 
   // Kvalita leadu (max 35 bodů)
   { name: 'Splňuje LTV', points: 10, condition: (p) => {
-    if (!p.propertyPrice || !p.equity) return false;
+    if (!p.propertyPrice || p.equity === undefined || p.equity === null) return false;
     const ltv = (p.propertyPrice - p.equity) / p.propertyPrice;
     const limit = p.isYoung ? 0.9 : 0.8;
     return ltv <= limit;
   }},
   { name: 'Splňuje DSTI', points: 10, condition: (p) => {
-    if (!p.propertyPrice || !p.equity || !p.monthlyIncome) return false;
+    if (!p.propertyPrice || (p.equity === undefined || p.equity === null) || !p.monthlyIncome) return false;
     const loan = p.propertyPrice - p.equity;
     const r = 0.045 / 12;
     const n = 360;
@@ -88,7 +88,7 @@ export function calculateLeadScore(profile: ClientProfile, state: ConversationSt
 
   // What's missing for qualification
   if (!profile.propertyPrice) missingForQualification.push('cena nemovitosti');
-  if (!profile.equity) missingForQualification.push('vlastni zdroje');
+  if (profile.equity === undefined || profile.equity === null) missingForQualification.push('vlastni zdroje');
   if (!profile.monthlyIncome && !profile.totalMonthlyIncome) missingForQualification.push('mesicni prijem');
   if (score < 61 && state.widgetsShown.length < 2) missingForQualification.push('zobrazit vice vypoctu');
 
