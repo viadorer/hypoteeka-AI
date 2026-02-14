@@ -28,10 +28,10 @@ html, body {
   }
 }
 
-/* Larger base font on mobile for readability */
+/* Base font on mobile - 16px is standard, prevents widget overflow */
 @media (max-width: 767px) {
   html {
-    font-size: 17px;
+    font-size: 16px;
   }
 }
 

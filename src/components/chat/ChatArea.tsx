@@ -3,7 +3,7 @@
 import { useChat } from '@ai-sdk/react';
 import { useRef, useEffect, useState, useMemo, useCallback } from 'react';
 import { v4 as uuidv4 } from 'uuid';
-import { Send, AlertCircle, RotateCcw, Calculator, ShieldCheck, TrendingUp, Users, BarChart3, RefreshCw, Home, PiggyBank, Percent, HelpCircle, ArrowDownUp, Search } from 'lucide-react';
+import { Send, AlertCircle, RotateCcw, Calculator, ShieldCheck, TrendingUp, Users, BarChart3, RefreshCw, Home, PiggyBank, Percent, HelpCircle, ArrowDownUp, Search, ChevronDown, Phone } from 'lucide-react';
 import { WidgetRenderer } from '../widgets/WidgetRenderer';
 import ReactMarkdown from 'react-markdown';
 import { DefaultChatTransport } from 'ai';
@@ -73,6 +73,7 @@ export function ChatArea({ initialSessionId = null }: ChatAreaProps) {
     mortgage: { avgRate: number; rateFix1y: number; rateFix5y: number; rateFix10y: number; rpsn: number };
   } | null>(null);
   const [historyLoaded, setHistoryLoaded] = useState(false);
+  const [showMoreActions, setShowMoreActions] = useState(false);
   const prevStatusRef = useRef(status);
   const inputRef = useRef<HTMLInputElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -250,8 +251,17 @@ export function ChatArea({ initialSessionId = null }: ChatAreaProps) {
               </button>
             ))}
           </div>
-          {/* Quick action badges - more */}
-          <div className="flex flex-wrap gap-2 justify-center mb-10">
+          {/* Quick action badges - more (collapsed on mobile) */}
+          {!showMoreActions && (
+            <button
+              onClick={() => setShowMoreActions(true)}
+              className="md:hidden flex items-center gap-1 text-xs text-gray-400 mb-8 active:text-gray-600"
+            >
+              <ChevronDown className="w-3.5 h-3.5" />
+              Další možnosti
+            </button>
+          )}
+          <div className={`flex-wrap gap-2 justify-center mb-8 ${showMoreActions ? 'flex' : 'hidden md:flex'}`}>
             {QUICK_ACTIONS_MORE.map(({ label, icon: Icon, prompt }) => (
               <button
                 key={label}
@@ -265,70 +275,67 @@ export function ChatArea({ initialSessionId = null }: ChatAreaProps) {
             ))}
           </div>
 
-          {/* Today's rates */}
+          {/* Today's rates - compact on mobile */}
           {todayRates && todayRates.mortgage.avgRate > 0 && (
-            <div className="w-full max-w-[700px] mb-10 min-w-0">
-              <div className="flex items-center justify-center gap-2 mb-4">
+            <div className="w-full max-w-[700px] mb-8 min-w-0">
+              <div className="flex items-center justify-center gap-2 mb-3">
                 <BarChart3 className="w-4 h-4 text-[#E91E63]" />
                 <p className="text-[11px] text-gray-400 uppercase tracking-wider font-medium">
                   Sazby hypoték dnes ({todayRates.date})
                 </p>
               </div>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                <div className={`rounded-xl p-4 text-center ${glass}`}>
-                  <p className="text-[10px] text-gray-400 uppercase tracking-wider mb-1">Repo ČNB</p>
-                  <p className="text-xl font-bold text-[#0A1E5C]">{todayRates.cnb.repo} %</p>
+              <div className="grid grid-cols-4 gap-2 md:gap-3">
+                <div className={`rounded-xl p-2.5 md:p-4 text-center ${glass}`}>
+                  <p className="text-[9px] md:text-[10px] text-gray-400 uppercase tracking-wider mb-1">Repo ČNB</p>
+                  <p className="text-lg md:text-xl font-bold text-[#0A1E5C]">{todayRates.cnb.repo} %</p>
                 </div>
-                <div className={`rounded-xl p-4 text-center ${glass}`}>
-                  <p className="text-[10px] text-gray-400 uppercase tracking-wider mb-1">Fixace 1-5 let</p>
-                  <p className="text-xl font-bold text-[#0A1E5C]">{todayRates.mortgage.rateFix5y} %</p>
-                  <p className="text-[10px] text-gray-400 mt-0.5">průměr trhu</p>
+                <div className={`rounded-xl p-2.5 md:p-4 text-center ${glass}`}>
+                  <p className="text-[9px] md:text-[10px] text-gray-400 uppercase tracking-wider mb-1">Fix 1-5y</p>
+                  <p className="text-lg md:text-xl font-bold text-[#0A1E5C]">{todayRates.mortgage.rateFix5y} %</p>
                 </div>
-                <div className={`rounded-xl p-4 text-center ${glass}`}>
-                  <p className="text-[10px] text-gray-400 uppercase tracking-wider mb-1">Fixace 5-10 let</p>
-                  <p className="text-xl font-bold text-[#0A1E5C]">{todayRates.mortgage.rateFix10y} %</p>
-                  <p className="text-[10px] text-gray-400 mt-0.5">průměr trhu</p>
+                <div className={`rounded-xl p-2.5 md:p-4 text-center ${glass}`}>
+                  <p className="text-[9px] md:text-[10px] text-gray-400 uppercase tracking-wider mb-1">Fix 5-10y</p>
+                  <p className="text-lg md:text-xl font-bold text-[#0A1E5C]">{todayRates.mortgage.rateFix10y} %</p>
                 </div>
-                <div className={`rounded-xl p-4 text-center ${glass}`}>
-                  <p className="text-[10px] text-gray-400 uppercase tracking-wider mb-1">RPSN</p>
-                  <p className="text-xl font-bold text-[#0A1E5C]">{todayRates.mortgage.rpsn} %</p>
-                  <p className="text-[10px] text-gray-400 mt-0.5">průměr trhu</p>
+                <div className={`rounded-xl p-2.5 md:p-4 text-center ${glass}`}>
+                  <p className="text-[9px] md:text-[10px] text-gray-400 uppercase tracking-wider mb-1">RPSN</p>
+                  <p className="text-lg md:text-xl font-bold text-[#0A1E5C]">{todayRates.mortgage.rpsn} %</p>
                 </div>
               </div>
-              <p className="text-center text-[10px] text-gray-400 mt-3">
+              <p className="text-center text-[10px] text-gray-400 mt-2">
                 Zdroj: ČNB ARAD
               </p>
             </div>
           )}
 
-          {/* Social proof */}
-          <div className="w-full max-w-[600px] mb-10 min-w-0">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-              <div className={`rounded-xl p-3 text-center ${glass}`}>
-                <p className="text-xl font-bold text-[#0A1E5C]">850+</p>
-                <p className="text-[10px] text-gray-400 mt-0.5">spokojených rodin</p>
+          {/* Social proof - single compact row */}
+          <div className="w-full max-w-[600px] mb-8 min-w-0">
+            <div className="grid grid-cols-4 gap-2 md:gap-3">
+              <div className={`rounded-xl p-2.5 md:p-3 text-center ${glass}`}>
+                <p className="text-lg md:text-xl font-bold text-[#0A1E5C]">850+</p>
+                <p className="text-[9px] md:text-[10px] text-gray-400 mt-0.5">rodin</p>
               </div>
-              <div className={`rounded-xl p-3 text-center ${glass}`}>
-                <p className="text-xl font-bold text-[#0A1E5C]">164 000 Kč</p>
-                <p className="text-[10px] text-gray-400 mt-0.5">průměrná úspora</p>
+              <div className={`rounded-xl p-2.5 md:p-3 text-center ${glass}`}>
+                <p className="text-lg md:text-xl font-bold text-[#0A1E5C]">164k</p>
+                <p className="text-[9px] md:text-[10px] text-gray-400 mt-0.5">úspora</p>
               </div>
-              <div className={`rounded-xl p-3 text-center ${glass}`}>
-                <p className="text-xl font-bold text-[#0A1E5C]">4.9/5</p>
-                <p className="text-[10px] text-gray-400 mt-0.5">hodnocení klientů</p>
+              <div className={`rounded-xl p-2.5 md:p-3 text-center ${glass}`}>
+                <p className="text-lg md:text-xl font-bold text-[#0A1E5C]">4.9/5</p>
+                <p className="text-[9px] md:text-[10px] text-gray-400 mt-0.5">hodnocení</p>
               </div>
-              <div className={`rounded-xl p-3 text-center ${glass}`}>
-                <p className="text-xl font-bold text-[#0A1E5C]">14 bank</p>
-                <p className="text-[10px] text-gray-400 mt-0.5">porovnáváme</p>
+              <div className={`rounded-xl p-2.5 md:p-3 text-center ${glass}`}>
+                <p className="text-lg md:text-xl font-bold text-[#0A1E5C]">14</p>
+                <p className="text-[9px] md:text-[10px] text-gray-400 mt-0.5">bank</p>
               </div>
             </div>
           </div>
 
-          {/* Co řešíme - zjednodušeno na 4 */}
-          <div className="w-full max-w-[700px] mb-10 min-w-0">
+          {/* Co řešíme - hidden on mobile (redundant with badges), visible on desktop */}
+          <div className="hidden md:block w-full max-w-[700px] mb-10 min-w-0">
             <p className="text-center text-[11px] text-gray-400 uppercase tracking-wider mb-5 font-medium">
               Jak vám pomůžeme
             </p>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <div className="grid grid-cols-4 gap-3">
               <div className={`rounded-xl p-4 text-center ${glass}`}>
                 <Calculator className="w-6 h-6 text-[#E91E63] mx-auto mb-2" />
                 <p className="text-sm font-semibold text-gray-800 mb-1">Splátka a bonita</p>
@@ -337,12 +344,12 @@ export function ChatArea({ initialSessionId = null }: ChatAreaProps) {
               <div className={`rounded-xl p-4 text-center ${glass}`}>
                 <Percent className="w-6 h-6 text-[#E91E63] mx-auto mb-2" />
                 <p className="text-sm font-semibold text-gray-800 mb-1">Nejlepší sazby</p>
-                <p className="text-xs text-gray-400">Exkluzivní podmínky bank</p>
+                <p className="text-xs text-gray-400">Porovnání nabídek bank</p>
               </div>
               <div className={`rounded-xl p-4 text-center ${glass}`}>
                 <RefreshCw className="w-6 h-6 text-[#E91E63] mx-auto mb-2" />
                 <p className="text-sm font-semibold text-gray-800 mb-1">Refinancování</p>
-                <p className="text-xs text-gray-400">Snížení splátky i sazby</p>
+                <p className="text-xs text-gray-400">Optimalizace podmínek</p>
               </div>
               <div className={`rounded-xl p-4 text-center ${glass}`}>
                 <Users className="w-6 h-6 text-[#E91E63] mx-auto mb-2" />
@@ -352,14 +359,14 @@ export function ChatArea({ initialSessionId = null }: ChatAreaProps) {
             </div>
           </div>
 
-          {/* Banks */}
-          <div className="w-full max-w-[700px] mb-8 min-w-0">
-            <p className="text-center text-[11px] text-gray-400 uppercase tracking-wider mb-4 font-medium">
+          {/* Banks - compact horizontal scroll on mobile */}
+          <div className="w-full max-w-[700px] mb-6 min-w-0">
+            <p className="text-center text-[11px] text-gray-400 uppercase tracking-wider mb-3 font-medium">
               Porovnáváme nabídky bank
             </p>
-            <div className="flex flex-wrap justify-center gap-x-6 gap-y-2">
+            <div className="flex flex-wrap justify-center gap-x-4 md:gap-x-6 gap-y-1.5">
               {BANKS.map((bank) => (
-                <span key={bank} className="text-xs text-gray-400 font-medium whitespace-nowrap">
+                <span key={bank} className="text-[11px] md:text-xs text-gray-400 font-medium whitespace-nowrap">
                   {bank}
                 </span>
               ))}
@@ -483,10 +490,17 @@ export function ChatArea({ initialSessionId = null }: ChatAreaProps) {
         <div className="bg-gradient-to-t from-[#F5F7FA] via-[#F5F7FA]/95 to-transparent backdrop-blur-md">
           <div className="max-w-[640px] mx-auto px-4 md:px-6 pt-4 pb-4" style={{ paddingBottom: 'max(1rem, env(safe-area-inset-bottom))' }}>
             {inputBar}
-            <div className="flex items-center justify-between mt-2">
+            <div className="flex items-center justify-between mt-2 gap-2">
               <CtaIntensityDial onChange={handleCtaChange} />
-              <p className="text-[11px] text-gray-400">
-                AI průvodce -- orientační výpočty, data z ČNB ARAD. Nesdílejte RČ ani číslo účtu.
+              <button
+                onClick={() => useBadge('Chci se spojit se specialistou na bezplatnou konzultaci.')}
+                className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] text-gray-400 hover:text-[#E91E63] hover:bg-pink-50/50 transition-all flex-shrink-0"
+              >
+                <Phone className="w-3 h-3" />
+                <span className="hidden sm:inline">Expert</span>
+              </button>
+              <p className="text-[10px] md:text-[11px] text-gray-400 truncate">
+                AI průvodce -- data z ČNB ARAD
               </p>
             </div>
           </div>

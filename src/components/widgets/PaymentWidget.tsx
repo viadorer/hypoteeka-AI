@@ -68,8 +68,8 @@ export function PaymentWidget({ propertyPrice, equity, rate, rpsn, years, scenar
         </p>
       </div>
 
-      {/* 3 scenario columns */}
-      <div className="grid grid-cols-3 gap-2 md:gap-3">
+      {/* 3 scenario columns - responsive */}
+      <div className="grid grid-cols-3 gap-1.5 md:gap-3">
         {/* High rate - muted */}
         <ScenarioCard
           label="Nejvyšší na trhu"
@@ -154,18 +154,18 @@ function ScenarioCard({ label, rate, monthly, totalInterest, variant }: {
   }[variant];
 
   return (
-    <div className={`${styles.bg} border ${styles.border} rounded-xl p-2.5 md:p-3 text-center`}>
-      <p className={`text-[10px] md:text-[11px] font-semibold uppercase tracking-wider ${styles.label} mb-1.5 leading-tight min-h-[28px] flex items-center justify-center`}>
+    <div className={`${styles.bg} border ${styles.border} rounded-xl p-2 md:p-3 text-center`}>
+      <p className={`text-[9px] md:text-[11px] font-semibold uppercase tracking-wider ${styles.label} mb-1 leading-tight min-h-[24px] md:min-h-[28px] flex items-center justify-center`}>
         {label}
       </p>
-      <p className={`text-sm md:text-base font-bold ${styles.rate}`}>
+      <p className={`text-xs md:text-base font-bold ${styles.rate}`}>
         {formatPercent(rate)}
       </p>
-      <p className={`text-base md:text-lg font-bold ${styles.monthly} mt-1 truncate`}>
+      <p className={`text-sm md:text-lg font-bold ${styles.monthly} mt-0.5 md:mt-1`}>
         {formatCZK(monthly)}
       </p>
-      <p className="text-[10px] text-gray-400 -mt-0.5">/ měsíc</p>
-      <p className={`text-[10px] ${styles.interest} mt-1.5`}>
+      <p className="text-[9px] md:text-[10px] text-gray-400">/ měsíc</p>
+      <p className={`text-[9px] md:text-[10px] ${styles.interest} mt-1`}>
         Úroky: {formatCZK(totalInterest)}
       </p>
     </div>

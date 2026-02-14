@@ -168,7 +168,7 @@ export function Sidebar({ activeSessionId, currentView, onSelectSession, onConti
 
       {/* Sidebar */}
       <aside className={`
-        fixed left-0 top-0 h-screen w-[320px] bg-white/70 backdrop-blur-2xl border-r border-white/40 flex flex-col z-50
+        fixed left-0 top-0 h-screen w-[min(320px,85vw)] md:w-[320px] bg-white/70 backdrop-blur-2xl border-r border-white/40 flex flex-col z-50
         transition-transform duration-300 ease-out
         md:translate-x-0
         ${mobileOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}

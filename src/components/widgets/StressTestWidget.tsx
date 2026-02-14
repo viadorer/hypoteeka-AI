@@ -26,21 +26,21 @@ export function StressTestWidget({ loanAmount, rate, years }: Props) {
 
       <div className="space-y-0 rounded-xl border border-gray-100 overflow-hidden">
         {/* Header */}
-        <div className="grid grid-cols-3 gap-0 bg-gray-50 px-3 py-2 text-[11px] font-semibold text-gray-500 uppercase tracking-wider">
+        <div className="grid grid-cols-3 gap-0 bg-gray-50 px-2 md:px-3 py-1.5 md:py-2 text-[10px] md:text-[11px] font-semibold text-gray-500 uppercase tracking-wider">
           <span>Sazba</span>
           <span className="text-right">Splátka</span>
           <span className="text-right">Rozdíl</span>
         </div>
 
         {/* Base row */}
-        <div className="grid grid-cols-3 gap-0 px-3 py-2.5 border-t border-gray-50 bg-green-50/50">
-          <span className="text-sm font-medium text-gray-900">
+        <div className="grid grid-cols-3 gap-0 px-2 md:px-3 py-2 md:py-2.5 border-t border-gray-50 bg-green-50/50">
+          <span className="text-xs md:text-sm font-medium text-gray-900">
             {formatPercent(result.baseRate)}
           </span>
-          <span className="text-sm font-medium text-gray-900 text-right">
+          <span className="text-xs md:text-sm font-medium text-gray-900 text-right">
             {formatCZK(result.basePayment)}
           </span>
-          <span className="text-sm text-green-600 text-right font-medium">
+          <span className="text-xs md:text-sm text-green-600 text-right font-medium">
             aktuální
           </span>
         </div>
@@ -50,15 +50,15 @@ export function StressTestWidget({ loanAmount, rate, years }: Props) {
           const severity = s.rateChange <= 0.01 ? 'text-amber-600' : s.rateChange <= 0.02 ? 'text-orange-600' : 'text-red-600';
           const bg = s.rateChange <= 0.01 ? 'bg-amber-50/30' : s.rateChange <= 0.02 ? 'bg-orange-50/30' : 'bg-red-50/30';
           return (
-            <div key={s.rateChange} className={`grid grid-cols-3 gap-0 px-3 py-2.5 border-t border-gray-50 ${bg}`}>
-              <span className="text-sm text-gray-900">
+            <div key={s.rateChange} className={`grid grid-cols-3 gap-0 px-2 md:px-3 py-2 md:py-2.5 border-t border-gray-50 ${bg}`}>
+              <span className="text-xs md:text-sm text-gray-900">
                 {formatPercent(s.newRate)}
-                <span className="text-[10px] text-gray-400 ml-1">+{(s.rateChange * 100).toFixed(0)}pp</span>
+                <span className="text-[9px] md:text-[10px] text-gray-400 ml-0.5 md:ml-1">+{(s.rateChange * 100).toFixed(0)}pp</span>
               </span>
-              <span className="text-sm text-gray-900 text-right">
+              <span className="text-xs md:text-sm text-gray-900 text-right">
                 {formatCZK(s.monthlyPayment)}
               </span>
-              <span className={`text-sm text-right font-medium ${severity}`}>
+              <span className={`text-xs md:text-sm text-right font-medium ${severity}`}>
                 +{formatCZK(s.difference)}
               </span>
             </div>
