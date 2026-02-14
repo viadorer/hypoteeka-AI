@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
-import { Menu, X, Plus, MessageSquare, BarChart3, FolderPlus, LogIn, UserPlus, LogOut, KeyRound, ChevronRight, User, Trash2, Newspaper } from 'lucide-react';
+import { Menu, X, Plus, MessageSquare, BarChart3, LogIn, LogOut, KeyRound, User, Trash2 } from 'lucide-react';
 import { useAuth } from '@/lib/auth/auth-context';
 
 interface SessionSummary {
@@ -16,6 +16,7 @@ interface SessionSummary {
     monthlyIncome?: number;
     name?: string;
     email?: string;
+    phone?: string;
   };
   state: {
     phase: string;
@@ -27,14 +28,6 @@ interface SessionSummary {
     dataCollected: string[];
   };
   createdAt: string;
-  updatedAt: string;
-}
-
-interface ProjectSummary {
-  id: string;
-  name: string;
-  description?: string;
-  sessionCount: number;
   updatedAt: string;
 }
 
@@ -82,6 +75,28 @@ function phaseLabel(phase: string): string {
   return map[phase] ?? phase;
 }
 
+function leadBadge(score: number, qualified: boolean, captured: boolean): { label: string; color: string } {
+  if (captured) return { label: 'Lead', color: 'bg-green-100 text-green-700' };
+  if (qualified) return { label: 'Kvalifikovaný', color: 'bg-emerald-100 text-emerald-700' };
+  if (score >= 61) return { label: 'Hot', color: 'bg-orange-100 text-orange-700' };
+  if (score >= 31) return { label: 'Warm', color: 'bg-amber-100 text-amber-700' };
+  return { label: '', color: '' };
+}
+
+function sessionSubtitle(s: SessionSummary): string {
+  const parts: string[] = [];
+  if (s.profile.purpose) {
+    const purposeMap: Record<string, string> = { 'vlastni_bydleni': 'Vlastní bydlení', 'investice': 'Investice', 'refinancovani': 'Refinancování' };
+    parts.push(purposeMap[s.profile.purpose] ?? s.profile.purpose);
+  }
+  if (s.profile.location) parts.push(s.profile.location);
+  if (s.profile.propertyType) {
+    const typeMap: Record<string, string> = { 'byt': 'Byt', 'dum': 'Dům', 'pozemek': 'Pozemek' };
+    parts.push(typeMap[s.profile.propertyType] ?? s.profile.propertyType);
+  }
+  return parts.join(' / ');
+}
+
 type AuthView = 'none' | 'login' | 'signup' | 'change-password';
 
 export function Sidebar({ activeSessionId, currentView, onSelectSession, onContinueChat, onNewChat, onShowNews }: SidebarProps) {
@@ -94,11 +109,6 @@ export function Sidebar({ activeSessionId, currentView, onSelectSession, onConti
       return stored ? new Set(JSON.parse(stored)) : new Set();
     } catch { return new Set(); }
   });
-  const [projects, setProjects] = useState<ProjectSummary[]>([]);
-  const [showNewProject, setShowNewProject] = useState(false);
-  const [newProjectName, setNewProjectName] = useState('');
-  const [newProjectDesc, setNewProjectDesc] = useState('');
-  const [projectsExpanded, setProjectsExpanded] = useState(false);
   const [authView, setAuthView] = useState<AuthView>('none');
   const [authEmail, setAuthEmail] = useState('');
   const [authPassword, setAuthPassword] = useState('');
@@ -106,7 +116,8 @@ export function Sidebar({ activeSessionId, currentView, onSelectSession, onConti
   const [authError, setAuthError] = useState('');
   const [authLoading, setAuthLoading] = useState(false);
   const [authSuccess, setAuthSuccess] = useState('');
-  const { user, login, signup, logout, changePassword } = useAuth();
+  const { user, login, signup, loginWithOAuth, logout, changePassword } = useAuth();
+  const [oauthLoading, setOauthLoading] = useState<string | null>(null);
 
   // Load sessions for chat history
   useEffect(() => {
@@ -116,42 +127,6 @@ export function Sidebar({ activeSessionId, currentView, onSelectSession, onConti
       .catch(() => setSessions([]));
   }, [activeSessionId]);
 
-  // Load projects
-  useEffect(() => {
-    fetch('/api/projects')
-      .then(r => r.json())
-      .then((data: ProjectSummary[]) => { if (Array.isArray(data)) setProjects(data); })
-      .catch(() => setProjects([]));
-  }, []);
-
-  const createProject = async () => {
-    if (!newProjectName.trim()) return;
-    try {
-      const res = await fetch('/api/projects', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: newProjectName.trim(),
-          description: newProjectDesc.trim() || undefined,
-          sessionId: activeSessionId ?? undefined,
-        }),
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setProjects(prev => [{ id: data.id, name: data.name, description: newProjectDesc.trim() || undefined, sessionCount: activeSessionId ? 1 : 0, updatedAt: new Date().toISOString() }, ...prev]);
-        setNewProjectName('');
-        setNewProjectDesc('');
-        setShowNewProject(false);
-      }
-    } catch { /* ignore */ }
-  };
-
-  const deleteProject = async (projectId: string) => {
-    try {
-      await fetch(`/api/projects/${projectId}`, { method: 'DELETE' });
-      setProjects(prev => prev.filter(p => p.id !== projectId));
-    } catch { /* ignore */ }
-  };
 
   const handleContinue = (id: string) => {
     onContinueChat(id);
@@ -233,103 +208,7 @@ export function Sidebar({ activeSessionId, currentView, onSelectSession, onConti
             <MessageSquare className="w-5 h-5" />
             Konzultace
           </button>
-          {/* <button
-            onClick={() => { if (activeSessionId) onSelectSession(activeSessionId); setMobileOpen(false); }}
-            className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-[15px] font-medium transition-all ${
-              currentView === 'dashboard' ? 'bg-blue-50/80 text-[#0A1E5C]' : 'text-gray-600 hover:bg-gray-50/80'
-            }`}
-          >
-            <BarChart3 className="w-5 h-5" />
-            Analýzy
-          </button> */}
-          {/* <button
-            onClick={() => setProjectsExpanded(!projectsExpanded)}
-            className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-[15px] font-medium transition-all ${
-              projectsExpanded ? 'bg-blue-50/80 text-[#0A1E5C]' : 'text-gray-600 hover:bg-gray-50/80'
-            }`}
-          >
-            <FolderPlus className="w-5 h-5" />
-            Projekty
-            {projects.length > 0 && (
-              <span className="ml-auto text-[10px] bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded-full">{projects.length}</span>
-            )}
-          </button> */}
-          {/* <button
-            onClick={() => { onShowNews(); setMobileOpen(false); }}
-            className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-base font-medium transition-all ${
-              currentView === 'news' ? 'bg-blue-50/80 text-[#0A1E5C]' : 'text-gray-600 hover:bg-gray-50/80'
-            }`}
-          >
-            <Newspaper className="w-5 h-5" />
-            Novinky
-          </button> */}
         </div>
-
-        {/* Projects section */}
-        {projectsExpanded && (
-          <div className="px-4 py-2 border-t border-gray-100/50 space-y-2 max-h-[200px] overflow-y-auto">
-            {projects.length === 0 && !showNewProject && (
-              <p className="text-xs text-gray-300 px-1 py-1">Zatím žádné projekty.</p>
-            )}
-            {projects.map(p => (
-              <div key={p.id} className="group flex items-center gap-2 px-3 py-2 rounded-xl hover:bg-gray-50/80 transition-all">
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-gray-800 truncate">{p.name}</p>
-                  {p.description && <p className="text-[11px] text-gray-400 truncate">{p.description}</p>}
-                  <p className="text-[10px] text-gray-300">{p.sessionCount} konzultací</p>
-                </div>
-                <button
-                  onClick={() => deleteProject(p.id)}
-                  className="opacity-0 group-hover:opacity-100 p-1 rounded-lg hover:bg-red-50 text-gray-300 hover:text-red-400 transition-all"
-                >
-                  <Trash2 className="w-3.5 h-3.5" />
-                </button>
-              </div>
-            ))}
-            {showNewProject ? (
-              <div className="space-y-2 px-1">
-                <input
-                  type="text"
-                  placeholder="Název projektu *"
-                  value={newProjectName}
-                  onChange={e => setNewProjectName(e.target.value)}
-                  autoFocus
-                  className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm outline-none focus:border-[#E91E63]/40"
-                />
-                <input
-                  type="text"
-                  placeholder="Popis (volitelný)"
-                  value={newProjectDesc}
-                  onChange={e => setNewProjectDesc(e.target.value)}
-                  className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm outline-none focus:border-[#E91E63]/40"
-                />
-                <div className="flex gap-2">
-                  <button
-                    onClick={createProject}
-                    disabled={!newProjectName.trim()}
-                    className="flex-1 px-3 py-2 rounded-lg bg-[#E91E63] hover:bg-[#C2185B] disabled:bg-gray-200 text-white text-sm font-medium transition-all"
-                  >
-                    Vytvořit
-                  </button>
-                  <button
-                    onClick={() => { setShowNewProject(false); setNewProjectName(''); setNewProjectDesc(''); }}
-                    className="px-3 py-2 rounded-lg text-sm text-gray-500 hover:bg-gray-50 transition-all"
-                  >
-                    Zrušit
-                  </button>
-                </div>
-              </div>
-            ) : (
-              <button
-                onClick={() => setShowNewProject(true)}
-                className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-sm text-gray-500 hover:bg-gray-50/80 transition-all"
-              >
-                <Plus className="w-4 h-4" />
-                Nový projekt
-              </button>
-            )}
-          </div>
-        )}
 
         {/* Previous chats */}
         <div className="flex-1 overflow-y-auto px-4 py-2 border-t border-gray-100/50">
@@ -341,54 +220,88 @@ export function Sidebar({ activeSessionId, currentView, onSelectSession, onConti
             <p className="text-sm text-gray-300 px-1 py-2">Zatím žádné konverzace.</p>
           )}
 
-          <div className="space-y-1">
+          <div className="space-y-1.5">
             {chatSessions.map((s) => {
               const isActive = activeSessionId === s.id;
               const title = chatTitle(s);
+              const subtitle = sessionSubtitle(s);
+              const badge = leadBadge(s.state.leadScore, s.state.leadQualified, s.state.leadCaptured);
+              const hasContact = !!(s.profile.email || s.profile.phone);
+              const hasName = !!s.profile.name;
               return (
                 <div
                   key={s.id}
                   className={`group rounded-xl transition-all ${
-                    isActive ? 'bg-[#E91E63]/5' : 'hover:bg-gray-50/80'
+                    isActive ? 'bg-[#E91E63]/5 ring-1 ring-[#E91E63]/20' : 'hover:bg-gray-50/80'
                   }`}
                 >
                   <button
                     onClick={() => handleContinue(s.id)}
                     className="w-full text-left px-3 py-2.5 cursor-pointer"
                   >
-                    <div className="flex items-center justify-between">
+                    {/* Row 1: Title + time */}
+                    <div className="flex items-center justify-between gap-2">
                       <span className={`text-[15px] font-medium truncate ${isActive ? 'text-[#E91E63]' : 'text-gray-800'}`}>
-                        {title}
+                        {hasName ? s.profile.name : title}
                       </span>
-                      <span className="text-[11px] text-gray-400 flex-shrink-0 ml-2">
+                      <span className="text-[10px] text-gray-400 flex-shrink-0">
                         {timeAgo(s.updatedAt)}
                       </span>
                     </div>
-                    <div className="flex items-center gap-2 mt-0.5">
-                      <span className={`text-xs ${
-                        s.state.phase === 'followup' ? 'text-green-600' : 'text-gray-400'
+                    {/* Row 2: Price + subtitle */}
+                    {(hasName && s.profile.propertyPrice) && (
+                      <p className="text-xs text-gray-500 truncate mt-0.5">
+                        {fmt(s.profile.propertyPrice)} Kc
+                      </p>
+                    )}
+                    {subtitle && (
+                      <p className="text-[11px] text-gray-400 truncate mt-0.5">{subtitle}</p>
+                    )}
+                    {/* Row 3: Badges */}
+                    <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
+                      {/* Phase */}
+                      <span className={`text-[10px] px-1.5 py-0.5 rounded-md ${
+                        s.state.phase === 'followup' ? 'bg-green-50 text-green-600' :
+                        s.state.phase === 'conversion' ? 'bg-blue-50 text-blue-600' :
+                        s.state.phase === 'qualification' ? 'bg-purple-50 text-purple-600' :
+                        'bg-gray-50 text-gray-400'
                       }`}>
                         {phaseLabel(s.state.phase)}
                       </span>
-                      <span className="text-xs text-gray-300">{s.state.turnCount} zpráv</span>
+                      {/* Lead badge */}
+                      {badge.label && (
+                        <span className={`text-[10px] px-1.5 py-0.5 rounded-md font-medium ${badge.color}`}>
+                          {badge.label}
+                        </span>
+                      )}
+                      {/* Contact indicator */}
+                      {hasContact && (
+                        <span className="text-[10px] px-1.5 py-0.5 rounded-md bg-green-50 text-green-600">
+                          {s.profile.email ? 'Email' : 'Tel'}
+                        </span>
+                      )}
+                      {/* Widget count */}
+                      {s.state.widgetsShown.length > 0 && (
+                        <span className="text-[10px] text-gray-300">
+                          {s.state.widgetsShown.length} vypoctu
+                        </span>
+                      )}
                     </div>
                   </button>
-                  {/* Quick actions: analyse + delete */}
-                  <div className="hidden group-hover:flex items-center gap-2 px-3 pb-2 -mt-1">
+                  {/* Quick actions on hover */}
+                  <div className="hidden group-hover:flex items-center gap-2 px-3 pb-2 -mt-0.5">
                     <button
                       onClick={() => handleAnalyse(s.id)}
-                      className="flex items-center gap-1 text-xs text-gray-400 hover:text-[#E91E63] transition-colors"
+                      className="flex items-center gap-1 text-[11px] text-gray-400 hover:text-[#E91E63] transition-colors"
                     >
                       <BarChart3 className="w-3.5 h-3.5" />
-                      Analýza
-                      <ChevronRight className="w-3.5 h-3.5" />
+                      Analyza
                     </button>
                     <button
                       onClick={(e) => { e.stopPropagation(); hideSession(s.id); }}
-                      className="flex items-center gap-1 text-xs text-gray-400 hover:text-red-500 transition-colors ml-auto"
+                      className="flex items-center gap-1 text-[11px] text-gray-400 hover:text-red-500 transition-colors ml-auto"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
-                      Smazat
                     </button>
                   </div>
                 </div>
@@ -422,25 +335,51 @@ export function Sidebar({ activeSessionId, currentView, onSelectSession, onConti
               </button>
             </div>
           ) : authView === 'none' ? (
-            /* Not logged in - show buttons */
-            <div className="space-y-1">
+            /* Not logged in - OAuth first, email as fallback */
+            <div className="space-y-2">
+              <p className="text-[11px] font-semibold uppercase tracking-wider text-gray-400 px-1">Přihlášení</p>
+              {/* OAuth buttons */}
               <button
-                onClick={() => { setAuthView('login'); setAuthError(''); setAuthEmail(''); setAuthPassword(''); }}
-                className="w-full flex items-center gap-2 px-3 py-2.5 rounded-xl text-sm text-gray-500 hover:bg-gray-50/80 transition-all"
+                onClick={async () => { setOauthLoading('google'); setAuthError(''); const r = await loginWithOAuth('google'); if (r.error) { setAuthError(r.error); setOauthLoading(null); } }}
+                disabled={!!oauthLoading}
+                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-gray-700 bg-white border border-gray-200 hover:bg-gray-50 transition-all disabled:opacity-50"
               >
-                <LogIn className="w-4 h-4" />
-                Přihlásit se
+                <svg className="w-4 h-4 flex-shrink-0" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 01-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+                {oauthLoading === 'google' ? 'Přesměrování...' : 'Pokračovat přes Google'}
               </button>
               <button
-                onClick={() => { setAuthView('signup'); setAuthError(''); setAuthEmail(''); setAuthPassword(''); setAuthName(''); }}
-                className="w-full flex items-center gap-2 px-3 py-2.5 rounded-xl text-sm text-gray-500 hover:bg-gray-50/80 transition-all"
+                onClick={async () => { setOauthLoading('facebook'); setAuthError(''); const r = await loginWithOAuth('facebook'); if (r.error) { setAuthError(r.error); setOauthLoading(null); } }}
+                disabled={!!oauthLoading}
+                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-white bg-[#1877F2] hover:bg-[#166FE5] transition-all disabled:opacity-50"
               >
-                <UserPlus className="w-4 h-4" />
-                Registrace
+                <svg className="w-4 h-4 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+                {oauthLoading === 'facebook' ? 'Přesměrování...' : 'Pokračovat přes Facebook'}
+              </button>
+              <button
+                onClick={async () => { setOauthLoading('apple'); setAuthError(''); const r = await loginWithOAuth('apple'); if (r.error) { setAuthError(r.error); setOauthLoading(null); } }}
+                disabled={!!oauthLoading}
+                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-white bg-black hover:bg-gray-900 transition-all disabled:opacity-50"
+              >
+                <svg className="w-4 h-4 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24"><path d="M17.05 20.28c-.98.95-2.05.88-3.08.4-1.09-.5-2.08-.48-3.24 0-1.44.62-2.2.44-3.06-.4C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"/></svg>
+                {oauthLoading === 'apple' ? 'Přesměrování...' : 'Pokračovat přes Apple'}
+              </button>
+              {authError && <p className="text-xs text-red-500 px-1">{authError}</p>}
+              {/* Email fallback */}
+              <div className="flex items-center gap-2 px-1">
+                <div className="flex-1 h-px bg-gray-200" />
+                <span className="text-[10px] text-gray-400">nebo</span>
+                <div className="flex-1 h-px bg-gray-200" />
+              </div>
+              <button
+                onClick={() => { setAuthView('login'); setAuthError(''); setAuthEmail(''); setAuthPassword(''); }}
+                className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-xl text-xs text-gray-400 hover:text-gray-600 hover:bg-gray-50/80 transition-all"
+              >
+                <LogIn className="w-3.5 h-3.5" />
+                Přihlásit se e-mailem
               </button>
             </div>
           ) : (
-            /* Auth form */
+            /* Auth form (email/password) */
             <form
               onSubmit={async (e) => {
                 e.preventDefault();
@@ -466,7 +405,7 @@ export function Sidebar({ activeSessionId, currentView, onSelectSession, onConti
               className="space-y-2"
             >
               <p className="text-xs font-medium text-gray-600 px-1">
-                {authView === 'login' ? 'Přihlášení' : authView === 'signup' ? 'Registrace' : 'Změna hesla'}
+                {authView === 'login' ? 'Přihlášení e-mailem' : authView === 'signup' ? 'Registrace' : 'Změna hesla'}
               </p>
               {authView === 'signup' && (
                 <input
@@ -516,12 +455,11 @@ export function Sidebar({ activeSessionId, currentView, onSelectSession, onConti
                 </button>
               )}
               <button type="button" onClick={() => setAuthView('none')} className="w-full text-[11px] text-gray-400 py-0.5">
-                Zrušit
+                Zpět
               </button>
             </form>
           )}
-          <p className="text-[10px] text-gray-300 text-center">Hypoteeka AI v0.4</p>
-          <p className="text-[10px] text-gray-300 text-center">Created by David Choc</p>
+          <p className="text-[10px] text-gray-300 text-center">Hypoteeka AI v0.5</p>
         </div>
       </aside>
     </>

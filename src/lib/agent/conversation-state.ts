@@ -18,8 +18,11 @@ export type ConversationPhase =
   | 'conversion'
   | 'followup';
 
+export type ClientPersona = 'unknown' | 'first_time_buyer' | 'experienced';
+
 export interface ConversationState {
   phase: ConversationPhase;
+  persona: ClientPersona;
   widgetsShown: string[];
   questionsAsked: string[];
   dataCollected: string[];
@@ -32,6 +35,7 @@ export interface ConversationState {
 export function createInitialState(): ConversationState {
   return {
     phase: 'greeting',
+    persona: 'unknown',
     widgetsShown: [],
     questionsAsked: [],
     dataCollected: [],
@@ -142,4 +146,46 @@ export function getNextQuestion(
   }
 
   return null;
+}
+
+/**
+ * Detekce persony klienta z profilu
+ * - first_time_buyer: mladý (do 36), kupuje poprvé, nemá zkušenosti
+ * - experienced: starší, refinancuje, investuje, zná terminologii
+ */
+export function detectPersona(profile: {
+  age?: number;
+  purpose?: string;
+  existingMortgageBalance?: number;
+  existingMortgageRate?: number;
+  propertyPrice?: number;
+  equity?: number;
+}): ClientPersona {
+  // Refinancování nebo existující hypotéka = zkušený
+  if (profile.purpose === 'refinancovani' || profile.existingMortgageBalance || profile.existingMortgageRate) {
+    return 'experienced';
+  }
+
+  // Investice = zkušený
+  if (profile.purpose === 'investice') {
+    return 'experienced';
+  }
+
+  // Mladý = prvokupující
+  if (profile.age && profile.age <= 36) {
+    return 'first_time_buyer';
+  }
+
+  // Starší bez dalších signálů = zkušený
+  if (profile.age && profile.age > 40) {
+    return 'experienced';
+  }
+
+  // Nízké equity vůči ceně = pravděpodobně prvokupující
+  if (profile.propertyPrice && profile.equity !== undefined && profile.equity !== null) {
+    const equityRatio = profile.equity / profile.propertyPrice;
+    if (equityRatio < 0.15) return 'first_time_buyer';
+  }
+
+  return 'unknown';
 }

@@ -33,6 +33,7 @@ export class SupabaseStorage implements StorageProvider {
       profile: data.client_profile ?? {},
       state: {
         phase: data.phase,
+        persona: data.conversation_state?.persona ?? 'unknown',
         widgetsShown: data.conversation_state?.widgetsShown ?? [],
         questionsAsked: data.conversation_state?.questionsAsked ?? [],
         dataCollected: data.conversation_state?.dataCollected ?? [],
@@ -124,6 +125,7 @@ export class SupabaseStorage implements StorageProvider {
       profile: row.client_profile ?? {},
       state: {
         phase: row.phase,
+        persona: row.conversation_state?.persona ?? 'unknown',
         widgetsShown: row.conversation_state?.widgetsShown ?? [],
         questionsAsked: row.conversation_state?.questionsAsked ?? [],
         dataCollected: row.conversation_state?.dataCollected ?? [],

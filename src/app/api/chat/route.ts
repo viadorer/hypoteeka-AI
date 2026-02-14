@@ -2,7 +2,7 @@ import { streamText, stepCountIs, convertToModelMessages } from 'ai';
 import { createGoogleGenerativeAI } from '@ai-sdk/google';
 import { toolDefinitions } from '@/lib/ai-tools';
 import type { ClientProfile } from '@/lib/agent/client-profile';
-import { createInitialState, determinePhase } from '@/lib/agent/conversation-state';
+import { createInitialState, determinePhase, detectPersona } from '@/lib/agent/conversation-state';
 import type { ConversationState } from '@/lib/agent/conversation-state';
 import { calculateLeadScore } from '@/lib/agent/lead-scoring';
 import { buildAgentPrompt } from '@/lib/agent/prompt-builder';
@@ -139,6 +139,7 @@ export async function POST(req: Request) {
     state.widgetsShown = getShownWidgets(messages);
     state.turnCount = profile.messageCount ?? 0;
     state.phase = determinePhase(state, collectedFields);
+    state.persona = detectPersona(profile);
 
     // Calculate lead score
     const leadScore = calculateLeadScore(profile, state);

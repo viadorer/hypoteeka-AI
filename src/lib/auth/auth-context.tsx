@@ -10,11 +10,14 @@ interface AuthUser {
   name?: string;
 }
 
+type OAuthProvider = 'google' | 'facebook' | 'apple';
+
 interface AuthContextType {
   user: AuthUser | null;
   loading: boolean;
   login: (email: string, password: string) => Promise<{ error?: string }>;
   signup: (email: string, password: string, name?: string) => Promise<{ error?: string; needsConfirmation?: boolean }>;
+  loginWithOAuth: (provider: OAuthProvider) => Promise<{ error?: string }>;
   logout: () => Promise<void>;
   changePassword: (password: string) => Promise<{ error?: string }>;
   forgotPassword: (email: string) => Promise<{ error?: string; message?: string }>;
@@ -114,8 +117,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return { message: data.message };
   }, []);
 
+  const loginWithOAuth = useCallback(async (provider: OAuthProvider) => {
+    const supabase = createSupabaseBrowser();
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider,
+      options: {
+        redirectTo: `${window.location.origin}/auth/callback`,
+      },
+    });
+    if (error) return { error: error.message };
+    return {};
+  }, []);
+
   return (
-    <AuthContext.Provider value={{ user, loading, login, signup, logout, changePassword, forgotPassword }}>
+    <AuthContext.Provider value={{ user, loading, login, signup, loginWithOAuth, logout, changePassword, forgotPassword }}>
       {children}
     </AuthContext.Provider>
   );

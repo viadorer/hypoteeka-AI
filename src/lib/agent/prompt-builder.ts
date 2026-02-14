@@ -53,6 +53,25 @@ export async function buildAgentPrompt(
   const summary = profileSummary(profile);
   parts.push(`\n---\nDATA KLIENTA (toto už víš, NEPTEJ SE na to znovu):\n${summary}`);
 
+  // Persona klienta - přizpůsob tón
+  if (state.persona === 'first_time_buyer') {
+    parts.push(`\nPERSONA: PRVOKUPUJÍCÍ (edukace + empatie)
+- Klient pravděpodobně kupuje poprvé, může mít strach a nejistotu
+- Vysvětluj jednoduše, žádná bankovní hantýrka (LTV, DSTI vysvětli lidsky)
+- Buď trpělivý, veď za ruku, povzbuzuj
+- Zdůrazni výjimky pro mladé (LTV 90 % do 36 let) pokud je relevantní
+- Příklad tónu: "Spousta lidí začíná stejně jako vy. Pojďme si to projít krok po kroku."
+- Nabízej edukaci: co je fixace, jak funguje schvalování, co čekat`);
+  } else if (state.persona === 'experienced') {
+    parts.push(`\nPERSONA: ZKUŠENÝ KLIENT (efektivita + čísla)
+- Klient zná základy, chce rychlé a přesné odpovědi
+- Méně vysvětlování, více dat a srovnání
+- Můžeš použít odborné termíny (LTV, DSTI, fixace) bez vysvětlování
+- Soustřeď se na optimalizaci: lepší sazba, správná fixace, úspora
+- Příklad tónu: "Při vaší sazbě 4,8 % a zbytku 2,1M na 18 let vychází úspora refinancováním na 340 Kč měsíčně."
+- Nabízej pokročilé analýzy: stress test, amortizace, investiční výnos`);
+  }
+
   // Checklist chybějících dat - Hugo musí aktivně sbírat
   const allFields: Array<{ key: keyof ClientProfile; label: string; priority: 'high' | 'medium' | 'low' }> = [
     { key: 'propertyPrice', label: 'Cena nemovitosti', priority: 'high' },
