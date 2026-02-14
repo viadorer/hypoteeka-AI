@@ -62,6 +62,22 @@ export async function buildAgentPrompt(
 - Zdůrazni výjimky pro mladé (LTV 90 % do 36 let) pokud je relevantní
 - Příklad tónu: "Spousta lidí začíná stejně jako vy. Pojďme si to projít krok po kroku."
 - Nabízej edukaci: co je fixace, jak funguje schvalování, co čekat`);
+  } else if (state.persona === 'investor') {
+    parts.push(`\nPERSONA: INVESTOR (expertní přístup + čísla)
+- Klient hledá pákový efekt a výnosnost, ne bydlení
+- Mluv jazykem investic: cash flow, výnosnost, pákový efekt
+- Zdůrazni specifika investičních hypoték: vyšší LTV požadavky, vyšší sazba
+- Nabídni investiční analýzu (show_investment) co nejdříve
+- Zmiň možnost kombinace se stavebním spořením pro vykrytí vlastních zdrojů
+- Příklad tónu: "Při nájmu 15 000 Kč a splátce 12 000 Kč vychází kladný cash flow. Pojďme to spočítat přesně."`);
+  } else if (state.persona === 'complex_case') {
+    parts.push(`\nPERSONA: KOMPLIKOVANÝ PŘÍPAD (empatie + řešení)
+- Klient může mít: OSVČ příjmy, kombinované příjmy, příjmy ze zahraničí, předchozí zamítnutí
+- NIKDY neříkej "to nepůjde" -- vždy ukaž cestu
+- Zdůrazni, že specialista řeší i složitější případy
+- Buď extra empatický -- klient pravděpodobně už zažil odmítnutí
+- Příklad tónu: "Rozumím, OSVČ příjmy mají svá specifika. Pojďme se podívat na vaši situaci -- banky mají různé přístupy."
+- Sbírej data normálně, ale při kvalifikaci vždy nabídni specialistu`);
   } else if (state.persona === 'experienced') {
     parts.push(`\nPERSONA: ZKUŠENÝ KLIENT (efektivita + čísla)
 - Klient zná základy, chce rychlé a přesné odpovědi

@@ -296,7 +296,7 @@ export function ChatArea({ initialSessionId = null }: ChatAreaProps) {
                 </div>
               </div>
               <p className="text-center text-[10px] text-gray-400 mt-3">
-                Zdroj: ČNB ARAD -- Díky exkluzivním smlouvám nabízíme výhodnější podmínky
+                Zdroj: ČNB ARAD
               </p>
             </div>
           )}
@@ -368,8 +368,8 @@ export function ChatArea({ initialSessionId = null }: ChatAreaProps) {
 
           {/* Footer */}
           <div className={`rounded-xl px-6 py-3 text-center text-[11px] text-gray-400 max-w-lg ${glass}`}>
-            <p>Hypoteeka AI používá metodiku ČNB 2026 a live data z ČNB ARAD. Výsledky jsou orientační.</p>
-            <p className="mt-1">Vaše data zpracováváme pouze pro účely kalkulace a nejsou sdílena třetím stranám.</p>
+            <p>Hugo je AI průvodce hypotékami. Výpočty jsou orientační -- konkrétní nabídky řeší certifikovaný specialista.</p>
+            <p className="mt-1">Data z ČNB ARAD. Citlivé údaje (RČ, číslo účtu) prosím nesdílejte v chatu.</p>
           </div>
         </div>
       </div>
@@ -486,7 +486,7 @@ export function ChatArea({ initialSessionId = null }: ChatAreaProps) {
             <div className="flex items-center justify-between mt-2">
               <CtaIntensityDial onChange={handleCtaChange} />
               <p className="text-[11px] text-gray-400">
-                Hypoteeka AI -- metodika ČNB 2026, live REPO, data z ČNB. Výsledky jsou orientační.
+                AI průvodce -- orientační výpočty, data z ČNB ARAD. Nesdílejte RČ ani číslo účtu.
               </p>
             </div>
           </div>

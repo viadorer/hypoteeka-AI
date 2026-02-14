@@ -18,7 +18,7 @@ export type ConversationPhase =
   | 'conversion'
   | 'followup';
 
-export type ClientPersona = 'unknown' | 'first_time_buyer' | 'experienced';
+export type ClientPersona = 'unknown' | 'first_time_buyer' | 'experienced' | 'investor' | 'complex_case';
 
 export interface ConversationState {
   phase: ConversationPhase;
@@ -160,15 +160,22 @@ export function detectPersona(profile: {
   existingMortgageRate?: number;
   propertyPrice?: number;
   equity?: number;
+  employmentType?: string;
+  expectedRentalIncome?: number;
 }): ClientPersona {
+  // Investice = investor
+  if (profile.purpose === 'investice' || profile.expectedRentalIncome) {
+    return 'investor';
+  }
+
   // Refinancování nebo existující hypotéka = zkušený
   if (profile.purpose === 'refinancovani' || profile.existingMortgageBalance || profile.existingMortgageRate) {
     return 'experienced';
   }
 
-  // Investice = zkušený
-  if (profile.purpose === 'investice') {
-    return 'experienced';
+  // OSVČ nebo kombinované příjmy = potenciálně komplikovaný případ
+  if (profile.employmentType === 'osvc' || profile.employmentType === 'kombinace') {
+    return 'complex_case';
   }
 
   // Mladý = prvokupující
