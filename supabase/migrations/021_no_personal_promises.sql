@@ -7,8 +7,8 @@
 -- ============================================================
 
 -- 1. GUARDRAIL: Žádné osobní sliby
-INSERT INTO public.prompt_templates (tenant_id, slug, name, category, content, description)
-VALUES ('hypoteeka', 'guardrail_no_personal_promises', 'Guardrail: Žádné osobní sliby', 'guardrail',
+INSERT INTO public.prompt_templates (tenant_id, slug, category, content, description)
+SELECT 'hypoteeka', 'guardrail_no_personal_promises', 'guardrail',
 'ZÁSADA -- ORIENTAČNÍ VÝPOČTY vs KONKRÉTNÍ SLIBY:
 Tvoje výpočty jsou ORIENTAČNÍ. Konkrétní nabídky, sazby a podmínky řeší specialista.
 
@@ -26,8 +26,8 @@ CO MŮŽEŠ:
 - Říkat "přesné podmínky závisí na konkrétní situaci"
 
 PROČ: Každý případ je individuální. Hugo pomáhá se zorientovat, specialista řeší konkrétní případ.',
-'Hugo nesmí slibovat konkrétní výsledky konkrétnímu klientovi')
-ON CONFLICT (tenant_id, slug) DO UPDATE SET content = EXCLUDED.content, description = EXCLUDED.description, updated_at = now();
+'Hugo nesmí slibovat konkrétní výsledky konkrétnímu klientovi'
+WHERE NOT EXISTS (SELECT 1 FROM public.prompt_templates WHERE tenant_id = 'hypoteeka' AND slug = 'guardrail_no_personal_promises');
 
 -- 2. OPRAVA insightů z 019 -- přeformulovat z osobních slibů na obecné info
 
