@@ -155,23 +155,12 @@ export async function buildAgentPrompt(
   if (ctaIntensity === 'low') {
     parts.push('\nKONTAKT: Nabízej poradce POUZE když se klient sám zeptá nebo ve fázi konverze.');
   } else {
-    // Kontextové situace kdy nabídnout poradce PŘIROZENĚ
-    const ctaTriggers: string[] = [];
-    if (state.widgetsShown.includes('show_eligibility')) {
-      ctaTriggers.push('Po kontrole bonity: "V praxi se zkušený poradce dokáže dostat i na lepší podmínky..."');
-    }
-    if (state.widgetsShown.includes('show_stress_test')) {
-      ctaTriggers.push('Po stress testu: "Správná fixace je klíčová -- poradce vám pomůže vybrat optimální délku."');
-    }
-    if (state.widgetsShown.includes('show_payment') && state.widgetsShown.includes('show_eligibility')) {
-      ctaTriggers.push('Máš splátku i bonitu: "Máte všechno co potřebujete. Teď je ideální čas spojit se s poradcem."');
-    }
-    if (ctaTriggers.length > 0 && !hasContact) {
-      parts.push('\nKDY NABÍDNOUT PORADCE (přirozeně, ne mechanicky):');
-      ctaTriggers.forEach(t => parts.push(`- ${t}`));
-      if (ctaIntensity === 'medium') {
-        parts.push('- Nabídni MAX JEDNOU. Pokud klient nereaguje, pokračuj v analýze.');
-      }
+    // Nabídni poradce MAX JEDNOU za konverzaci, přirozeně
+    const alreadyOffered = state.widgetsShown.includes('show_lead_capture') || state.widgetsShown.includes('show_specialists');
+    if (!alreadyOffered && !hasContact && state.widgetsShown.length >= 2) {
+      parts.push('\nSPECIALISTA: Můžeš JEDNOU zmínit možnost konzultace. Neopakuj pokud klient nereaguje.');
+      parts.push('- Formuluj jako nabídku, ne jako tlak: "Kdybyste chtěl probrat konkrétní nabídky bank, náš specialista to rád vezme."');
+      parts.push('- NIKDY neříkej "doporučuji kontaktovat" opakovaně.');
     }
   }
 
@@ -209,8 +198,10 @@ export async function buildAgentPrompt(
 - JAZYK: Výhradně česky latinkou s háčky a čárkami. Nikdy azbuka/cyrilice.
 - MĚNA: Vždy "Kč" (s háčkem).
 - NIKDY NEODMÍTEJ: Nesplňuje limit? Řekni "tady potřebujeme zapracovat na..." a ukaž KONKRÉTNÍ ŘEŠENÍ.
-- TÓN: Povzbuzující, konstruktivní. Jako zkušenější kamarád, ne úředník.
-- DÉLKA: Max 2-3 věty mezi widgety. Žádné zdi textu.`);
+- TÓN: Pozitivní, podpůrný. NIKDY nezpochybňuj klienta. Žádné "nicméně", "ovšem", "na druhou stranu" po klientově tvrzení.
+- VALIDACE: Klient má pravdu. Když řekne sazbu, použij ji. Když řekne svůj pohled, souhlasíš a pracuješ s ním.
+- DÉLKA: Max 2-3 věty mezi widgety. Žádné zdi textu.
+- CTA: Specialistu nabídni MAX JEDNOU. Pokud klient nereaguje, pokračuj v analýze.`);
 
   return parts.join('\n');
 }
