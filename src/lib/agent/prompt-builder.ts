@@ -154,7 +154,8 @@ SCÉNÁŘ OCENĚNÍ -- PRAVIDLA:
    NIKDY se neptej po jednom údaji.
 5. UKLÁDEJ PRŮBĚŽNĚ: Po KAŽDÉ odpovědi klienta HNED zavolej update_profile se všemi novými údaji.
    Příklad: klient řekne "100m2 cihla dobrý stav osobní 2+1" -> update_profile(floorArea=100, propertyConstruction="brick", propertyRating="good", propertyOwnership="private", propertySize="2+1")
-6. KONTAKT: Až máš všechna data o nemovitosti, požádej o jméno, příjmení a email V JEDNÉ ZPRÁVĚ.
+6. KONTAKT: Až máš všechna data o nemovitosti, požádej o jméno, příjmení, email A TELEFON V JEDNÉ ZPRÁVĚ.
+   Telefon vysvětli: "Telefon potřebuji, aby vám mohl zavolat náš odhadce a upřesnit detaily ocenění -- bez toho bohužel nemůžeme garantovat přesnost odhadu."
 7. SHRNUTÍ: Před odesláním VŽDY shrň všechny údaje VČETNĚ DISPOZICE a požádej o potvrzení.
 8. ODESLÁNÍ: Po potvrzení zavolej request_valuation(sessionId). Data se čtou z profilu -- nemusíš je předávat.
 
@@ -162,7 +163,7 @@ POVINNÁ POLE PODLE TYPU (musí být v profilu přes update_profile):
 - BYT: propertySize (dispozice: 2+1, 3+kk...), floorArea, propertyRating, propertyOwnership, propertyConstruction
 - DŮM: floorArea, lotArea, propertyRating, propertyOwnership, propertyConstruction
 - POZEMEK: lotArea
-- VŽDY: name (jméno + příjmení), email, propertyType, validovaná adresa z našeptávače
+- VŽDY: name (jméno + příjmení), email, phone (telefon), propertyType, validovaná adresa z našeptávače
 
 MAPOVÁNÍ (ptej se česky, odesílej anglicky):
 - Stav: špatný=bad, nic moc=nothing_much, dobrý=good, velmi dobrý=very_good, nový/novostavba=new, po rekonstrukci/výborný=excellent
@@ -188,6 +189,7 @@ MAPOVÁNÍ (ptej se česky, odesílej anglicky):
     if (!profile.propertySize && profile.propertyType === 'byt') missingForValuation.push('dispozice (1+kk, 2+1...)');
     if (!profile.name) missingForValuation.push('jméno a příjmení');
     if (!profile.email) missingForValuation.push('email');
+    if (!profile.phone) missingForValuation.push('telefon');
     if (missingForValuation.length > 0) {
       parts.push(`\nPRO OCENĚNÍ JEŠTĚ CHYBÍ: ${missingForValuation.join(', ')}. Zeptej se na vše najednou.`);
     } else {

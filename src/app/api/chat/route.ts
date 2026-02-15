@@ -226,6 +226,7 @@ export async function POST(req: Request) {
           const miss: string[] = [];
           if (!firstName || firstName === 'Klient') miss.push('jmeno');
           if (!profile.email) miss.push('email');
+          if (!profile.phone) miss.push('telefon (phone) - vysvetli ze odhadce potrebuje zavolat');
           if (!profile.propertyLat || !profile.propertyLng) miss.push('adresa (GPS souradnice - klient musi vybrat z naseptavace)');
           if (pt === 'flat') {
             if (!profile.floorArea) miss.push('uzitna plocha (floorArea)');
