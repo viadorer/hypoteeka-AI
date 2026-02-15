@@ -212,6 +212,14 @@ export async function POST(req: Request) {
       request_valuation: {
         ...toolDefinitions.request_valuation,
         execute: async () => {
+          // HARD LIMIT: max 1 valuation per session (each call costs money)
+          if (profile.valuationId) {
+            return {
+              success: false,
+              summary: `Oceneni jiz bylo provedeno (ID: ${profile.valuationId}). NELZE volat znovu -- kazde volani stoji kredit. Rekni klientovi ze oceneni uz bylo odeslano a nabidni jinou sluzbu (hypoteka, investicni analyza).`,
+            };
+          }
+
           const rvKey = process.env.REALVISOR_API_KEY;
           if (!rvKey) return { success: false, summary: 'Chybi REALVISOR_API_KEY.' };
 

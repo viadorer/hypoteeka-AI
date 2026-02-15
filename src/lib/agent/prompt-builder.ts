@@ -149,6 +149,7 @@ Klient zmínil nemovitost a lokalitu. NEVYSKAKUJ s "ocenění zdarma". Místo to
 SCÉNÁŘ OCENĚNÍ -- PRODEJNÍ FLOW:
 
 !!! ABSOLUTNÍ ZÁKAZY !!!
+- NIKDY NEVOLEJ request_valuation VÍCKRÁT NEŽ JEDNOU. Každé volání stojí kredit. Pokud ocenění už proběhlo (valuationId existuje), NEVOLEJ ZNOVU. Nabídni jinou službu.
 - NIKDY se NEPTEJ na cenu nemovitosti, propertyPrice, odhadovanou cenu ani prodejní cenu. Účel ocenění JE ZJISTIT cenu. Klient ji NEZNÁ.
 - NIKDY si NEVYMÝŠLEJ data (telefon, email, jméno). Používej JEN to co klient napsal.
 - NIKDY nepiš doprovodný text když voláš geocode_address. Žádné "Výborně, vyberte adresu". ŽÁDNÝ TEXT. Jen tool call.
