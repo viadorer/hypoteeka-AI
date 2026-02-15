@@ -128,9 +128,22 @@ export async function buildAgentPrompt(
   // Lead score (interní, nezobrazuj klientovi)
   parts.push(`\nLEAD: ${leadScore.score}/100 (${leadScore.temperature})`);
 
-  // Proaktivní nabídka ocenění -- když známe typ + lokalitu a ještě jsme neukázali
-  if (profile.propertyType && profile.location && !state.widgetsShown.includes('show_valuation')) {
-    parts.push('\nOCENĚNÍ: Znáš typ a lokalitu nemovitosti. Nabídni klientovi tržní ocenění ZDARMA: "Mimochodem, můžu vám udělat orientační tržní ocenění nemovitosti zdarma. Chcete?"');
+  // Proaktivní nabídka ocenění -- když známe typ + lokalitu a ještě jsme neprovedli ocenění
+  const valuationDone = state.widgetsShown.includes('request_valuation') || !!profile.valuationId;
+  if (profile.propertyType && profile.location && !valuationDone) {
+    parts.push('\nOCENĚNÍ ZDARMA: Znáš typ a lokalitu nemovitosti. Nabídni klientovi tržní ocenění zdarma.');
+    parts.push('- Řekni: "Mimochodem, můžu vám udělat orientační tržní ocenění nemovitosti zdarma. Pomůže to i při jednání s bankou. Chcete?"');
+    parts.push('- Pokud klient souhlasí, potřebuješ: adresu, plochu, stav, kontakt (jméno, příjmení, email).');
+    parts.push('- POSTUP: (1) geocode_address pro validaci adresy, (2) nabídni výběr z výsledků, (3) request_valuation s kompletními daty.');
+  }
+
+  // Instrukce pro probíhající ocenění
+  if (state.widgetsShown.includes('geocode_address') && !valuationDone) {
+    parts.push('\nOCENĚNÍ PROBÍHÁ: Adresa validována. Zkontroluj, že máš všechna povinná data pro request_valuation:');
+    parts.push('- Byt: floorArea + rating (povinné), localType, construction, floor, elevator (volitelné)');
+    parts.push('- Dům: floorArea + lotArea + rating (povinné), houseType, construction (volitelné)');
+    parts.push('- Pozemek: lotArea (povinné), landType (volitelné)');
+    parts.push('- Kontakt: firstName + lastName + email (povinné), phone (doporučený)');
   }
 
   // Doporučené widgety

@@ -225,13 +225,136 @@ export const toolDefinitions = {
     },
   },
 
-  show_valuation: {
-    description: 'Zobraz formular pro oceneni nemovitosti. Pouzij kdyz klient chce zjistit hodnotu nemovitosti, odhad ceny, trzni cenu, nebo se pta kolik jeho nemovitost stoji.',
+  geocode_address: {
+    description: 'Validuj adresu nemovitosti a ziskej GPS souradnice. POVINNY krok PRED odeslanim oceneni (request_valuation). Vraci seznam kandidatu -- nabidni klientovi vyber spravne adresy. Pouzij kdyz klient uvede adresu nemovitosti pro oceneni.',
     inputSchema: z.object({
-      context: z.string().optional().describe('Kratky kontext proc klient chce oceneni (napr. "pro ucel hypoteky", "pred prodejem")'),
+      query: z.string().describe('Adresa zadana klientem, napr. "Korunni 104 Praha" nebo "Na Kopci 5, Ricany"'),
+    }),
+    execute: async ({ query }: { query: string }) => {
+      const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000';
+      try {
+        const res = await fetch(`${baseUrl}/api/valuation/geocode?query=${encodeURIComponent(query)}`);
+        if (!res.ok) {
+          const text = await res.text();
+          return { success: false, error: `Geocode chyba: ${text}`, summary: 'Nepodařilo se validovat adresu.' };
+        }
+        const data = await res.json();
+        if (!data.results || data.results.length === 0) {
+          return { success: false, results: [], summary: 'Adresa nenalezena. Zeptej se klienta na přesnější adresu.' };
+        }
+        return {
+          success: true,
+          results: data.results.map((r: Record<string, unknown>) => ({
+            name: r.name,
+            label: r.label,
+            lat: r.lat,
+            lng: r.lng,
+            address: r.address,
+          })),
+          count: data.count,
+          summary: `Nalezeno ${data.count} adres. Nabídni klientovi výběr správné adresy.`,
+        };
+      } catch (err) {
+        return { success: false, error: err instanceof Error ? err.message : 'Network error', summary: 'Chyba při validaci adresy.' };
+      }
+    },
+  },
+
+  request_valuation: {
+    description: 'Odesli zadost o oceneni nemovitosti pres RealVisor API. PRED volanim MUSIS mit: (1) validovanou adresu z geocode_address (lat, lng), (2) kontaktni udaje (firstName, lastName, email), (3) typ nemovitosti, (4) povinne parametry podle typu (byt: floorArea+rating, dum: floorArea+lotArea+rating, pozemek: lotArea). Vysledek obsahuje odhadni cenu a je odeslan na email klienta.',
+    inputSchema: z.object({
+      // Kontakt - povinne
+      firstName: z.string().describe('Jmeno klienta'),
+      lastName: z.string().describe('Prijmeni klienta'),
+      email: z.string().describe('Email klienta - na tento email prijde vysledek'),
+      phone: z.string().optional().describe('Telefon klienta - silne doporuceny'),
+      // Nemovitost - povinne
+      kind: z.enum(['sale', 'lease']).describe('Typ nabidky: sale = prodej, lease = pronajem'),
+      propertyType: z.enum(['flat', 'house', 'land']).describe('Typ nemovitosti'),
+      address: z.string().describe('Validovana adresa z geocode_address (pouzij label)'),
+      lat: z.number().describe('GPS sirka z geocode_address'),
+      lng: z.number().describe('GPS delka z geocode_address'),
+      // Plochy - povinne podle typu
+      floorArea: z.number().optional().describe('Uzitna plocha v m2 - POVINNE pro byt a dum'),
+      lotArea: z.number().optional().describe('Plocha pozemku v m2 - POVINNE pro dum a pozemek'),
+      // Stav - povinny pro byt a dum
+      rating: z.enum(['bad', 'nothing_much', 'good', 'very_good', 'new', 'excellent']).optional().describe('Stav nemovitosti - POVINNY pro byt a dum'),
+      // Volitelne - zlepsuji presnost
+      localType: z.string().optional().describe('Dispozice bytu: 1+kk, 2+1, 3+kk atd.'),
+      ownership: z.enum(['private', 'cooperative', 'council', 'other']).optional().describe('Vlastnictvi'),
+      construction: z.enum(['brick', 'panel', 'wood', 'stone', 'montage', 'mixed', 'other']).optional().describe('Konstrukce'),
+      houseType: z.enum(['family_house', 'villa', 'cottage', 'hut', 'other']).optional().describe('Typ domu'),
+      landType: z.enum(['building', 'garden', 'field', 'meadow', 'forest', 'other']).optional().describe('Typ pozemku'),
+      floor: z.number().optional().describe('Patro (0 = prizemi)'),
+      totalFloors: z.number().optional().describe('Celkovy pocet podlazi budovy'),
+      elevator: z.boolean().optional().describe('Vytah v budove'),
+      energyPerformance: z.enum(['A', 'B', 'C', 'D', 'E', 'F', 'G']).optional().describe('Energeticky stitek'),
+      rooms: z.number().optional().describe('Celkovy pocet pokoju'),
+      bathrooms: z.number().optional().describe('Pocet koupelen'),
+      bedrooms: z.number().optional().describe('Pocet loznic'),
+      balconyArea: z.number().optional().describe('Balkon v m2'),
+      terraceArea: z.number().optional().describe('Terasa v m2'),
+      cellarArea: z.number().optional().describe('Sklep v m2'),
+      gardenArea: z.number().optional().describe('Zahrada v m2'),
+      garages: z.number().optional().describe('Pocet garazi'),
+      parkingSpaces: z.number().optional().describe('Pocet parkovacich mist'),
+      // Strukturovana adresa z geocode
+      street: z.string().optional().describe('Ulice z geocode_address'),
+      streetNumber: z.string().optional().describe('Cislo z geocode_address'),
+      city: z.string().optional().describe('Mesto z geocode_address'),
+      district: z.string().optional().describe('Mestska cast z geocode_address'),
+      region: z.string().optional().describe('Kraj z geocode_address'),
+      postalCode: z.string().optional().describe('PSC z geocode_address'),
+    }),
+    execute: async (params: Record<string, unknown>) => {
+      const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000';
+      try {
+        const res = await fetch(`${baseUrl}/api/valuation/valuo`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(params),
+        });
+        if (!res.ok) {
+          const text = await res.text();
+          let detail = text;
+          try { detail = JSON.parse(text).message ?? text; } catch { /* keep raw */ }
+          return { success: false, error: detail, summary: `Oceneni se nepodarilo: ${detail}` };
+        }
+        const data = await res.json();
+        if (!data.success) {
+          return { success: false, error: data.error ?? 'Valuo API selhalo', summary: 'Oceneni se nepodarilo. Zkus to znovu s jinymi parametry.' };
+        }
+        const v = data.valuation;
+        const fmtPrice = (n: number) => Math.round(n).toLocaleString('cs-CZ');
+        return {
+          success: true,
+          valuationId: data.valuationId,
+          propertyId: data.propertyId,
+          avgPrice: v?.avgPrice,
+          minPrice: v?.minPrice,
+          maxPrice: v?.maxPrice,
+          avgPriceM2: v?.avgPriceM2,
+          avgDuration: v?.avgDuration,
+          emailSent: data.emailSent,
+          contactEmail: params.email,
+          summary: v
+            ? `Oceneni dokonceno. Odhadni cena: ${fmtPrice(v.avgPrice)} Kc (rozmezi ${fmtPrice(v.minPrice)} - ${fmtPrice(v.maxPrice)} Kc). Cena za m2: ${fmtPrice(v.avgPriceM2)} Kc/m2. Prumerna doba prodeje: ${v.avgDuration} dni. Vysledek odeslan na email ${params.email}.`
+            : 'Oceneni dokonceno, ale bez cenoveho vysledku.',
+          displayed: true,
+        };
+      } catch (err) {
+        return { success: false, error: err instanceof Error ? err.message : 'Network error', summary: 'Chyba pri odesilani oceneni.' };
+      }
+    },
+  },
+
+  show_valuation: {
+    description: 'ZASTARALE - pouzij geocode_address a request_valuation misto toho. Tento nastroj pouze zobrazi informaci ze oceneni je k dispozici.',
+    inputSchema: z.object({
+      context: z.string().optional().describe('Kratky kontext proc klient chce oceneni'),
     }),
     execute: async ({ context }: { context?: string }) => {
-      return { context, formDisplayed: true, summary: 'Formular pro oceneni nemovitosti zobrazen.' };
+      return { context, summary: 'Pro oceneni pouzij geocode_address (validace adresy) a nasledne request_valuation (odeslani oceneni).' };
     },
   },
 
@@ -268,6 +391,16 @@ export const toolDefinitions = {
       name: z.string().optional().describe('Jmeno klienta'),
       email: z.string().optional().describe('Email klienta'),
       phone: z.string().optional().describe('Telefon klienta'),
+      propertySize: z.string().optional().describe('Dispozice: 1+kk, 2+kk, 3+1 atd.'),
+      floorArea: z.number().optional().describe('Uzitna plocha v m2'),
+      lotArea: z.number().optional().describe('Plocha pozemku v m2'),
+      propertyRating: z.string().optional().describe('Stav nemovitosti: bad, nothing_much, good, very_good, new, excellent'),
+      propertyConstruction: z.string().optional().describe('Konstrukce: brick, panel, wood, stone, montage, mixed'),
+      propertyFloor: z.number().optional().describe('Patro (0 = prizemi)'),
+      propertyTotalFloors: z.number().optional().describe('Celkovy pocet podlazi'),
+      propertyElevator: z.boolean().optional().describe('Vytah v budove'),
+      propertyOwnership: z.string().optional().describe('Vlastnictvi: private, cooperative, council'),
+      preferredRate: z.number().optional().describe('Sazba kterou klient zminil (napr. 0.0375 pro 3.75%)'),
     }),
     execute: async (data: Record<string, unknown>) => {
       // Data se zpracovávají v API route přes onStepFinish

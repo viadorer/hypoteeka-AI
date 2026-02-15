@@ -24,6 +24,21 @@ export interface ClientProfile {
   location?: string;
   purpose?: 'vlastni_bydleni' | 'investice' | 'refinancovani';
 
+  // Ocenění - detaily nemovitosti
+  floorArea?: number; // užitná plocha m²
+  lotArea?: number; // plocha pozemku m²
+  propertyRating?: string; // stav: bad, nothing_much, good, very_good, new, excellent
+  propertyAddress?: string; // validovaná adresa z geocode
+  propertyLat?: number; // GPS šířka
+  propertyLng?: number; // GPS délka
+  propertyConstruction?: string; // brick, panel, wood, stone, montage, mixed
+  propertyFloor?: number; // patro
+  propertyTotalFloors?: number; // celkem podlaží
+  propertyElevator?: boolean; // výtah
+  propertyOwnership?: string; // private, cooperative, council
+  valuationId?: string; // ID ocenění z RealVisor
+  valuationAvgPrice?: number; // průměrná odhadní cena
+
   // Finance
   equity?: number;
   currentRent?: number;
@@ -87,6 +102,13 @@ export function profileSummary(profile: ClientProfile): string {
   if (profile.propertySize) parts.push(`Dispozice: ${profile.propertySize}`);
   if (profile.location) parts.push(`Lokalita: ${profile.location}`);
   if (profile.purpose) parts.push(`Účel: ${profile.purpose}`);
+  if (profile.floorArea) parts.push(`Užitná plocha: ${profile.floorArea} m²`);
+  if (profile.lotArea) parts.push(`Plocha pozemku: ${profile.lotArea} m²`);
+  if (profile.propertyRating) parts.push(`Stav: ${profile.propertyRating}`);
+  if (profile.propertyAddress) parts.push(`Adresa (validovaná): ${profile.propertyAddress}`);
+  if (profile.propertyConstruction) parts.push(`Konstrukce: ${profile.propertyConstruction}`);
+  if (profile.propertyFloor !== undefined) parts.push(`Patro: ${profile.propertyFloor}/${profile.propertyTotalFloors ?? '?'}`);
+  if (profile.valuationAvgPrice) parts.push(`Ocenění: ${fmt(profile.valuationAvgPrice)} Kč`);
   if (profile.equity !== undefined && profile.equity !== null) parts.push(`Vlastní zdroje: ${fmt(profile.equity)} Kč`);
   if (profile.monthlyIncome) parts.push(`Měsíční příjem: ${fmt(profile.monthlyIncome)} Kč`);
   if (profile.partnerIncome) parts.push(`Příjem partnera: ${fmt(profile.partnerIncome)} Kč`);

@@ -90,7 +90,7 @@ function getShownWidgets(messages: Array<{ role: string; parts?: AnyPart[] }>): 
       } else if (typeof part.type === 'string' && part.type.startsWith('tool-')) {
         toolName = part.type.replace(/^tool-/, '');
       }
-      if (toolName && toolName.startsWith('show_') && !widgets.includes(toolName)) {
+      if (toolName && (toolName.startsWith('show_') || toolName === 'geocode_address' || toolName === 'request_valuation') && !widgets.includes(toolName)) {
         widgets.push(toolName);
       }
     }
@@ -189,8 +189,8 @@ export async function POST(req: Request) {
               ? tr.input as Record<string, unknown>
               : {};
 
-            // Track shown widgets
-            if (toolName.startsWith('show_')) {
+            // Track shown widgets + valuation tools
+            if (toolName.startsWith('show_') || toolName === 'geocode_address' || toolName === 'request_valuation') {
               if (!state.widgetsShown.includes(toolName)) {
                 state.widgetsShown.push(toolName);
               }
@@ -260,8 +260,43 @@ export async function POST(req: Request) {
               }
             }
 
-            // After any show_ widget, refresh dataCollected + phase from auto-captured data
-            if (toolName.startsWith('show_') || toolName === 'send_email_summary') {
+            // Auto-capture from valuation tools
+            if (toolName === 'geocode_address') {
+              console.log(`[Profile] Geocode called for: ${input.query}`);
+            }
+            if (toolName === 'request_valuation') {
+              if (input.email) profile.email = input.email as string;
+              if (input.phone) profile.phone = input.phone as string;
+              if (input.firstName) {
+                const fullName = `${input.firstName}${input.lastName ? ' ' + input.lastName : ''}`;
+                if (!profile.name) profile.name = fullName;
+              }
+              if (input.address) profile.propertyAddress = input.address as string;
+              if (input.lat) profile.propertyLat = input.lat as number;
+              if (input.lng) profile.propertyLng = input.lng as number;
+              if (input.floorArea) profile.floorArea = input.floorArea as number;
+              if (input.lotArea) profile.lotArea = input.lotArea as number;
+              if (input.rating) profile.propertyRating = input.rating as string;
+              if (input.construction) profile.propertyConstruction = input.construction as string;
+              if (input.floor !== undefined) profile.propertyFloor = input.floor as number;
+              if (input.totalFloors) profile.propertyTotalFloors = input.totalFloors as number;
+              if (input.elevator !== undefined) profile.propertyElevator = input.elevator as boolean;
+              if (input.ownership) profile.propertyOwnership = input.ownership as string;
+              if (input.localType) profile.propertySize = input.localType as string;
+              if (input.city) profile.location = input.city as string;
+              // Map propertyType from API format to profile format
+              const ptMap: Record<string, string> = { flat: 'byt', house: 'dum', land: 'pozemek' };
+              if (input.propertyType) profile.propertyType = (ptMap[input.propertyType as string] ?? input.propertyType) as ClientProfile['propertyType'];
+              console.log(`[Profile] Auto-captured from request_valuation: address, contact, property details`);
+
+              // Check tool result for valuationId
+              const result = 'output' in tr ? tr.output as Record<string, unknown> : {};
+              if (result.valuationId) profile.valuationId = result.valuationId as string;
+              if (result.avgPrice) profile.valuationAvgPrice = result.avgPrice as number;
+            }
+
+            // After any show_ widget or valuation tool, refresh dataCollected + phase
+            if (toolName.startsWith('show_') || toolName === 'send_email_summary' || toolName === 'request_valuation' || toolName === 'geocode_address') {
               const fields = getCollectedFields(profile);
               state.dataCollected = fields;
               state.phase = determinePhase(state, fields);
