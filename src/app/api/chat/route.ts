@@ -211,7 +211,7 @@ export async function POST(req: Request) {
       ...toolDefinitions,
       request_valuation: {
         ...toolDefinitions.request_valuation,
-        execute: async () => {
+        execute: async ({ kind }: { confirm?: boolean; kind?: 'sale' | 'lease' }) => {
           // STEP 0: Normalize all profile values (Czech -> English, fix types)
           const ratingMap: Record<string, string> = {
             'spatny': 'bad', 'špatný': 'bad', 'bad': 'bad',
@@ -308,10 +308,14 @@ export async function POST(req: Request) {
           const rvKey = process.env.REALVISOR_API_KEY;
           if (!rvKey) return { success: false, summary: 'Chybi REALVISOR_API_KEY.' };
 
+          // Determine valuation kind: from tool input, profile, or default to 'sale'
+          const valuationKind = kind ?? profile.valuationKind ?? 'sale';
+          profile.valuationKind = valuationKind;
+
           // Build payload from profile
           const payload: Record<string, unknown> = {
             firstName, lastName, email: profile.email, phone: profile.phone,
-            kind: 'sale', propertyType: pt,
+            kind: valuationKind, propertyType: pt,
             address: profile.propertyAddress ?? '', lat: profile.propertyLat, lng: profile.propertyLng,
             street: p._addrStreet ?? '', streetNumber: p._addrStreetNumber ?? '',
             city: profile.location ?? '', district: p._addrDistrict ?? '',

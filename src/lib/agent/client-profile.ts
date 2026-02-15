@@ -36,6 +36,7 @@ export interface ClientProfile {
   propertyTotalFloors?: number; // celkem podlaží
   propertyElevator?: boolean; // výtah
   propertyOwnership?: string; // private, cooperative, council
+  valuationKind?: 'sale' | 'lease'; // typ ocenění: prodej nebo pronájem
   valuationId?: string; // ID ocenění z RealVisor
   valuationPropertyId?: string; // ID nemovitosti v RealVisor
   valuationAvgPrice?: number; // průměrná odhadní cena
@@ -129,8 +130,10 @@ export function profileSummary(profile: ClientProfile): string {
   if (profile.propertyAddress) parts.push(`Adresa (validovaná): ${profile.propertyAddress}`);
   if (profile.propertyConstruction) parts.push(`Konstrukce: ${profile.propertyConstruction}`);
   if (profile.propertyFloor !== undefined) parts.push(`Patro: ${profile.propertyFloor}/${profile.propertyTotalFloors ?? '?'}`);
+  if (profile.valuationKind) parts.push(`Typ ocenění: ${profile.valuationKind === 'lease' ? 'pronájem' : 'prodej'}`);
   if (profile.valuationAvgPrice) {
-    parts.push(`Ocenění: ${fmt(profile.valuationAvgPrice)} Kč (${fmt(profile.valuationMinPrice ?? 0)} - ${fmt(profile.valuationMaxPrice ?? 0)} Kč)`);
+    const label = profile.valuationKind === 'lease' ? 'Odhad nájmu' : 'Ocenění';
+    parts.push(`${label}: ${fmt(profile.valuationAvgPrice)} Kč (${fmt(profile.valuationMinPrice ?? 0)} - ${fmt(profile.valuationMaxPrice ?? 0)} Kč)`);
     if (profile.valuationAvgPriceM2) parts.push(`Cena za m²: ${fmt(profile.valuationAvgPriceM2)} Kč`);
     if (profile.valuationAvgDuration) parts.push(`Prům. doba prodeje: ${profile.valuationAvgDuration} dní`);
     if (profile.valuationAvgScore) parts.push(`Skóre shody: ${(profile.valuationAvgScore * 100).toFixed(0)}%`);

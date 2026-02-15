@@ -76,7 +76,7 @@ export async function POST(req: NextRequest) {
       lastName,
       email: p.email,
       phone: p.phone ?? undefined,
-      kind: 'sale',
+      kind: (p as Record<string, unknown>).valuationKind === 'lease' ? 'lease' : 'sale',
       propertyType,
       address: p.propertyAddress ?? '',
       lat,

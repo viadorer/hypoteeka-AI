@@ -183,6 +183,13 @@ FÁZE 3 -- KONTAKT (VŠECHNO NAJEDNOU):
 FÁZE 4 -- SHRNUTÍ A ODESLÁNÍ:
 - Shrň VŠECHNY údaje a požádej o potvrzení. Po "ano" zavolej request_valuation.
 - Shrnutí musí obsahovat: typ, adresu, plochu, stav, kontakt.
+- TYP OCENĚNÍ (parametr kind):
+  * kind="sale" (default) = odhad PRODEJNÍ CENY nemovitosti
+  * kind="lease" = odhad NÁJEMNÍHO VÝNOSU (měsíční nájem)
+  * Pro INVESTIČNÍ nemovitost (purpose=investice) použij kind="lease" -- klient potřebuje vědět kolik může inkasovat na nájmu
+  * Pro POROVNÁNÍ NÁJEM VS HYPOTÉKA použij kind="lease" -- klient chce vědět reálný nájem v lokalitě
+  * Pokud klient výslovně chce odhad prodejní ceny, použij kind="sale"
+  * Pokud si nejsi jistý, zeptej se: "Chcete odhad prodejní ceny, nebo výši možného nájmu?"
 
 FÁZE 5 -- VÝSLEDEK:
 - Komentuj výsledek a kvalitu dat (systém ti pošle varování).

@@ -242,9 +242,10 @@ export const toolDefinitions = {
   },
 
   request_valuation: {
-    description: 'Odesli zadost o oceneni nemovitosti. Data se ctou z PROFILU klienta -- NEMUSIS je predavat. Pred volanim MUSIS mit v profilu (pres update_profile): (1) validovanou adresu (klient vybral z naseptavace), (2) jmeno + email, (3) typ nemovitosti, (4) povinne parametry. Pokud neco chybi, tool ti rekne co. Zavolej az klient potvrdil shrnuti. VZDY PRED timto toolem zavolej update_profile se vsemi daty.',
+    description: 'Odesli zadost o oceneni nemovitosti. Data se ctou z PROFILU klienta -- NEMUSIS je predavat. Pred volanim MUSIS mit v profilu (pres update_profile): (1) validovanou adresu (klient vybral z naseptavace), (2) jmeno + email, (3) typ nemovitosti, (4) povinne parametry. Pokud neco chybi, tool ti rekne co. Zavolej az klient potvrdil shrnuti. VZDY PRED timto toolem zavolej update_profile se vsemi daty. Parametr kind: "sale" = odhad prodejni ceny (default), "lease" = odhad najemniho vynos. Pro investicni nemovitost nebo porovnani najem vs hypoteka pouzij "lease".',
     inputSchema: z.object({
       confirm: z.boolean().optional().describe('Klient potvrdil shrnuti'),
+      kind: z.enum(['sale', 'lease']).optional().describe('Typ oceneni: "sale" = prodejni cena (default), "lease" = najemni vynos. Pro investice nebo najem vs hypo pouzij "lease".'),
     }),
     execute: async () => {
       // Skutečné odeslání probíhá v onStepFinish v chat/route.ts,
