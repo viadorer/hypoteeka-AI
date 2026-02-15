@@ -404,6 +404,15 @@ export function ChatArea({ initialSessionId = null }: ChatAreaProps) {
               {message.role === 'assistant' && (
                 <div className="space-y-3">
                   {message.parts?.map((part, index: number) => {
+                    // Hide text parts when geocode widget is in same message
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    const hasGeocodeInMessage = message.parts?.some((p: any) => {
+                      if (p.type?.startsWith?.('tool-') || p.type === 'dynamic-tool') {
+                        return (p.toolName ?? p.type?.replace?.(/^tool-/, '')) === 'geocode_address';
+                      }
+                      return false;
+                    });
+                    if (part.type === 'text' && part.text && hasGeocodeInMessage) return null;
                     if (part.type === 'text' && part.text) {
                       return (
                         <div key={index} className="flex justify-start mb-2">
