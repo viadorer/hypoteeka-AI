@@ -243,7 +243,7 @@ export function ChatArea({ initialSessionId = null }: ChatAreaProps) {
             <h1 className="text-[28px] md:text-4xl font-extrabold text-[#0A1E5C] tracking-tight mb-3">
               {visitorName
                 ? `Zdravím, ${visitorNameVocative ?? visitorName}!`
-                : isValuation ? 'Zjistěte cenu své nemovitosti' : 'Jsem Hugo, váš hypoteční poradce'}
+                : isValuation ? `Jsem ${tenant.agentName}, váš odhadce nemovitostí` : `Jsem ${tenant.agentName}, váš hypoteční poradce`}
             </h1>
             <p className="text-gray-500 text-base md:text-lg leading-relaxed">
               {visitorName
@@ -401,8 +401,8 @@ export function ChatArea({ initialSessionId = null }: ChatAreaProps) {
           {/* Footer */}
           <div className={`rounded-xl px-6 py-3 text-center text-[11px] text-gray-400 max-w-lg ${glass}`}>
             <p>{isValuation
-              ? 'AI asistent odhad.online. Odhady jsou orientační -- pro závazný posudek kontaktujte certifikovaného odhadce.'
-              : 'Hugo je AI průvodce hypotékami. Výpočty jsou orientační -- konkrétní nabídky řeší certifikovaný specialista.'}</p>
+              ? `${tenant.agentName} je AI asistent odhad.online. Odhady jsou orientační -- pro závazný posudek kontaktujte certifikovaného odhadce.`
+              : `${tenant.agentName} je AI průvodce hypotékami. Výpočty jsou orientační -- konkrétní nabídky řeší certifikovaný specialista.`}</p>
             <p className="mt-1">{isValuation
               ? 'Data z reálných transakcí. Citlivé údaje (RČ, číslo účtu) prosím nesdílejte v chatu.'
               : 'Data z ČNB ARAD. Citlivé údaje (RČ, číslo účtu) prosím nesdílejte v chatu.'}</p>

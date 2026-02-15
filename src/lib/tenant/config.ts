@@ -33,6 +33,7 @@ export interface TenantConfig {
     primaryFlow: 'mortgage' | 'valuation';
   };
   gaId?: string;
+  agentName: string;
 }
 
 const TENANT_CONFIGS: Record<string, TenantConfig> = {
@@ -62,6 +63,7 @@ const TENANT_CONFIGS: Record<string, TenantConfig> = {
       primaryFlow: 'mortgage',
     },
     gaId: 'G-Q6HN5J19BT',
+    agentName: 'Hugo',
   },
   odhad: {
     id: 'odhad',
@@ -89,6 +91,7 @@ const TENANT_CONFIGS: Record<string, TenantConfig> = {
       ctaIntensity: 'medium',
       primaryFlow: 'valuation',
     },
+    agentName: 'Otto',
   },
 };
 
