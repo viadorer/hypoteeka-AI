@@ -74,7 +74,7 @@ const TENANT_CONFIGS: Record<string, TenantConfig> = {
       accentColor: '#0A1E5C',
       title: 'Odhad.online',
       description: 'Orientační odhad ceny nemovitosti',
-      logoUrl: '/images/odhad-logo.svg',
+      logoUrl: '/images/odhad-online.png',
     },
     aiConfig: {
       provider: 'google',
