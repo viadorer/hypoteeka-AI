@@ -116,23 +116,35 @@ export function ChatArea({ initialSessionId = null }: ChatAreaProps) {
     }
   }, [status, messages, sessionId]);
 
-  // Load conversation history for existing session
+  // Load conversation history for existing session, or trigger auto-greeting for new chats
+  const greetingSentRef = useRef(false);
   useEffect(() => {
     if (historyLoaded) return;
     setHistoryLoaded(true);
     fetch(`/api/sessions/${sessionId}/messages`)
       .then(r => { if (r.ok) return r.json(); throw new Error('no session'); })
-      .then((data: { uiMessages?: unknown[]; profile?: { name?: string } }) => {
+      .then((data: { uiMessages?: unknown[]; profile?: { name?: string; nameVocative?: string } }) => {
         if (data.uiMessages && Array.isArray(data.uiMessages) && data.uiMessages.length > 0) {
           setMessages(data.uiMessages as Parameters<typeof setMessages>[0]);
+        } else {
+          triggerGreeting();
         }
         if (data.profile?.name) {
           setVisitorName(data.profile.name.split(' ')[0]);
-          setVisitorNameVocative(data.profile.name.split(' ')[0]);
+          setVisitorNameVocative(data.profile.nameVocative ?? data.profile.name.split(' ')[0]);
         }
       })
-      .catch(() => {});
-  }, [sessionId, historyLoaded, setMessages]);
+      .catch(() => {
+        triggerGreeting();
+      });
+
+    function triggerGreeting() {
+      if (greetingSentRef.current) return;
+      greetingSentRef.current = true;
+      // Send hidden trigger to backend so Hugo greets dynamically based on profile/history
+      sendMessage({ text: '[GREETING]' });
+    }
+  }, [sessionId, historyLoaded, setMessages, sendMessage]);
 
   // Load visitor name from any session (for new chats)
   useEffect(() => {
@@ -420,7 +432,10 @@ export function ChatArea({ initialSessionId = null }: ChatAreaProps) {
       <div className="flex-1 overflow-y-auto overflow-x-hidden min-w-0">
         <div className="max-w-[640px] mx-auto px-4 md:px-6 pt-4 md:pt-8 pb-44 md:pb-40 w-full min-w-0">
           {/* Messages */}
-          {messages.map((message: UIMessage) => (
+          {messages.map((message: UIMessage) => {
+            // Hide [GREETING] trigger message from user
+            if (message.role === 'user' && getTextContent(message).trim() === '[GREETING]') return null;
+            return (
             <div key={message.id} className="mb-4 animate-in">
               {message.role === 'user' && (
                 <div className="flex justify-end mb-2">
@@ -481,7 +496,8 @@ export function ChatArea({ initialSessionId = null }: ChatAreaProps) {
                 </div>
               )}
             </div>
-          ))}
+          );
+          })}
 
           {/* Loading */}
           {isLoading && (

@@ -182,6 +182,15 @@ export async function POST(req: Request) {
     // Inject sessionId so Hugo can pass it to request_valuation
     systemPrompt += `\n\nSESSION_ID: "${sessionId}" -- POUŽIJ tuto hodnotu jako sessionId v request_valuation.`;
 
+    // Auto-greeting trigger: if the last user message is [GREETING], instruct Hugo to greet
+    const lastMsg = msgArray[msgArray.length - 1];
+    const lastMsgText = lastMsg?.role === 'user'
+      ? (lastMsg.parts?.filter((p: AnyPart) => p.type === 'text').map((p: AnyPart) => p.text).join('') ?? (typeof lastMsg.content === 'string' ? lastMsg.content : ''))
+      : '';
+    if (lastMsgText.trim() === '[GREETING]') {
+      systemPrompt += '\n\nUŽIVATEL PRÁVĚ OTEVŘEL CHAT. Zpráva [GREETING] je automatický systémový trigger — NEODPOVÍDEJ na ni jako na text. Místo toho se PŘIVÍTEJ podle aktuální fáze (nový vs. vracející se uživatel). Viz instrukce v phase_greeting.';
+    }
+
     // Inject full ADDRESS_DATA into system prompt (informational)
     if (parsedAddressData) {
       const a = parsedAddressData;
