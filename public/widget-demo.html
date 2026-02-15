@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hugo Widget Demo</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #f0f2f5;
+      color: #333;
+    }
+    .demo-page {
+      max-width: 800px;
+      margin: 60px auto;
+      padding: 40px;
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+    }
+    h1 { font-size: 28px; margin-bottom: 8px; }
+    h2 { font-size: 20px; margin-top: 32px; margin-bottom: 12px; color: #555; }
+    p { line-height: 1.7; margin-bottom: 16px; color: #666; }
+    pre {
+      background: #1e1e1e;
+      color: #d4d4d4;
+      padding: 20px;
+      border-radius: 8px;
+      overflow-x: auto;
+      font-size: 13px;
+      line-height: 1.6;
+      margin-bottom: 24px;
+    }
+    .highlight { color: #E91E63; }
+    code { background: #f5f5f5; padding: 2px 6px; border-radius: 4px; font-size: 13px; }
+    .badge {
+      display: inline-block;
+      background: #E91E63;
+      color: #fff;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      margin-bottom: 16px;
+    }
+    table { width: 100%; border-collapse: collapse; margin-bottom: 24px; }
+    th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid #eee; font-size: 14px; }
+    th { font-weight: 600; color: #555; }
+    td code { background: #f0f0f0; }
+  </style>
+</head>
+<body>
+  <div class="demo-page">
+    <div class="badge">Widget v1.0</div>
+    <h1>Hugo AI Widget</h1>
+    <p>Embeddable chat widget pro jakoukoliv webovou stranku. Kolecko v rohu, po kliknuti se otevre dialog s Hugem.</p>
+
+    <h2>Instalace</h2>
+    <p>Pridejte tento kod pred uzaviraci <code>&lt;/body&gt;</code> tag:</p>
+    <pre>&lt;script&gt;
+  window.HugoConfig = {
+    apiUrl: '<span class="highlight">https://vas-domena.cz</span>',
+    widgetKey: '<span class="highlight">vas-widget-key</span>',
+    primaryColor: '#E91E63',
+    position: 'bottom-right',
+    title: 'Hugo',
+    subtitle: 'Hypotecni poradce',
+    greeting: 'Ahoj! Jsem Hugo, vas hypotecni poradce. Jak vam mohu pomoci?',
+  };
+&lt;/script&gt;
+&lt;script src="<span class="highlight">https://vas-domena.cz</span>/hugo-widget.js" defer&gt;&lt;/script&gt;</pre>
+
+    <h2>Konfigurace</h2>
+    <table>
+      <tr><th>Parametr</th><th>Typ</th><th>Popis</th></tr>
+      <tr><td><code>apiUrl</code></td><td>string</td><td>URL vaseho serveru (bez lomitka na konci)</td></tr>
+      <tr><td><code>widgetKey</code></td><td>string</td><td>API klic pro autentizaci widgetu</td></tr>
+      <tr><td><code>primaryColor</code></td><td>string</td><td>Hlavni barva widgetu (hex)</td></tr>
+      <tr><td><code>position</code></td><td>string</td><td><code>bottom-right</code>, <code>bottom-left</code>, <code>top-right</code>, <code>top-left</code></td></tr>
+      <tr><td><code>title</code></td><td>string</td><td>Jmeno v hlavicce chatu</td></tr>
+      <tr><td><code>subtitle</code></td><td>string</td><td>Podtitulek v hlavicce</td></tr>
+      <tr><td><code>greeting</code></td><td>string</td><td>Uvodni zprava od Huga</td></tr>
+      <tr><td><code>logoUrl</code></td><td>string</td><td>URL loga (volitelne)</td></tr>
+      <tr><td><code>zIndex</code></td><td>number</td><td>CSS z-index (default: 9999)</td></tr>
+      <tr><td><code>tenantId</code></td><td>string</td><td>ID tenanta (pro multi-tenant)</td></tr>
+    </table>
+
+    <h2>JavaScript API</h2>
+    <pre>// Otevrit chat
+HugoWidget.open();
+
+// Zavrit chat
+HugoWidget.close();
+
+// Toggle
+HugoWidget.toggle();
+
+// Poslat zpravu programaticky
+HugoWidget.sendMessage('Chci ocenit nemovitost');</pre>
+
+    <h2>Demo</h2>
+    <p>Kliknete na ruzove kolecko vpravo dole.</p>
+  </div>
+
+  <!-- Hugo Widget -->
+  <script>
+    window.HugoConfig = {
+      apiUrl: window.location.origin,
+      widgetKey: 'demo-key-123',
+      primaryColor: '#E91E63',
+      position: 'bottom-right',
+      title: 'Hugo',
+      subtitle: 'Hypotecni poradce',
+      greeting: 'Ahoj! Jsem Hugo, vas hypotecni poradce. Jak vam mohu pomoci?',
+    };
+  </script>
+  <script src="/hugo-widget.js" defer></script>
+</body>
+</html>
