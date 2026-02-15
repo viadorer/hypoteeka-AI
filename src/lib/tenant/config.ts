@@ -91,7 +91,7 @@ const TENANT_CONFIGS: Record<string, TenantConfig> = {
       ctaIntensity: 'medium',
       primaryFlow: 'valuation',
     },
-    agentName: 'Otto',
+    agentName: 'Hugo',
   },
 };
 
