@@ -333,7 +333,7 @@ export async function POST(req: Request) {
               messageCount: messages.length,
               chatHistory: analysisNote,
             };
-            payload.message = analysisNote;
+            // NOTE: 'message' field is NOT allowed by RealVisor API (returns 400)
           }
 
           const clean = Object.fromEntries(Object.entries(payload).filter(([, v]) => v != null && v !== ''));
