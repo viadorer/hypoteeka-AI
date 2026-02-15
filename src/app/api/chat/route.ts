@@ -296,17 +296,55 @@ export async function POST(req: Request) {
 
             if (vData.success && vData.valuation) {
               const v = vData.valuation;
+              const cad = vData.cadastre;
+              const prop = vData.property;
               const fmt = (n: number) => Math.round(n).toLocaleString('cs-CZ');
+
+              // Save rich data to profile for follow-up analyses
               profile.valuationId = vData.valuationId;
+              profile.valuationPropertyId = vData.propertyId;
               profile.valuationAvgPrice = v.avgPrice;
+              profile.valuationMinPrice = v.minPrice;
+              profile.valuationMaxPrice = v.maxPrice;
+              profile.valuationAvgPriceM2 = v.avgPriceM2;
+              profile.valuationMinPriceM2 = v.minPriceM2;
+              profile.valuationMaxPriceM2 = v.maxPriceM2;
+              profile.valuationCalcArea = v.calcArea;
+              profile.valuationAvgDuration = v.avgDuration;
+              profile.valuationAvgScore = v.avgScore;
+              profile.valuationAvgDistance = v.avgDistance;
+              profile.valuationAvgAge = v.avgAge;
+              profile.valuationDate = v.asOf;
+              profile.valuationCurrency = v.currency;
+              if (cad) {
+                profile.cadastralArea = cad.cadastralArea;
+                profile.parcelNumber = cad.parcelNumber;
+                profile.ruianCode = cad.ruianCode;
+              }
+              if (prop?.panoramaUrl) profile.panoramaUrl = prop.panoramaUrl;
+              profile.valuationEmailSent = vData.emailSent;
+              profile.valuationLeadId = vData.leadId;
+              profile.valuationContactId = vData.contactId;
+
+              // Use propertyPrice for mortgage calculations
+              if (!profile.propertyPrice) profile.propertyPrice = v.avgPrice;
+
               return {
                 success: true, displayed: true,
+                // Core valuation
                 valuationId: vData.valuationId, propertyId: vData.propertyId,
                 avgPrice: v.avgPrice, minPrice: v.minPrice, maxPrice: v.maxPrice,
-                avgPriceM2: v.avgPriceM2, avgDuration: v.avgDuration, emailSent: vData.emailSent,
-                // Data for widget display
-                address: profile.propertyAddress, propertyType: pt, contactEmail: profile.email,
-                summary: `Oceneni dokonceno. Odhadni cena: ${fmt(v.avgPrice)} Kc (rozmezi ${fmt(v.minPrice)} - ${fmt(v.maxPrice)} Kc). Cena za m2: ${fmt(v.avgPriceM2)} Kc/m2. Prumerna doba prodeje: ${v.avgDuration} dni. Vysledek odeslan na email ${profile.email}. DULEZITE: Rekni klientovi ze toto je orientacni odhad na zaklade dostupnych dat. Nas specialista ho bude kontaktovat pro upresneni posudku -- je to nezavazne a zcela zdarma. Pokud klient planuje koupi jine nemovitosti, nabidni vypocet hypoteky.`,
+                avgPriceM2: v.avgPriceM2, minPriceM2: v.minPriceM2, maxPriceM2: v.maxPriceM2,
+                avgDuration: v.avgDuration, calcArea: v.calcArea,
+                // Quality metrics
+                avgScore: v.avgScore, avgDistance: v.avgDistance, avgAge: v.avgAge,
+                searchRadius: v.distance,
+                // Cadastre
+                cadastralArea: cad?.cadastralArea, parcelNumber: cad?.parcelNumber,
+                // Widget display
+                address: profile.propertyAddress, propertyType: pt,
+                contactEmail: profile.email, emailSent: vData.emailSent,
+                summary: `Oceneni dokonceno. Odhadni cena: ${fmt(v.avgPrice)} Kc (rozmezi ${fmt(v.minPrice)} - ${fmt(v.maxPrice)} Kc). Cena za m2: ${fmt(v.avgPriceM2)} Kc/m2. Prumerna doba prodeje: ${v.avgDuration} dni. Pocitana plocha: ${v.calcArea} m2. Skore shody srovnatelnychh: ${(v.avgScore * 100).toFixed(0)}%. Prumerna vzdalenost srovnatelnych: ${v.avgDistance} m. Katastralni uzemi: ${cad?.cadastralArea ?? 'neznamo'}, parcela: ${cad?.parcelNumber ?? 'neznamo'}. Vysledek odeslan na email ${profile.email}. DULEZITE: Rekni klientovi ze toto je orientacni odhad na zaklade ${v.avgAge ? Math.round(v.avgAge) : '?'} dni starych dat z okruhu ${v.distance ?? '?'} m. Nas specialista ho bude kontaktovat pro upresneni posudku -- je to nezavazne a zcela zdarma. UPSELL: Cena nemovitosti je nyni ulozena v profilu jako propertyPrice=${fmt(v.avgPrice)} Kc. Nabidni klientovi: 1) vypocet hypoteky na zaklade teto ceny, 2) investicni analyzu (pokud planuje pronajmat), 3) srovnani najem vs koupi. Rekni: "Chcete, abych vam na zaklade teto ceny spocital hypoteku? Staci mi rict kolik mate nasporenych penez."`,
               };
             }
             return { success: false, summary: `Oceneni selhalo: ${vData.error ?? 'neznama chyba'}` };

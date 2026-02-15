@@ -37,7 +37,28 @@ export interface ClientProfile {
   propertyElevator?: boolean; // výtah
   propertyOwnership?: string; // private, cooperative, council
   valuationId?: string; // ID ocenění z RealVisor
+  valuationPropertyId?: string; // ID nemovitosti v RealVisor
   valuationAvgPrice?: number; // průměrná odhadní cena
+  valuationMinPrice?: number;
+  valuationMaxPrice?: number;
+  valuationAvgPriceM2?: number;
+  valuationMinPriceM2?: number;
+  valuationMaxPriceM2?: number;
+  valuationCalcArea?: number; // počítaná plocha (vč. balkón, sklep...)
+  valuationAvgDuration?: number; // průměrná doba prodeje (dny)
+  valuationAvgScore?: number; // skóre shody srovnatelných (0-1)
+  valuationAvgDistance?: number; // průměrná vzdálenost srovnatelných (m)
+  valuationAvgAge?: number; // průměrné stáří dat (dny)
+  valuationDate?: string; // datum ocenění
+  valuationCurrency?: string;
+  valuationEmailSent?: boolean;
+  valuationLeadId?: string;
+  valuationContactId?: string;
+  // Katastr
+  cadastralArea?: string; // katastrální území
+  parcelNumber?: string; // číslo parcely
+  ruianCode?: string; // RUIAN kód
+  panoramaUrl?: string; // street view URL
 
   // Finance
   equity?: number;
@@ -108,7 +129,13 @@ export function profileSummary(profile: ClientProfile): string {
   if (profile.propertyAddress) parts.push(`Adresa (validovaná): ${profile.propertyAddress}`);
   if (profile.propertyConstruction) parts.push(`Konstrukce: ${profile.propertyConstruction}`);
   if (profile.propertyFloor !== undefined) parts.push(`Patro: ${profile.propertyFloor}/${profile.propertyTotalFloors ?? '?'}`);
-  if (profile.valuationAvgPrice) parts.push(`Ocenění: ${fmt(profile.valuationAvgPrice)} Kč`);
+  if (profile.valuationAvgPrice) {
+    parts.push(`Ocenění: ${fmt(profile.valuationAvgPrice)} Kč (${fmt(profile.valuationMinPrice ?? 0)} - ${fmt(profile.valuationMaxPrice ?? 0)} Kč)`);
+    if (profile.valuationAvgPriceM2) parts.push(`Cena za m²: ${fmt(profile.valuationAvgPriceM2)} Kč`);
+    if (profile.valuationAvgDuration) parts.push(`Prům. doba prodeje: ${profile.valuationAvgDuration} dní`);
+    if (profile.valuationAvgScore) parts.push(`Skóre shody: ${(profile.valuationAvgScore * 100).toFixed(0)}%`);
+    if (profile.cadastralArea) parts.push(`Katastr: ${profile.cadastralArea}, parcela ${profile.parcelNumber ?? '?'}`);
+  }
   if (profile.equity !== undefined && profile.equity !== null) parts.push(`Vlastní zdroje: ${fmt(profile.equity)} Kč`);
   if (profile.monthlyIncome) parts.push(`Měsíční příjem: ${fmt(profile.monthlyIncome)} Kč`);
   if (profile.partnerIncome) parts.push(`Příjem partnera: ${fmt(profile.partnerIncome)} Kč`);
