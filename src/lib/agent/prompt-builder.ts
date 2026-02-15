@@ -219,6 +219,58 @@ MAPOVÁNÍ (ptej se česky, ukládej anglicky):
     }
   }
 
+  // === PO OCENĚNÍ -- follow-up konverzace ===
+  if (valuationDone && profile.valuationAvgPrice) {
+    const price = profile.valuationAvgPrice;
+    const fmtP = (n: number) => Math.round(n).toLocaleString('cs-CZ');
+    const hasEquity = profile.equity !== undefined && profile.equity !== null;
+    const hasIncome = !!profile.monthlyIncome || !!profile.totalMonthlyIncome;
+    const avgScore = profile.valuationAvgScore;
+    const avgAge = profile.valuationAvgAge;
+    const avgDist = profile.valuationAvgDistance;
+    const duration = profile.valuationAvgDuration;
+
+    parts.push(`
+PO OCENĚNÍ -- POKRAČUJ V KONVERZACI:
+
+Cena nemovitosti: ${fmtP(price)} Kč (uložena jako propertyPrice).
+${profile.valuationMinPrice ? `Rozmezí: ${fmtP(profile.valuationMinPrice)} - ${fmtP(profile.valuationMaxPrice ?? 0)} Kč` : ''}
+${profile.valuationAvgPriceM2 ? `Cena za m²: ${fmtP(profile.valuationAvgPriceM2)} Kč` : ''}
+${duration ? `Průměrná doba prodeje: ${duration} dní` : ''}
+${profile.cadastralArea ? `Katastr: ${profile.cadastralArea}, parcela ${profile.parcelNumber ?? '?'}` : ''}
+
+KVALITA ODHADU:
+${avgScore !== undefined ? `- Shoda srovnatelných: ${(avgScore * 100).toFixed(0)}%${avgScore < 0.6 ? ' ⚠️ NÍZKÁ -- zdůrazni potřebu osobního posouzení' : ''}` : ''}
+${avgAge !== undefined ? `- Stáří dat: ${Math.round(avgAge)} dní${avgAge > 90 ? ' ⚠️ STARŠÍ DATA -- zmíň že trh se mění' : ''}` : ''}
+${avgDist !== undefined ? `- Vzdálenost srovnatelných: ${avgDist > 1000 ? (avgDist / 1000).toFixed(1) + ' km' : avgDist + ' m'}${avgDist > 1000 ? ' ⚠️ DALEKO -- v okolí je málo srovnatelných' : ''}` : ''}
+
+TVŮJ CÍL: Rozpovídat klienta a nabídnout další služby. NEPTEJ SE "mohu ještě s něčím pomoci?" -- místo toho AKTIVNĚ nabídni konkrétní analýzu.
+
+STRATEGIE PODLE SITUACE:
+${!hasEquity ? `1. HYPOTÉKA (hlavní cíl): "Na základě ocenění ${fmtP(price)} Kč vám můžu hned spočítat hypotéku. Kolik máte přibližně naspořeno na vlastní zdroje?"
+   -> Po odpovědi: zavolej show_payment s propertyPrice=${price} a equity.` : ''}
+${hasEquity && !hasIncome ? `1. BONITA: "Máte vlastní zdroje ${fmtP(profile.equity!)} Kč. Chcete vědět, jestli vám banka hypotéku schválí? Stačí mi říct váš měsíční čistý příjem."
+   -> Po odpovědi: zavolej show_eligibility.` : ''}
+${hasEquity && hasIncome ? `1. KOMPLETNÍ ANALÝZA: Máš všechna data pro výpočet. HNED zavolej show_payment a show_eligibility.` : ''}
+
+2. INVESTICE (pokud klient zmíní pronájem): "Zajímá vás, jaký výnos by nemovitost přinesla při pronájmu? Můžu spočítat investiční analýzu."
+   -> Zeptej se na očekávaný měsíční nájem, pak zavolej show_investment.
+
+3. NÁJEM vs KOUPĚ: "Pokud teď platíte nájem, můžu porovnat co se víc vyplatí -- zůstat v nájmu nebo koupit. Kolik platíte měsíčně?"
+   -> Po odpovědi: zavolej show_rent_vs_buy.
+
+4. PRODEJ: Pokud klient plánuje prodat, zmíň dobu prodeje: "${duration ? `Podobné nemovitosti se v okolí prodávají průměrně za ${duration} dní.` : ''} Náš specialista vám pomůže s celým procesem prodeje."
+
+5. REFINANCOVÁNÍ: Pokud má klient stávající hypotéku: "Máte aktuálně hypotéku? S dnešními sazbami by se vám mohlo vyplatit refinancování."
+
+TAKTIKY PRO ROZPOVÍDÁNÍ:
+- Ptej se na SITUACI klienta: "Co s nemovitostí plánujete?" / "Řešíte teď nějaké bydlení?"
+- Reaguj na kontext: prodej → doba prodeje + specialista, koupě → hypotéka, investice → výnos
+- Vždy měj připravený KONKRÉTNÍ výpočet -- ne obecné řeči
+- Pokud klient neví, nabídni: "Většina klientů po ocenění řeší hypotéku. Chcete, abych vám ukázal, jaká by byla splátka?"
+`);
+  }
+
   // Doporučené widgety
   const recommended = getRecommendedWidgets(state.phase, state.dataCollected, state.widgetsShown);
   if (recommended.length > 0) {
