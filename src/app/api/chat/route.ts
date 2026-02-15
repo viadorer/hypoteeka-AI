@@ -129,6 +129,26 @@ export async function POST(req: Request) {
         (profile as Record<string, unknown>)[key] = value;
       }
     }
+
+    // Parse ADDRESS_DATA from user messages (sent by AddressSuggestWidget)
+    // Store full address components for injection into system prompt
+    let parsedAddressData: Record<string, unknown> | null = null;
+    for (const msg of (Array.isArray(messages) ? messages : [])) {
+      if (msg.role !== 'user') continue;
+      const text = msg.parts?.filter((p: AnyPart) => p.type === 'text').map((p: AnyPart) => p.text).join('') ?? (typeof msg.content === 'string' ? msg.content : '');
+      const addrMatch = text.match(/\[ADDRESS_DATA:(.*?)\]/);
+      if (addrMatch) {
+        try {
+          const addr = JSON.parse(addrMatch[1]);
+          parsedAddressData = addr;
+          if (addr.address) profile.propertyAddress = addr.address;
+          if (addr.lat) profile.propertyLat = addr.lat;
+          if (addr.lng) profile.propertyLng = addr.lng;
+          if (addr.city) profile.location = addr.city;
+          console.log(`[Profile] Parsed ADDRESS_DATA: ${addr.address}, lat=${addr.lat}, lng=${addr.lng}`);
+        } catch { /* ignore parse errors */ }
+      }
+    }
     console.log(`[Profile] After merge: equity=${profile.equity}, price=${profile.propertyPrice}, purpose=${profile.purpose}, income=${profile.monthlyIncome}, email=${profile.email}`);
     profile.lastMessageAt = new Date().toISOString();
     profile.messageCount = messages.filter((m: { role: string }) => m.role === 'user').length;
@@ -151,7 +171,13 @@ export async function POST(req: Request) {
     const lastUserMessage = [...msgArray].reverse().find((m: { role: string }) => m.role === 'user')?.content as string | undefined;
 
     // Build dynamic prompt (async - fetches live rates from ČNB API + knowledge base)
-    const systemPrompt = await buildAgentPrompt(profile, state, leadScore, tenantId, lastUserMessage, ctaIntensity);
+    let systemPrompt = await buildAgentPrompt(profile, state, leadScore, tenantId, lastUserMessage, ctaIntensity);
+
+    // Inject full ADDRESS_DATA into system prompt so Hugo has all address fields reliably
+    if (parsedAddressData) {
+      const a = parsedAddressData;
+      systemPrompt += `\n\nADRESA PRO OCENĚNÍ (z našeptávače, POUŽIJ v request_valuation):\n- address: "${a.address}"\n- lat: ${a.lat}\n- lng: ${a.lng}\n- street: "${a.street ?? ''}"\n- streetNumber: "${a.streetNumber ?? ''}"\n- city: "${a.city ?? ''}"\n- district: "${a.district ?? ''}"\n- region: "${a.region ?? ''}"\n- postalCode: "${a.postalCode ?? ''}"\nTyto hodnoty MUSÍŠ předat do request_valuation. Neměň je.`;
+    }
 
     console.log(`[Agent] Tenant: ${tenantId}, Session: ${sessionId}, Phase: ${state.phase}, Score: ${leadScore.score}/${leadScore.temperature}, Fields: ${collectedFields.join(',')}`);
 
