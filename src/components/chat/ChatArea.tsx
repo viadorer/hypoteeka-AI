@@ -93,6 +93,17 @@ export function ChatArea({ initialSessionId = null }: ChatAreaProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const greetingSentRef = useRef(false);
+
+  const getTextContent = (message: UIMessage): string => {
+    if (message.parts) {
+      return message.parts
+        .filter((p): p is { type: 'text'; text: string } => p.type === 'text')
+        .map((p) => p.text)
+        .join('');
+    }
+    return '';
+  };
+
   // Greeting-only state: [GREETING] trigger + Hugo's response = still on welcome screen
   const isGreetingOnly = messages.length <= 2 && messages.every(m =>
     (m.role === 'user' && getTextContent(m).trim() === '[GREETING]') || m.role === 'assistant'
@@ -202,16 +213,6 @@ export function ChatArea({ initialSessionId = null }: ChatAreaProps) {
       const text = getTextContent(lastUserMsg);
       if (text) sendMessage({ text });
     }
-  };
-
-  const getTextContent = (message: UIMessage): string => {
-    if (message.parts) {
-      return message.parts
-        .filter((p): p is { type: 'text'; text: string } => p.type === 'text')
-        .map((p) => p.text)
-        .join('');
-    }
-    return '';
   };
 
   // --- GLASS STYLE CLASSES ---
@@ -440,11 +441,12 @@ export function ChatArea({ initialSessionId = null }: ChatAreaProps) {
           {/* Footer */}
           <div className={`rounded-xl px-6 py-3 text-center text-[11px] text-gray-400 max-w-lg ${glass}`}>
             <p>{isValuation
-              ? `${tenant.agentName} je AI asistent odhad.online. Odhady jsou orientační -- pro závazný posudek kontaktujte certifikovaného odhadce.`
-              : `${tenant.agentName} je AI průvodce hypotékami. Výpočty jsou orientační -- konkrétní nabídky řeší certifikovaný specialista.`}</p>
+              ? `${tenant.agentName} je AI asistent odhad.online. Může se mýlit -- ověřujte důležité informace.`
+              : `${tenant.agentName} je AI průvodce hypotékami. Může se mýlit -- ověřujte důležité informace.`}</p>
             <p className="mt-1">{isValuation
-              ? 'Data z reálných transakcí. Citlivé údaje (RČ, číslo účtu) prosím nesdílejte v chatu.'
-              : 'Data z ČNB ARAD. Citlivé údaje (RČ, číslo účtu) prosím nesdílejte v chatu.'}</p>
+              ? 'Odhady jsou orientační, vychází z reálných transakcí. Pro závazný posudek kontaktujte certifikovaného odhadce.'
+              : 'Výpočty jsou orientační, data z ČNB ARAD. Konkrétní nabídky řeší certifikovaný specialista.'}</p>
+            <p className="mt-1">Citlivé údaje (RČ, číslo účtu) prosím nesdílejte v chatu.</p>
           </div>
         </div>
       </div>
