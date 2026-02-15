@@ -28,17 +28,13 @@ const QUICK_ACTIONS_MORTGAGE_MORE = [
 ];
 
 const QUICK_ACTIONS_VALUATION_PRIMARY = [
-  { label: 'Odhad ceny bytu', icon: Home, prompt: 'Chci zjistit tržní cenu svého bytu.' },
-  { label: 'Odhad ceny domu', icon: Home, prompt: 'Chci zjistit tržní cenu svého domu.' },
-  { label: 'Odhad nájmu', icon: PiggyBank, prompt: 'Chci zjistit, za kolik bych mohl pronajímat svou nemovitost.' },
-  { label: 'Cena pozemku', icon: Search, prompt: 'Chci zjistit cenu svého pozemku.' },
+  { label: 'Zjistit cenu nemovitosti', icon: Search, prompt: 'Chci zjistit tržní cenu své nemovitosti.' },
+  { label: 'Odhadnout výši nájmu', icon: PiggyBank, prompt: 'Chci zjistit, za kolik bych mohl pronajímat svou nemovitost.' },
 ];
 
 const QUICK_ACTIONS_VALUATION_MORE = [
-  { label: 'Spočítat splátku hypotéky', icon: Calculator, prompt: 'Chci si spočítat splátku hypotéky.' },
-  { label: 'Nájem vs. hypotéka', icon: ArrowDownUp, prompt: 'Vyplatí se mi víc nájem nebo hypotéka?' },
-  { label: 'Investiční nemovitost', icon: PiggyBank, prompt: 'Chci koupit investiční nemovitost, vyplatí se to?' },
-  { label: 'Ověřit bonitu', icon: ShieldCheck, prompt: 'Chci si ověřit, jestli dosáhnu na hypotéku.' },
+  { label: 'Spočítat hypotéku', icon: Calculator, prompt: 'Chci si spočítat splátku hypotéky.' },
+  { label: 'Poradit s něčím jiným', icon: HelpCircle, prompt: 'Potřebuji poradit s nemovitostí.' },
 ];
 
 
@@ -250,11 +246,11 @@ export function ChatArea({ initialSessionId = null }: ChatAreaProps) {
             <p className="text-gray-500 text-base md:text-lg leading-relaxed">
               {visitorName
                 ? isValuation
-                  ? 'Pokračujte tam, kde jste skončili, nebo začněte nový odhad. Vaše předchozí konzultace najdete v bočním panelu.'
-                  : 'Pokračujte tam, kde jste skončili, nebo začněte novou konzultaci. Vaše předchozí konzultace najdete v bočním panelu.'
+                  ? 'Pokračujte tam, kde jste skončili, nebo začněte nový odhad. Předchozí odhady najdete v bočním panelu.'
+                  : 'Pokračujte tam, kde jste skončili, nebo začněte novou konzultaci. Předchozí konzultace najdete v bočním panelu.'
                 : isValuation
-                  ? 'Orientační odhad tržní ceny nebo výše nájmu. Zdarma a nezávazně. Každá konzultace se automaticky ukládá do bočního panelu.'
-                  : 'Spočítám splátku, ověřím bonitu a porovnám nabídky bank. Za minutu víte, na co dosáhnete. Každá konzultace se automaticky ukládá do bočního panelu.'}
+                  ? 'Zjistěte aktuální tržní hodnotu vaší nemovitosti — na základě reálných dat z katastru a posledních prodejů v okolí. Zdarma a bez registrace.'
+                  : 'Spočítám splátku, ověřím bonitu a porovnám nabídky bank. Za minutu víte, na co dosáhnete.'}
             </p>
           </div>
 
@@ -347,12 +343,12 @@ export function ChatArea({ initialSessionId = null }: ChatAreaProps) {
                 <p className="text-[9px] md:text-[10px] text-gray-400 mt-0.5">{isValuation ? 'výsledek' : 'úspora'}</p>
               </div>
               <div className={`rounded-xl p-2.5 md:p-3 text-center ${glass}`}>
-                <p className="text-lg md:text-xl font-bold" style={{ color: tenant.branding.accentColor }}>{isValuation ? '98 %' : '4.9/5'}</p>
-                <p className="text-[9px] md:text-[10px] text-gray-400 mt-0.5">{isValuation ? 'přesnost' : 'hodnocení'}</p>
+                <p className="text-lg md:text-xl font-bold" style={{ color: tenant.branding.accentColor }}>{isValuation ? 'Reálná data' : '4.9/5'}</p>
+                <p className="text-[9px] md:text-[10px] text-gray-400 mt-0.5">{isValuation ? 'z katastru' : 'hodnocení'}</p>
               </div>
               <div className={`rounded-xl p-2.5 md:p-3 text-center ${glass}`}>
                 <p className="text-lg md:text-xl font-bold" style={{ color: tenant.branding.accentColor }}>{isValuation ? 'Zdarma' : '14'}</p>
-                <p className="text-[9px] md:text-[10px] text-gray-400 mt-0.5">{isValuation ? 'bez závazků' : 'bank'}</p>
+                <p className="text-[9px] md:text-[10px] text-gray-400 mt-0.5">{isValuation ? 'bez registrace' : 'bank'}</p>
               </div>
             </div>
           </div>
