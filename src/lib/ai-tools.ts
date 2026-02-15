@@ -242,102 +242,32 @@ export const toolDefinitions = {
   },
 
   request_valuation: {
-    description: 'Odesli zadost o oceneni nemovitosti pres RealVisor API. PRED volanim MUSIS mit: (1) validovanou adresu z geocode_address (lat, lng), (2) kontaktni udaje (firstName, lastName, email), (3) typ nemovitosti, (4) povinne parametry podle typu: BYT = floorArea + rating + localType + ownership + construction, DUM = floorArea + lotArea + rating + ownership + construction + houseType (default family_house), POZEMEK = lotArea. BEZ construction a houseType pro dum oceneni SELZE. Vysledek obsahuje odhadni cenu a je odeslan na email klienta.',
+    description: 'Odesli zadost o oceneni nemovitosti. Data se ctou z PROFILU klienta -- NEMUSIS je predavat. Pred volanim MUSIS mit v profilu (pres update_profile): (1) validovanou adresu (klient vybral z naseptavace), (2) jmeno + email, (3) typ nemovitosti, (4) povinne parametry. Pokud neco chybi, tool ti rekne co. Zavolej az klient potvrdil shrnuti.',
     inputSchema: z.object({
-      // Kontakt - povinne
-      firstName: z.string().describe('Jmeno klienta'),
-      lastName: z.string().describe('Prijmeni klienta'),
-      email: z.string().describe('Email klienta - na tento email prijde vysledek'),
-      phone: z.string().optional().describe('Telefon klienta - silne doporuceny'),
-      // Nemovitost - povinne
-      kind: z.enum(['sale', 'lease']).describe('Typ nabidky: sale = prodej, lease = pronajem'),
-      propertyType: z.enum(['flat', 'house', 'land']).describe('Typ nemovitosti'),
-      address: z.string().describe('Validovana adresa z geocode_address (pouzij label)'),
-      lat: z.number().describe('GPS sirka z geocode_address'),
-      lng: z.number().describe('GPS delka z geocode_address'),
-      // Plochy - povinne podle typu
-      floorArea: z.number().optional().describe('Uzitna plocha v m2 - POVINNE pro byt a dum'),
-      lotArea: z.number().optional().describe('Plocha pozemku v m2 - POVINNE pro dum a pozemek'),
-      // Stav - povinny pro byt a dum
-      rating: z.enum(['bad', 'nothing_much', 'good', 'very_good', 'new', 'excellent']).optional().describe('Stav nemovitosti - POVINNY pro byt a dum'),
-      // Povinne pro byt a dum
-      localType: z.string().optional().describe('Dispozice bytu: 1+kk, 2+1, 3+kk atd. POVINNE pro byt'),
-      ownership: z.enum(['private', 'cooperative', 'council', 'other']).optional().describe('Vlastnictvi - POVINNE pro byt a dum'),
-      construction: z.enum(['brick', 'panel', 'wood', 'stone', 'montage', 'mixed', 'other']).optional().describe('Konstrukce - POVINNE pro byt a dum'),
-      houseType: z.enum(['family_house', 'villa', 'cottage', 'hut', 'other']).optional().describe('Typ domu - POVINNE pro dum, default family_house'),
-      landType: z.enum(['building', 'garden', 'field', 'meadow', 'forest', 'other']).optional().describe('Typ pozemku - POVINNE pro pozemek, default building'),
-      floor: z.number().optional().describe('Patro (0 = prizemi)'),
-      totalFloors: z.number().optional().describe('Celkovy pocet podlazi budovy'),
-      elevator: z.boolean().optional().describe('Vytah v budove'),
-      energyPerformance: z.enum(['A', 'B', 'C', 'D', 'E', 'F', 'G']).optional().describe('Energeticky stitek'),
-      rooms: z.number().optional().describe('Celkovy pocet pokoju'),
-      bathrooms: z.number().optional().describe('Pocet koupelen'),
-      bedrooms: z.number().optional().describe('Pocet loznic'),
-      balconyArea: z.number().optional().describe('Balkon v m2'),
-      terraceArea: z.number().optional().describe('Terasa v m2'),
-      cellarArea: z.number().optional().describe('Sklep v m2'),
-      gardenArea: z.number().optional().describe('Zahrada v m2'),
-      garages: z.number().optional().describe('Pocet garazi'),
-      parkingSpaces: z.number().optional().describe('Pocet parkovacich mist'),
-      // Strukturovana adresa z geocode
-      street: z.string().optional().describe('Ulice z geocode_address'),
-      streetNumber: z.string().optional().describe('Cislo z geocode_address'),
-      city: z.string().optional().describe('Mesto z geocode_address'),
-      district: z.string().optional().describe('Mestska cast z geocode_address'),
-      region: z.string().optional().describe('Kraj z geocode_address'),
-      postalCode: z.string().optional().describe('PSC z geocode_address'),
+      sessionId: z.string().describe('ID session -- predava se automaticky'),
     }),
-    execute: async (params: Record<string, unknown>) => {
-      // Auto-fill defaults that RealVisor requires but Hugo might omit
-      if (params.propertyType === 'house' && !params.houseType) params.houseType = 'family_house';
-      if (params.propertyType === 'land' && !params.landType) params.landType = 'building';
-
-      // HARD VALIDATION: check all required fields BEFORE sending to API
-      const missing: string[] = [];
-      if (!params.firstName) missing.push('firstName (jmeno)');
-      if (!params.lastName) missing.push('lastName (prijmeni)');
-      if (!params.email) missing.push('email');
-      if (!params.lat || !params.lng) missing.push('lat/lng (adresa nebyla validovana pres geocode_address)');
-      if (params.propertyType === 'flat') {
-        if (!params.floorArea) missing.push('floorArea (uzitna plocha)');
-        if (!params.rating) missing.push('rating (stav nemovitosti)');
-        if (!params.localType) missing.push('localType (dispozice: 1+kk, 2+1...)');
-        if (!params.ownership) missing.push('ownership (vlastnictvi: private/cooperative)');
-        if (!params.construction) missing.push('construction (konstrukce: brick/panel/wood)');
-      } else if (params.propertyType === 'house') {
-        if (!params.floorArea) missing.push('floorArea (uzitna plocha)');
-        if (!params.lotArea) missing.push('lotArea (plocha pozemku)');
-        if (!params.rating) missing.push('rating (stav nemovitosti)');
-        if (!params.ownership) missing.push('ownership (vlastnictvi: private/cooperative)');
-        if (!params.construction) missing.push('construction (konstrukce: brick/panel/wood)');
-      } else if (params.propertyType === 'land') {
-        if (!params.lotArea) missing.push('lotArea (plocha pozemku)');
-      }
-      if (missing.length > 0) {
-        return {
-          success: false,
-          missingFields: missing,
-          summary: `NELZE odeslat oceneni -- chybi povinne udaje: ${missing.join(', ')}. Zeptej se klienta na chybejici informace a zavolej request_valuation znovu.`,
-        };
-      }
-
+    execute: async ({ sessionId }: { sessionId: string }) => {
       const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000');
       try {
-        const res = await fetch(`${baseUrl}/api/valuation/valuo`, {
+        const res = await fetch(`${baseUrl}/api/valuation/submit`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(params),
+          body: JSON.stringify({ sessionId }),
         });
-        if (!res.ok) {
-          const text = await res.text();
-          let detail = text;
-          try { detail = JSON.parse(text).message ?? text; } catch { /* keep raw */ }
-          return { success: false, error: detail, summary: `Oceneni se nepodarilo: ${detail}` };
-        }
         const data = await res.json();
+
         if (!data.success) {
-          return { success: false, error: data.error ?? 'Valuo API selhalo', summary: 'Oceneni se nepodarilo. Zkus to znovu s jinymi parametry.' };
+          const missingFields = data.missingFields as string[] | undefined;
+          if (missingFields && missingFields.length > 0) {
+            return {
+              success: false,
+              missingFields,
+              summary: `NELZE odeslat oceneni -- v profilu chybi: ${missingFields.join(', ')}. Zeptej se klienta a uloz pres update_profile. Pak zavolej request_valuation znovu.`,
+            };
+          }
+          return { success: false, error: data.error ?? 'Oceneni selhalo', summary: `Oceneni se nepodarilo: ${data.error ?? 'neznama chyba'}` };
         }
+
         const v = data.valuation;
         const fmtPrice = (n: number) => Math.round(n).toLocaleString('cs-CZ');
         return {
@@ -350,9 +280,8 @@ export const toolDefinitions = {
           avgPriceM2: v?.avgPriceM2,
           avgDuration: v?.avgDuration,
           emailSent: data.emailSent,
-          contactEmail: params.email,
           summary: v
-            ? `Oceneni dokonceno. Odhadni cena: ${fmtPrice(v.avgPrice)} Kc (rozmezi ${fmtPrice(v.minPrice)} - ${fmtPrice(v.maxPrice)} Kc). Cena za m2: ${fmtPrice(v.avgPriceM2)} Kc/m2. Prumerna doba prodeje: ${v.avgDuration} dni. Vysledek odeslan na email ${params.email}.`
+            ? `Oceneni dokonceno. Odhadni cena: ${fmtPrice(v.avgPrice)} Kc (rozmezi ${fmtPrice(v.minPrice)} - ${fmtPrice(v.maxPrice)} Kc). Cena za m2: ${fmtPrice(v.avgPriceM2)} Kc/m2. Prumerna doba prodeje: ${v.avgDuration} dni. Vysledek odeslan na email klienta.`
             : 'Oceneni dokonceno, ale bez cenoveho vysledku.',
           displayed: true,
         };

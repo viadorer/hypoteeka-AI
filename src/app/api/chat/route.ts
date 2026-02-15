@@ -131,7 +131,7 @@ export async function POST(req: Request) {
     }
 
     // Parse ADDRESS_DATA from user messages (sent by AddressSuggestWidget)
-    // Store full address components for injection into system prompt
+    // Store full address components in profile + keep raw for valuation submit
     let parsedAddressData: Record<string, unknown> | null = null;
     for (const msg of (Array.isArray(messages) ? messages : [])) {
       if (msg.role !== 'user') continue;
@@ -145,6 +145,12 @@ export async function POST(req: Request) {
           if (addr.lat) profile.propertyLat = addr.lat;
           if (addr.lng) profile.propertyLng = addr.lng;
           if (addr.city) profile.location = addr.city;
+          // Store street/district/region/postalCode for valuation submit
+          if (addr.street) (profile as Record<string, unknown>)._addrStreet = addr.street;
+          if (addr.streetNumber) (profile as Record<string, unknown>)._addrStreetNumber = addr.streetNumber;
+          if (addr.district) (profile as Record<string, unknown>)._addrDistrict = addr.district;
+          if (addr.region) (profile as Record<string, unknown>)._addrRegion = addr.region;
+          if (addr.postalCode) (profile as Record<string, unknown>)._addrPostalCode = addr.postalCode;
           console.log(`[Profile] Parsed ADDRESS_DATA: ${addr.address}, lat=${addr.lat}, lng=${addr.lng}`);
         } catch { /* ignore parse errors */ }
       }
