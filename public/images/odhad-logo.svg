@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" fill="none">
+  <!-- Main circle (O shape) -->
+  <circle cx="52" cy="52" r="40" stroke="#2962FF" stroke-width="18" fill="none"/>
+  <!-- Inner white circle (cutout) -->
+  <circle cx="52" cy="52" r="16" fill="white"/>
+  <!-- Magnifying glass handle -->
+  <line x1="78" y1="78" x2="108" y2="108" stroke="#2962FF" stroke-width="18" stroke-linecap="round"/>
+</svg>

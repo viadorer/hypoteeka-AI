@@ -1,8 +1,23 @@
 import { ImageResponse } from 'next/og';
+import { getTenantConfig, getDefaultTenantId } from '@/lib/tenant/config';
 
 export const runtime = 'edge';
 
 export async function GET() {
+  const tenant = getTenantConfig(getDefaultTenantId());
+  const isValuation = tenant.features.primaryFlow === 'valuation';
+  const primary = tenant.branding.primaryColor;
+
+  const title = isValuation ? 'Odhad.online' : 'Hypoteeka AI';
+  const subtitle = isValuation ? 'Orientacni odhad ceny nemovitosti' : 'Vas hypotecni poradce';
+  const features = isValuation
+    ? ['Odhad ceny bytu', 'Odhad domu', 'Odhad najmu']
+    : ['Kalkulacka splatky', 'Overeni bonity', 'Sazby bank'];
+  const domain = tenant.domain;
+  const bgGradient = isValuation
+    ? 'linear-gradient(135deg, #0A1E5C 0%, #1a3a8f 50%, #0A1E5C 100%)'
+    : 'linear-gradient(135deg, #0A1E5C 0%, #1a3a8f 50%, #0A1E5C 100%)';
+
   return new ImageResponse(
     (
       <div
@@ -13,11 +28,11 @@ export async function GET() {
           flexDirection: 'column',
           alignItems: 'center',
           justifyContent: 'center',
-          background: 'linear-gradient(135deg, #0A1E5C 0%, #1a3a8f 50%, #0A1E5C 100%)',
+          background: bgGradient,
           fontFamily: 'Inter, sans-serif',
         }}
       >
-        {/* Pink accent bar */}
+        {/* Accent bar */}
         <div
           style={{
             position: 'absolute',
@@ -25,7 +40,7 @@ export async function GET() {
             left: 0,
             right: 0,
             height: '6px',
-            background: '#E91E63',
+            background: primary,
           }}
         />
 
@@ -35,8 +50,8 @@ export async function GET() {
             width: '80px',
             height: '80px',
             borderRadius: '50%',
-            background: 'rgba(233, 30, 99, 0.15)',
-            border: '3px solid rgba(233, 30, 99, 0.4)',
+            background: `${primary}26`,
+            border: `3px solid ${primary}66`,
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
@@ -44,9 +59,16 @@ export async function GET() {
             fontSize: '36px',
           }}
         >
-          <svg width="40" height="40" viewBox="0 0 24 24" fill="none">
-            <path d="M12 2C9.24 2 7 4.24 7 7v5H5v10h14V12h-2V7c0-2.76-2.24-5-5-5zm0 2c1.66 0 3 1.34 3 3v5H9V7c0-1.66 1.34-3 3-3z" fill="#E91E63"/>
-          </svg>
+          {isValuation ? (
+            <svg width="40" height="40" viewBox="0 0 120 120" fill="none">
+              <circle cx="52" cy="52" r="28" stroke={primary} strokeWidth="10" fill="none"/>
+              <line x1="72" y1="72" x2="100" y2="100" stroke={primary} strokeWidth="10" strokeLinecap="round"/>
+            </svg>
+          ) : (
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none">
+              <path d="M12 2C9.24 2 7 4.24 7 7v5H5v10h14V12h-2V7c0-2.76-2.24-5-5-5zm0 2c1.66 0 3 1.34 3 3v5H9V7c0-1.66 1.34-3 3-3z" fill={primary}/>
+            </svg>
+          )}
         </div>
 
         {/* Title */}
@@ -59,7 +81,7 @@ export async function GET() {
             marginBottom: '12px',
           }}
         >
-          Hypoteeka AI
+          {title}
         </div>
 
         {/* Subtitle */}
@@ -70,7 +92,7 @@ export async function GET() {
             marginBottom: '40px',
           }}
         >
-          Vas hypotecni poradce
+          {subtitle}
         </div>
 
         {/* Features row */}
@@ -80,7 +102,7 @@ export async function GET() {
             gap: '32px',
           }}
         >
-          {['Kalkulacka splatky', 'Overeni bonity', 'Sazby bank'].map((text) => (
+          {features.map((text) => (
             <div
               key={text}
               style={{
@@ -99,7 +121,7 @@ export async function GET() {
                   width: '8px',
                   height: '8px',
                   borderRadius: '50%',
-                  background: '#E91E63',
+                  background: primary,
                 }}
               />
               {text}
@@ -116,7 +138,7 @@ export async function GET() {
             color: 'rgba(255, 255, 255, 0.4)',
           }}
         >
-          hypoteeka.cz
+          {domain}
         </div>
       </div>
     ),

@@ -32,6 +32,7 @@ export interface TenantConfig {
     ctaIntensity: 'low' | 'medium' | 'high';
     primaryFlow: 'mortgage' | 'valuation';
   };
+  gaId?: string;
 }
 
 const TENANT_CONFIGS: Record<string, TenantConfig> = {
@@ -60,16 +61,18 @@ const TENANT_CONFIGS: Record<string, TenantConfig> = {
       ctaIntensity: 'medium',
       primaryFlow: 'mortgage',
     },
+    gaId: 'G-Q6HN5J19BT',
   },
   odhad: {
     id: 'odhad',
     name: 'Odhad.online',
     domain: 'odhad.online',
     branding: {
-      primaryColor: '#2196F3',
-      accentColor: '#FF9800',
+      primaryColor: '#2962FF',
+      accentColor: '#0A1E5C',
       title: 'Odhad.online',
-      description: 'Odhad nemovitosti',
+      description: 'Orientační odhad ceny nemovitosti',
+      logoUrl: '/images/odhad-logo.svg',
     },
     aiConfig: {
       provider: 'google',

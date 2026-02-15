@@ -159,7 +159,7 @@ export function Sidebar({ activeSessionId, currentView, onSelectSession, onConti
           <Menu className="w-6 h-6 text-gray-700" />
         </button>
         <div className="w-11 h-11 rounded-full bg-white shadow-sm border border-gray-100 flex items-center justify-center flex-shrink-0">
-          <Image src="/logo.png" alt={tenant.branding.title} width={28} height={28} className="object-contain" />
+          <Image src={tenant.branding.logoUrl ?? '/logo.png'} alt={tenant.branding.title} width={28} height={28} className="object-contain" />
         </div>
         <h1 className="text-lg font-extrabold text-[#0A1E5C] tracking-tight">{tenant.branding.title}</h1>
       </div>
@@ -180,7 +180,7 @@ export function Sidebar({ activeSessionId, currentView, onSelectSession, onConti
         <div className="flex items-center justify-between p-5 pb-4">
           <div className="flex items-center gap-3">
             <div className="w-12 h-12 rounded-full bg-white shadow-sm border border-gray-100 flex items-center justify-center flex-shrink-0">
-              <Image src="/logo.png" alt={tenant.branding.title} width={30} height={30} className="object-contain" />
+              <Image src={tenant.branding.logoUrl ?? '/logo.png'} alt={tenant.branding.title} width={30} height={30} className="object-contain" />
             </div>
             <h1 className="text-xl font-extrabold text-[#0A1E5C] tracking-tight">{tenant.branding.title}</h1>
           </div>

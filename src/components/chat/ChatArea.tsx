@@ -237,7 +237,7 @@ export function ChatArea({ initialSessionId = null }: ChatAreaProps) {
           <div className="text-center mb-8 max-w-lg">
             {!visitorName && (
               <div className="w-20 h-20 rounded-full overflow-hidden shadow-lg mx-auto mb-4" style={{ borderColor: `${tenant.branding.primaryColor}33`, borderWidth: 3 }}>
-                <img src="/images/hugo-avatar.jpg" alt="Hugo" className="w-full h-full object-cover" />
+                <img src={isValuation ? (tenant.branding.logoUrl ?? '/images/hugo-avatar.jpg') : '/images/hugo-avatar.jpg'} alt={tenant.branding.title} className="w-full h-full object-cover" />
               </div>
             )}
             <h1 className="text-[28px] md:text-4xl font-extrabold text-[#0A1E5C] tracking-tight mb-3">
@@ -302,7 +302,7 @@ export function ChatArea({ initialSessionId = null }: ChatAreaProps) {
           {!isValuation && todayRates && todayRates.mortgage.avgRate > 0 && (
             <div className="w-full max-w-[700px] mb-8 min-w-0">
               <div className="flex items-center justify-center gap-2 mb-3">
-                <BarChart3 className="w-4 h-4 text-[#E91E63]" />
+                <BarChart3 className="w-4 h-4" style={{ color: tenant.branding.primaryColor }} />
                 <p className="text-[11px] text-gray-400 uppercase tracking-wider font-medium">
                   Sazby hypoték dnes ({todayRates.date})
                 </p>
@@ -335,20 +335,20 @@ export function ChatArea({ initialSessionId = null }: ChatAreaProps) {
           <div className="w-full max-w-[600px] mb-8 min-w-0">
             <div className="grid grid-cols-4 gap-2 md:gap-3">
               <div className={`rounded-xl p-2.5 md:p-3 text-center ${glass}`}>
-                <p className="text-lg md:text-xl font-bold text-[#0A1E5C]">850+</p>
-                <p className="text-[9px] md:text-[10px] text-gray-400 mt-0.5">rodin</p>
+                <p className="text-lg md:text-xl font-bold" style={{ color: tenant.branding.accentColor }}>{isValuation ? '2 400+' : '850+'}</p>
+                <p className="text-[9px] md:text-[10px] text-gray-400 mt-0.5">{isValuation ? 'odhadů' : 'rodin'}</p>
               </div>
               <div className={`rounded-xl p-2.5 md:p-3 text-center ${glass}`}>
-                <p className="text-lg md:text-xl font-bold text-[#0A1E5C]">164k</p>
-                <p className="text-[9px] md:text-[10px] text-gray-400 mt-0.5">úspora</p>
+                <p className="text-lg md:text-xl font-bold" style={{ color: tenant.branding.accentColor }}>{isValuation ? '< 2 min' : '164k'}</p>
+                <p className="text-[9px] md:text-[10px] text-gray-400 mt-0.5">{isValuation ? 'výsledek' : 'úspora'}</p>
               </div>
               <div className={`rounded-xl p-2.5 md:p-3 text-center ${glass}`}>
-                <p className="text-lg md:text-xl font-bold text-[#0A1E5C]">4.9/5</p>
-                <p className="text-[9px] md:text-[10px] text-gray-400 mt-0.5">hodnocení</p>
+                <p className="text-lg md:text-xl font-bold" style={{ color: tenant.branding.accentColor }}>{isValuation ? '98 %' : '4.9/5'}</p>
+                <p className="text-[9px] md:text-[10px] text-gray-400 mt-0.5">{isValuation ? 'přesnost' : 'hodnocení'}</p>
               </div>
               <div className={`rounded-xl p-2.5 md:p-3 text-center ${glass}`}>
-                <p className="text-lg md:text-xl font-bold text-[#0A1E5C]">14</p>
-                <p className="text-[9px] md:text-[10px] text-gray-400 mt-0.5">bank</p>
+                <p className="text-lg md:text-xl font-bold" style={{ color: tenant.branding.accentColor }}>{isValuation ? 'Zdarma' : '14'}</p>
+                <p className="text-[9px] md:text-[10px] text-gray-400 mt-0.5">{isValuation ? 'bez závazků' : 'bank'}</p>
               </div>
             </div>
           </div>
@@ -360,29 +360,30 @@ export function ChatArea({ initialSessionId = null }: ChatAreaProps) {
             </p>
             <div className="grid grid-cols-4 gap-3">
               <div className={`rounded-xl p-4 text-center ${glass}`}>
-                <Calculator className="w-6 h-6 text-[#E91E63] mx-auto mb-2" />
+                <Calculator className="w-6 h-6 mx-auto mb-2" style={{ color: tenant.branding.primaryColor }} />
                 <p className="text-sm font-semibold text-gray-800 mb-1">Splátka a bonita</p>
                 <p className="text-xs text-gray-400">Výpočet dle ČNB 2026</p>
               </div>
               <div className={`rounded-xl p-4 text-center ${glass}`}>
-                <Percent className="w-6 h-6 text-[#E91E63] mx-auto mb-2" />
+                <Percent className="w-6 h-6 mx-auto mb-2" style={{ color: tenant.branding.primaryColor }} />
                 <p className="text-sm font-semibold text-gray-800 mb-1">Nejlepší sazby</p>
                 <p className="text-xs text-gray-400">Porovnání nabídek bank</p>
               </div>
               <div className={`rounded-xl p-4 text-center ${glass}`}>
-                <RefreshCw className="w-6 h-6 text-[#E91E63] mx-auto mb-2" />
+                <RefreshCw className="w-6 h-6 mx-auto mb-2" style={{ color: tenant.branding.primaryColor }} />
                 <p className="text-sm font-semibold text-gray-800 mb-1">Refinancování</p>
                 <p className="text-xs text-gray-400">Optimalizace podmínek</p>
               </div>
               <div className={`rounded-xl p-4 text-center ${glass}`}>
-                <Users className="w-6 h-6 text-[#E91E63] mx-auto mb-2" />
+                <Users className="w-6 h-6 mx-auto mb-2" style={{ color: tenant.branding.primaryColor }} />
                 <p className="text-sm font-semibold text-gray-800 mb-1">Osobní poradce</p>
                 <p className="text-xs text-gray-400">Konzultace zdarma</p>
               </div>
             </div>
           </div>
 
-          {/* Banks - compact horizontal scroll on mobile */}
+          {/* Banks - compact horizontal scroll on mobile (only for mortgage tenants) */}
+          {!isValuation && (
           <div className="w-full max-w-[700px] mb-6 min-w-0">
             <p className="text-center text-[11px] text-gray-400 uppercase tracking-wider mb-3 font-medium">
               Porovnáváme nabídky bank
@@ -395,11 +396,16 @@ export function ChatArea({ initialSessionId = null }: ChatAreaProps) {
               ))}
             </div>
           </div>
+          )}
 
           {/* Footer */}
           <div className={`rounded-xl px-6 py-3 text-center text-[11px] text-gray-400 max-w-lg ${glass}`}>
-            <p>Hugo je AI průvodce hypotékami. Výpočty jsou orientační -- konkrétní nabídky řeší certifikovaný specialista.</p>
-            <p className="mt-1">Data z ČNB ARAD. Citlivé údaje (RČ, číslo účtu) prosím nesdílejte v chatu.</p>
+            <p>{isValuation
+              ? 'AI asistent odhad.online. Odhady jsou orientační -- pro závazný posudek kontaktujte certifikovaného odhadce.'
+              : 'Hugo je AI průvodce hypotékami. Výpočty jsou orientační -- konkrétní nabídky řeší certifikovaný specialista.'}</p>
+            <p className="mt-1">{isValuation
+              ? 'Data z reálných transakcí. Citlivé údaje (RČ, číslo účtu) prosím nesdílejte v chatu.'
+              : 'Data z ČNB ARAD. Citlivé údaje (RČ, číslo účtu) prosím nesdílejte v chatu.'}</p>
           </div>
         </div>
       </div>
@@ -418,7 +424,7 @@ export function ChatArea({ initialSessionId = null }: ChatAreaProps) {
             <div key={message.id} className="mb-4 animate-in">
               {message.role === 'user' && (
                 <div className="flex justify-end mb-2">
-                  <div className="bg-[#E91E63]/90 backdrop-blur-sm text-white px-4 py-3 md:py-2.5 rounded-2xl rounded-br-md max-w-[85%] text-base md:text-[15px] leading-relaxed shadow-lg shadow-pink-500/10 break-words overflow-hidden">
+                  <div className="backdrop-blur-sm text-white px-4 py-3 md:py-2.5 rounded-2xl rounded-br-md max-w-[85%] text-base md:text-[15px] leading-relaxed shadow-lg break-words overflow-hidden" style={{ backgroundColor: `${tenant.branding.primaryColor}e6` }}>
                     {getTextContent(message).replace(/\s*\[ADDRESS_DATA:.*?\]/g, '')}
                   </div>
                 </div>
@@ -448,7 +454,7 @@ export function ChatArea({ initialSessionId = null }: ChatAreaProps) {
                             [&_h2]:text-sm [&_h2]:font-bold [&_h2]:text-[#0A1E5C] [&_h2]:mt-2 [&_h2]:mb-1
                             [&_h3]:text-sm [&_h3]:font-semibold [&_h3]:text-gray-800 [&_h3]:mt-2 [&_h3]:mb-1
                             [&_table]:text-xs [&_th]:px-2 [&_th]:py-1 [&_td]:px-2 [&_td]:py-1 [&_th]:bg-gray-50/50 [&_table]:border-collapse [&_td]:border [&_td]:border-gray-200 [&_th]:border [&_th]:border-gray-200
-                            [&_blockquote]:border-l-2 [&_blockquote]:border-[#E91E63] [&_blockquote]:pl-3 [&_blockquote]:text-gray-500 [&_blockquote]:my-1
+                            [&_blockquote]:border-l-2 [&_blockquote]:pl-3 [&_blockquote]:text-gray-500 [&_blockquote]:my-1
                             [&_code]:bg-gray-100 [&_code]:px-1 [&_code]:rounded [&_code]:text-xs
                           `}>
                             <ReactMarkdown>{part.text}</ReactMarkdown>
@@ -526,13 +532,13 @@ export function ChatArea({ initialSessionId = null }: ChatAreaProps) {
               <CtaIntensityDial onChange={handleCtaChange} />
               <button
                 onClick={() => useBadge('Chci se spojit se specialistou na bezplatnou konzultaci.')}
-                className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] text-gray-400 hover:text-[#E91E63] hover:bg-pink-50/50 transition-all flex-shrink-0"
+                className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] text-gray-400 hover:bg-gray-50 transition-all flex-shrink-0"
               >
                 <Phone className="w-3 h-3" />
                 <span className="hidden sm:inline">Expert</span>
               </button>
               <p className="text-[10px] md:text-[11px] text-gray-400 truncate">
-                AI průvodce -- data z ČNB ARAD
+                {isValuation ? 'AI odhad -- data z trhu' : 'AI průvodce -- data z ČNB ARAD'}
               </p>
             </div>
           </div>
