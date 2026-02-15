@@ -226,33 +226,52 @@ export const toolDefinitions = {
   },
 
   geocode_address: {
-    description: 'Validuj adresu nemovitosti a ziskej GPS souradnice. POVINNY krok PRED odeslanim oceneni (request_valuation). Vraci seznam kandidatu -- nabidni klientovi vyber spravne adresy. Pouzij kdyz klient uvede adresu nemovitosti pro oceneni.',
+    description: 'Validuj adresu nemovitosti a ziskej GPS souradnice. POVINNY krok PRED odeslanim oceneni (request_valuation). Klient muze zadat cokoliv (napr. "drevena 3 Plzen") a API najde presnou adresu. Vraci seznam kandidatu -- nabidni klientovi vyber. count >= 1 = uspech (adresa nalezena). count == 0 = adresa nenalezena. Kazdy vysledek obsahuje label (cela adresa), lat/lng (GPS), a rozbalene address komponenty (street, streetNumber, city, district, region, postalCode) -- VSECHNY tyto hodnoty si ZAPAMATUJ a pouzij v request_valuation.',
     inputSchema: z.object({
-      query: z.string().describe('Adresa zadana klientem, napr. "Korunni 104 Praha" nebo "Na Kopci 5, Ricany"'),
+      query: z.string().describe('Adresa zadana klientem presne jak ji napsal, napr. "drevena 3 Plzen" nebo "Korunni 104 Praha". API zvladne i bez diakritiky.'),
     }),
     execute: async ({ query }: { query: string }) => {
-      const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000';
+      const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000');
       try {
         const res = await fetch(`${baseUrl}/api/valuation/geocode?query=${encodeURIComponent(query)}`);
         if (!res.ok) {
           const text = await res.text();
-          return { success: false, error: `Geocode chyba: ${text}`, summary: 'Nepodařilo se validovat adresu.' };
+          return { success: false, error: `Geocode chyba: ${text}`, summary: 'Nepodařilo se validovat adresu. Zkus to znovu.' };
         }
         const data = await res.json();
         if (!data.results || data.results.length === 0) {
-          return { success: false, results: [], summary: 'Adresa nenalezena. Zeptej se klienta na přesnější adresu.' };
+          return { success: false, count: 0, results: [], summary: 'Adresa nenalezena. Zeptej se klienta na přesnější adresu (ulice, číslo, město).' };
         }
-        return {
-          success: true,
-          results: data.results.map((r: Record<string, unknown>) => ({
-            name: r.name,
+        // Rozbal address komponenty do ploché struktury pro snadné použití v request_valuation
+        const results = data.results.map((r: Record<string, unknown>) => {
+          const a = r.address as Record<string, string> | undefined;
+          return {
             label: r.label,
             lat: r.lat,
             lng: r.lng,
-            address: r.address,
-          })),
-          count: data.count,
-          summary: `Nalezeno ${data.count} adres. Nabídni klientovi výběr správné adresy.`,
+            street: a?.street ?? '',
+            streetNumber: a?.streetNumber ?? '',
+            city: a?.city ?? '',
+            district: a?.district ?? '',
+            region: a?.region ?? '',
+            postalCode: a?.postalCode ?? '',
+          };
+        });
+        const count = data.count ?? results.length;
+        if (count === 1) {
+          return {
+            success: true,
+            count,
+            results,
+            confirmedAddress: results[0].label,
+            summary: `Nalezena adresa: ${results[0].label}. Zeptej se klienta jestli je to správně. Pokud ano, použij tyto údaje v request_valuation: address="${results[0].label}", lat=${results[0].lat}, lng=${results[0].lng}, street="${results[0].street}", streetNumber="${results[0].streetNumber}", city="${results[0].city}", district="${results[0].district}", postalCode="${results[0].postalCode}".`,
+          };
+        }
+        return {
+          success: true,
+          count,
+          results,
+          summary: `Nalezeno ${count} adres. Nabídni klientovi výběr: ${results.map((r: { label: string }, i: number) => `${i + 1}. ${r.label}`).join(', ')}. Po výběru si zapamatuj všechny údaje vybraného výsledku pro request_valuation.`,
         };
       } catch (err) {
         return { success: false, error: err instanceof Error ? err.message : 'Network error', summary: 'Chyba při validaci adresy.' };
@@ -261,7 +280,7 @@ export const toolDefinitions = {
   },
 
   request_valuation: {
-    description: 'Odesli zadost o oceneni nemovitosti pres RealVisor API. PRED volanim MUSIS mit: (1) validovanou adresu z geocode_address (lat, lng), (2) kontaktni udaje (firstName, lastName, email), (3) typ nemovitosti, (4) povinne parametry podle typu (byt: floorArea+rating, dum: floorArea+lotArea+rating, pozemek: lotArea). Vysledek obsahuje odhadni cenu a je odeslan na email klienta.',
+    description: 'Odesli zadost o oceneni nemovitosti pres RealVisor API. PRED volanim MUSIS mit: (1) validovanou adresu z geocode_address (lat, lng), (2) kontaktni udaje (firstName, lastName, email), (3) typ nemovitosti, (4) povinne parametry podle typu: BYT = floorArea + rating + localType + ownership + construction, DUM = floorArea + lotArea + rating + ownership + construction, POZEMEK = lotArea. Vysledek obsahuje odhadni cenu a je odeslan na email klienta.',
     inputSchema: z.object({
       // Kontakt - povinne
       firstName: z.string().describe('Jmeno klienta'),
@@ -279,10 +298,10 @@ export const toolDefinitions = {
       lotArea: z.number().optional().describe('Plocha pozemku v m2 - POVINNE pro dum a pozemek'),
       // Stav - povinny pro byt a dum
       rating: z.enum(['bad', 'nothing_much', 'good', 'very_good', 'new', 'excellent']).optional().describe('Stav nemovitosti - POVINNY pro byt a dum'),
-      // Volitelne - zlepsuji presnost
-      localType: z.string().optional().describe('Dispozice bytu: 1+kk, 2+1, 3+kk atd.'),
-      ownership: z.enum(['private', 'cooperative', 'council', 'other']).optional().describe('Vlastnictvi'),
-      construction: z.enum(['brick', 'panel', 'wood', 'stone', 'montage', 'mixed', 'other']).optional().describe('Konstrukce'),
+      // Povinne pro byt a dum
+      localType: z.string().optional().describe('Dispozice bytu: 1+kk, 2+1, 3+kk atd. POVINNE pro byt'),
+      ownership: z.enum(['private', 'cooperative', 'council', 'other']).optional().describe('Vlastnictvi - POVINNE pro byt a dum'),
+      construction: z.enum(['brick', 'panel', 'wood', 'stone', 'montage', 'mixed', 'other']).optional().describe('Konstrukce - POVINNE pro byt a dum'),
       houseType: z.enum(['family_house', 'villa', 'cottage', 'hut', 'other']).optional().describe('Typ domu'),
       landType: z.enum(['building', 'garden', 'field', 'meadow', 'forest', 'other']).optional().describe('Typ pozemku'),
       floor: z.number().optional().describe('Patro (0 = prizemi)'),
@@ -307,7 +326,7 @@ export const toolDefinitions = {
       postalCode: z.string().optional().describe('PSC z geocode_address'),
     }),
     execute: async (params: Record<string, unknown>) => {
-      const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000';
+      const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000');
       try {
         const res = await fetch(`${baseUrl}/api/valuation/valuo`, {
           method: 'POST',

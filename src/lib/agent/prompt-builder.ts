@@ -140,9 +140,9 @@ export async function buildAgentPrompt(
   // Instrukce pro probíhající ocenění
   if (state.widgetsShown.includes('geocode_address') && !valuationDone) {
     parts.push('\nOCENĚNÍ PROBÍHÁ: Adresa validována. Zkontroluj, že máš všechna povinná data pro request_valuation:');
-    parts.push('- Byt: floorArea + rating (povinné), localType, construction, floor, elevator (volitelné)');
-    parts.push('- Dům: floorArea + lotArea + rating (povinné), houseType, construction (volitelné)');
-    parts.push('- Pozemek: lotArea (povinné), landType (volitelné)');
+    parts.push('- Byt: floorArea + rating + localType (dispozice) + ownership (vlastnictví) + construction (konstrukce) -- vše POVINNÉ');
+    parts.push('- Dům: floorArea + lotArea + rating + ownership + construction -- vše POVINNÉ');
+    parts.push('- Pozemek: lotArea -- POVINNÉ');
     parts.push('- Kontakt: firstName + lastName + email (povinné), phone (doporučený)');
   }
 
