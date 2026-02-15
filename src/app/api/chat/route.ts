@@ -179,10 +179,13 @@ export async function POST(req: Request) {
     // Build dynamic prompt (async - fetches live rates from ČNB API + knowledge base)
     let systemPrompt = await buildAgentPrompt(profile, state, leadScore, tenantId, lastUserMessage, ctaIntensity);
 
-    // Inject full ADDRESS_DATA into system prompt so Hugo has all address fields reliably
+    // Inject sessionId so Hugo can pass it to request_valuation
+    systemPrompt += `\n\nSESSION_ID: "${sessionId}" -- POUŽIJ tuto hodnotu jako sessionId v request_valuation.`;
+
+    // Inject full ADDRESS_DATA into system prompt (informational)
     if (parsedAddressData) {
       const a = parsedAddressData;
-      systemPrompt += `\n\nADRESA PRO OCENĚNÍ (z našeptávače, POUŽIJ v request_valuation):\n- address: "${a.address}"\n- lat: ${a.lat}\n- lng: ${a.lng}\n- street: "${a.street ?? ''}"\n- streetNumber: "${a.streetNumber ?? ''}"\n- city: "${a.city ?? ''}"\n- district: "${a.district ?? ''}"\n- region: "${a.region ?? ''}"\n- postalCode: "${a.postalCode ?? ''}"\nTyto hodnoty MUSÍŠ předat do request_valuation. Neměň je.`;
+      systemPrompt += `\nVALIDOVANÁ ADRESA: "${a.address}" (lat=${a.lat}, lng=${a.lng}). Adresa je uložena v profilu.`;
     }
 
     console.log(`[Agent] Tenant: ${tenantId}, Session: ${sessionId}, Phase: ${state.phase}, Score: ${leadScore.score}/${leadScore.temperature}, Fields: ${collectedFields.join(',')}`);
