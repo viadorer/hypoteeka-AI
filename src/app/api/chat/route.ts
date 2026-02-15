@@ -344,7 +344,28 @@ export async function POST(req: Request) {
                 // Widget display
                 address: profile.propertyAddress, propertyType: pt,
                 contactEmail: profile.email, emailSent: vData.emailSent,
-                summary: `Oceneni dokonceno. Odhadni cena: ${fmt(v.avgPrice)} Kc (rozmezi ${fmt(v.minPrice)} - ${fmt(v.maxPrice)} Kc). Cena za m2: ${fmt(v.avgPriceM2)} Kc/m2. Prumerna doba prodeje: ${v.avgDuration} dni. Pocitana plocha: ${v.calcArea} m2. Skore shody srovnatelnychh: ${(v.avgScore * 100).toFixed(0)}%. Prumerna vzdalenost srovnatelnych: ${v.avgDistance} m. Katastralni uzemi: ${cad?.cadastralArea ?? 'neznamo'}, parcela: ${cad?.parcelNumber ?? 'neznamo'}. Vysledek odeslan na email ${profile.email}. DULEZITE: Rekni klientovi ze toto je orientacni odhad na zaklade ${v.avgAge ? Math.round(v.avgAge) : '?'} dni starych dat z okruhu ${v.distance ?? '?'} m. Nas specialista ho bude kontaktovat pro upresneni posudku -- je to nezavazne a zcela zdarma. UPSELL: Cena nemovitosti je nyni ulozena v profilu jako propertyPrice=${fmt(v.avgPrice)} Kc. Nabidni klientovi: 1) vypocet hypoteky na zaklade teto ceny, 2) investicni analyzu (pokud planuje pronajmat), 3) srovnani najem vs koupi. Rekni: "Chcete, abych vam na zaklade teto ceny spocital hypoteku? Staci mi rict kolik mate nasporenych penez."`,
+                summary: (() => {
+                  const parts: string[] = [];
+                  parts.push(`Oceneni dokonceno. Odhadni cena: ${fmt(v.avgPrice)} Kc (rozmezi ${fmt(v.minPrice)} - ${fmt(v.maxPrice)} Kc). Cena za m2: ${fmt(v.avgPriceM2)} Kc/m2. Prumerna doba prodeje: ${v.avgDuration} dni.`);
+
+                  // Quality warnings for Hugo to mention
+                  const warnings: string[] = [];
+                  const rangeP = v.avgPrice > 0 ? Math.round(((v.maxPrice - v.minPrice) / v.avgPrice) * 100) : 0;
+                  if (v.avgAge && v.avgAge > 90) warnings.push(`data jsou v prumeru ${Math.round(v.avgAge)} dni stara`);
+                  if (v.avgDistance && v.avgDistance > 1000) warnings.push(`srovnatelne nemovitosti jsou v prumeru ${(v.avgDistance / 1000).toFixed(1)} km daleko`);
+                  if (v.avgScore && v.avgScore < 0.6) warnings.push(`nizka shoda se srovnatelnymi (${(v.avgScore * 100).toFixed(0)}%)`);
+                  if (rangeP > 40) warnings.push(`velky cenovy rozptyl (${rangeP}%)`);
+
+                  if (warnings.length > 0) {
+                    parts.push(`UPOZORNENI NA KVALITU DAT: ${warnings.join(', ')}. Rekni klientovi: "Musim upozornit, ze ${warnings.join(' a ')}. Proto doporucuji osobni posouzeni nasim specialistou -- je to nezavazne a zdarma, a vysledek bude mnohem presnejsi."`);
+                  } else {
+                    parts.push(`Kvalita dat je dobra (shoda ${v.avgScore ? (v.avgScore * 100).toFixed(0) : '?'}%, prumerna vzdalenost ${v.avgDistance ?? '?'} m). Rekni: "Toto je orientacni odhad. Nas specialista vas bude kontaktovat pro upresneni -- nezavazne a zdarma."`);
+                  }
+
+                  parts.push(`Vysledek odeslan na email ${profile.email}.`);
+                  parts.push(`UPSELL: Cena nemovitosti ulozena jako propertyPrice=${fmt(v.avgPrice)} Kc. Nabidni: 1) vypocet hypoteky, 2) investicni analyzu, 3) srovnani najem vs koupi. Rekni: "Chcete spocitat hypoteku na zaklade teto ceny? Staci rict kolik mate nasporenych penez."`);
+                  return parts.join(' ');
+                })(),
               };
             }
             return { success: false, summary: `Oceneni selhalo: ${vData.error ?? 'neznama chyba'}` };

@@ -1,6 +1,6 @@
 'use client';
 
-import { TrendingUp, MapPin, Clock, Mail, Phone, ArrowRight } from 'lucide-react';
+import { TrendingUp, MapPin, Clock, Mail, Phone, ArrowRight, AlertTriangle, Shield } from 'lucide-react';
 
 interface Props {
   avgPrice: number;
@@ -8,11 +8,17 @@ interface Props {
   maxPrice: number;
   avgPriceM2: number;
   avgDuration?: number;
+  calcArea?: number;
+  avgScore?: number;
+  avgDistance?: number;
+  avgAge?: number;
+  searchRadius?: number;
+  cadastralArea?: string;
+  parcelNumber?: string;
   address?: string;
   propertyType?: string;
   emailSent?: boolean;
   contactEmail?: string;
-  comment?: string;
 }
 
 function fmt(n: number): string {
@@ -20,8 +26,10 @@ function fmt(n: number): string {
 }
 
 export function ValuationResultWidget({
-  avgPrice, minPrice, maxPrice, avgPriceM2, avgDuration,
-  address, propertyType, emailSent, contactEmail, comment,
+  avgPrice, minPrice, maxPrice, avgPriceM2, avgDuration, calcArea,
+  avgScore, avgDistance, avgAge, searchRadius,
+  cadastralArea, parcelNumber,
+  address, propertyType, emailSent, contactEmail,
 }: Props) {
   const typeLabel: Record<string, string> = { flat: 'Byt', house: 'Dům', land: 'Pozemek' };
   const label = typeLabel[propertyType ?? ''] ?? 'Nemovitost';
@@ -71,7 +79,7 @@ export function ValuationResultWidget({
       </div>
 
       {/* Stats grid */}
-      <div className="grid grid-cols-2 gap-3 mb-5">
+      <div className="grid grid-cols-2 gap-3 mb-4">
         <StatCard
           icon={<TrendingUp className="w-3.5 h-3.5" />}
           label="Cena za m²"
@@ -86,6 +94,36 @@ export function ValuationResultWidget({
         )}
       </div>
 
+      {/* Data quality warnings */}
+      {(() => {
+        const warnings: { text: string; severity: 'warn' | 'info' }[] = [];
+        if (avgAge !== undefined && avgAge > 90)
+          warnings.push({ text: `Data jsou v průměru ${Math.round(avgAge)} dní stará`, severity: 'warn' });
+        if (avgDistance !== undefined && avgDistance > 1000)
+          warnings.push({ text: `Srovnatelné nemovitosti jsou v průměru ${(avgDistance / 1000).toFixed(1)} km daleko`, severity: 'warn' });
+        if (avgScore !== undefined && avgScore < 0.6)
+          warnings.push({ text: `Nízká shoda se srovnatelnými (${(avgScore * 100).toFixed(0)}%)`, severity: 'warn' });
+        if (rangePercent > 40)
+          warnings.push({ text: `Velký cenový rozptyl (${rangePercent}%) — odhad je méně přesný`, severity: 'warn' });
+        if (warnings.length > 0) {
+          return (
+            <div className="mb-4 space-y-1.5">
+              {warnings.map((w, i) => (
+                <div key={i} className="flex items-center gap-2 text-xs text-amber-700 bg-amber-50 rounded-lg px-3 py-2">
+                  <AlertTriangle className="w-3.5 h-3.5 flex-shrink-0" />
+                  <span>{w.text}</span>
+                </div>
+              ))}
+              <div className="flex items-center gap-2 text-xs text-blue-600 bg-blue-50 rounded-lg px-3 py-2">
+                <Shield className="w-3.5 h-3.5 flex-shrink-0" />
+                <span>Doporučujeme <strong>osobní posouzení</strong> specialistou pro přesnější odhad</span>
+              </div>
+            </div>
+          );
+        }
+        return null;
+      })()}
+
       {/* Email confirmation */}
       {emailSent && contactEmail && (
         <div className="flex items-center gap-2 text-xs text-emerald-600 bg-emerald-50 rounded-lg px-3 py-2 mb-4">
@@ -94,10 +132,10 @@ export function ValuationResultWidget({
         </div>
       )}
 
-      {/* Hugo's comment */}
-      {comment && (
-        <div className="text-sm text-gray-600 leading-relaxed mb-4 border-l-2 border-gray-200 pl-3">
-          {comment}
+      {/* Cadastre info */}
+      {cadastralArea && (
+        <div className="text-[10px] text-gray-400 mb-4">
+          k.ú. {cadastralArea}{parcelNumber ? `, parcela ${parcelNumber}` : ''}
         </div>
       )}
 

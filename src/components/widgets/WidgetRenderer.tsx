@@ -196,6 +196,13 @@ export function WidgetRenderer({ toolInvocation, sessionId, onSend }: { toolInvo
             maxPrice={out.maxPrice as number}
             avgPriceM2={out.avgPriceM2 as number}
             avgDuration={out.avgDuration as number | undefined}
+            calcArea={out.calcArea as number | undefined}
+            avgScore={out.avgScore as number | undefined}
+            avgDistance={out.avgDistance as number | undefined}
+            avgAge={out.avgAge as number | undefined}
+            searchRadius={out.searchRadius as number | undefined}
+            cadastralArea={out.cadastralArea as string | undefined}
+            parcelNumber={out.parcelNumber as string | undefined}
             address={out.address as string | undefined}
             propertyType={out.propertyType as string | undefined}
             emailSent={out.emailSent as boolean | undefined}
