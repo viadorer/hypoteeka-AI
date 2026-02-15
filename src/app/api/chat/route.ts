@@ -280,8 +280,47 @@ export async function POST(req: Request) {
           } else if (pt === 'land') {
             Object.assign(payload, { lotArea: profile.lotArea, landType: 'building' });
           }
+          // Build chat history and analysis for CRM
+          const chatHistory = messages
+            .filter((m: { role: string; parts?: AnyPart[] }) => m.role === 'user' || m.role === 'assistant')
+            .map((m: { role: string; parts?: AnyPart[] }) => {
+              const text = m.parts
+                ?.filter((p: AnyPart) => p.type === 'text')
+                .map((p: AnyPart) => p.text)
+                .join('') ?? '';
+              return `${m.role === 'user' ? 'Klient' : 'Hugo'}: ${text}`;
+            })
+            .filter((line: string) => line.length > 10 && !line.includes('ADDRESS_DATA'))
+            .join('\n');
+
+          const analysisNote = [
+            `=== ANALÝZA KLIENTA ===`,
+            `Typ: ${profile.propertyType ?? '?'}, Dispozice: ${profile.propertySize ?? '-'}, Plocha: ${profile.floorArea ?? profile.lotArea ?? '?'} m²`,
+            `Stav: ${profile.propertyRating ?? '-'}, Konstrukce: ${profile.propertyConstruction ?? '-'}`,
+            `Adresa: ${profile.propertyAddress ?? '-'}`,
+            `Kontakt: ${profile.name ?? '?'}, ${profile.email ?? '?'}, ${profile.phone ?? '?'}`,
+            profile.purpose ? `Účel: ${profile.purpose}` : '',
+            profile.equity !== undefined ? `Vlastní zdroje: ${profile.equity} Kč` : '',
+            profile.monthlyIncome ? `Měsíční příjem: ${profile.monthlyIncome} Kč` : '',
+            profile.currentRent ? `Současný nájem: ${profile.currentRent} Kč` : '',
+            `Počet zpráv: ${messages.length}`,
+            `Session: ${sessionId}`,
+            ``,
+            `=== KOMUNIKACE ===`,
+            chatHistory,
+          ].filter(Boolean).join('\n');
+
+          payload.data = {
+            source: 'hypoteeka-chatbot',
+            sessionId,
+            messageCount: messages.length,
+            chatHistory: analysisNote,
+          };
+          // Also send as message field for CRM note
+          payload.message = analysisNote;
+
           const clean = Object.fromEntries(Object.entries(payload).filter(([, v]) => v != null && v !== ''));
-          console.log('[Valuation] Submitting:', JSON.stringify(clean));
+          console.log('[Valuation] Submitting:', JSON.stringify(clean).substring(0, 500));
 
           try {
             const vRes = await fetch('https://api-production-88cf.up.railway.app/api/v1/public/api-leads/valuo', {
