@@ -242,7 +242,7 @@ export const toolDefinitions = {
   },
 
   request_valuation: {
-    description: 'Odesli zadost o oceneni nemovitosti pres RealVisor API. PRED volanim MUSIS mit: (1) validovanou adresu z geocode_address (lat, lng), (2) kontaktni udaje (firstName, lastName, email), (3) typ nemovitosti, (4) povinne parametry podle typu: BYT = floorArea + rating + localType + ownership + construction, DUM = floorArea + lotArea + rating + ownership + construction, POZEMEK = lotArea. Vysledek obsahuje odhadni cenu a je odeslan na email klienta.',
+    description: 'Odesli zadost o oceneni nemovitosti pres RealVisor API. PRED volanim MUSIS mit: (1) validovanou adresu z geocode_address (lat, lng), (2) kontaktni udaje (firstName, lastName, email), (3) typ nemovitosti, (4) povinne parametry podle typu: BYT = floorArea + rating + localType + ownership + construction, DUM = floorArea + lotArea + rating + ownership + construction + houseType (default family_house), POZEMEK = lotArea. BEZ construction a houseType pro dum oceneni SELZE. Vysledek obsahuje odhadni cenu a je odeslan na email klienta.',
     inputSchema: z.object({
       // Kontakt - povinne
       firstName: z.string().describe('Jmeno klienta'),
@@ -264,8 +264,8 @@ export const toolDefinitions = {
       localType: z.string().optional().describe('Dispozice bytu: 1+kk, 2+1, 3+kk atd. POVINNE pro byt'),
       ownership: z.enum(['private', 'cooperative', 'council', 'other']).optional().describe('Vlastnictvi - POVINNE pro byt a dum'),
       construction: z.enum(['brick', 'panel', 'wood', 'stone', 'montage', 'mixed', 'other']).optional().describe('Konstrukce - POVINNE pro byt a dum'),
-      houseType: z.enum(['family_house', 'villa', 'cottage', 'hut', 'other']).optional().describe('Typ domu'),
-      landType: z.enum(['building', 'garden', 'field', 'meadow', 'forest', 'other']).optional().describe('Typ pozemku'),
+      houseType: z.enum(['family_house', 'villa', 'cottage', 'hut', 'other']).optional().describe('Typ domu - POVINNE pro dum, default family_house'),
+      landType: z.enum(['building', 'garden', 'field', 'meadow', 'forest', 'other']).optional().describe('Typ pozemku - POVINNE pro pozemek, default building'),
       floor: z.number().optional().describe('Patro (0 = prizemi)'),
       totalFloors: z.number().optional().describe('Celkovy pocet podlazi budovy'),
       elevator: z.boolean().optional().describe('Vytah v budove'),
@@ -288,6 +288,39 @@ export const toolDefinitions = {
       postalCode: z.string().optional().describe('PSC z geocode_address'),
     }),
     execute: async (params: Record<string, unknown>) => {
+      // Auto-fill defaults that RealVisor requires but Hugo might omit
+      if (params.propertyType === 'house' && !params.houseType) params.houseType = 'family_house';
+      if (params.propertyType === 'land' && !params.landType) params.landType = 'building';
+
+      // HARD VALIDATION: check all required fields BEFORE sending to API
+      const missing: string[] = [];
+      if (!params.firstName) missing.push('firstName (jmeno)');
+      if (!params.lastName) missing.push('lastName (prijmeni)');
+      if (!params.email) missing.push('email');
+      if (!params.lat || !params.lng) missing.push('lat/lng (adresa nebyla validovana pres geocode_address)');
+      if (params.propertyType === 'flat') {
+        if (!params.floorArea) missing.push('floorArea (uzitna plocha)');
+        if (!params.rating) missing.push('rating (stav nemovitosti)');
+        if (!params.localType) missing.push('localType (dispozice: 1+kk, 2+1...)');
+        if (!params.ownership) missing.push('ownership (vlastnictvi: private/cooperative)');
+        if (!params.construction) missing.push('construction (konstrukce: brick/panel/wood)');
+      } else if (params.propertyType === 'house') {
+        if (!params.floorArea) missing.push('floorArea (uzitna plocha)');
+        if (!params.lotArea) missing.push('lotArea (plocha pozemku)');
+        if (!params.rating) missing.push('rating (stav nemovitosti)');
+        if (!params.ownership) missing.push('ownership (vlastnictvi: private/cooperative)');
+        if (!params.construction) missing.push('construction (konstrukce: brick/panel/wood)');
+      } else if (params.propertyType === 'land') {
+        if (!params.lotArea) missing.push('lotArea (plocha pozemku)');
+      }
+      if (missing.length > 0) {
+        return {
+          success: false,
+          missingFields: missing,
+          summary: `NELZE odeslat oceneni -- chybi povinne udaje: ${missing.join(', ')}. Zeptej se klienta na chybejici informace a zavolej request_valuation znovu.`,
+        };
+      }
+
       const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000');
       try {
         const res = await fetch(`${baseUrl}/api/valuation/valuo`, {

@@ -141,7 +141,7 @@ export async function buildAgentPrompt(
   if (state.widgetsShown.includes('geocode_address') && !valuationDone) {
     parts.push('\nOCENĚNÍ PROBÍHÁ: Našeptávač adresy zobrazen. Pokud klient potvrdil adresu (zpráva s ADDRESS_DATA), zapamatuj si všechny údaje. Zkontroluj, že máš všechna povinná data pro request_valuation:');
     parts.push('- Byt: floorArea + rating + localType (dispozice) + ownership (vlastnictví) + construction (konstrukce) -- vše POVINNÉ');
-    parts.push('- Dům: floorArea + lotArea + rating + ownership + construction -- vše POVINNÉ');
+    parts.push('- Dům: floorArea + lotArea + rating + ownership + construction + houseType (default family_house) -- vše POVINNÉ');
     parts.push('- Pozemek: lotArea -- POVINNÉ');
     parts.push('- Kontakt: firstName + lastName + email (povinné), phone (doporučený)');
   }
