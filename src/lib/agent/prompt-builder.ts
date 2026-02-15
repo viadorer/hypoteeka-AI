@@ -128,27 +128,68 @@ export async function buildAgentPrompt(
   // Lead score (interní, nezobrazuj klientovi)
   parts.push(`\nLEAD: ${leadScore.score}/100 (${leadScore.temperature})`);
 
-  // Proaktivní nabídka ocenění -- když známe typ + lokalitu a ještě jsme neprovedli ocenění
+  // === OCENĚNÍ NEMOVITOSTI ===
   const valuationDone = state.widgetsShown.includes('request_valuation') || !!profile.valuationId;
-  if (profile.propertyType && profile.location && !valuationDone) {
-    parts.push('\nOCENĚNÍ ZDARMA: Znáš typ a lokalitu nemovitosti. Nabídni klientovi tržní ocenění zdarma.');
-    parts.push('- Řekni: "Mimochodem, můžu vám udělat orientační tržní ocenění nemovitosti zdarma. Pomůže to i při jednání s bankou. Chcete?"');
-    parts.push('- Pokud klient souhlasí, potřebuješ: adresu, plochu, stav, kontakt (jméno, příjmení, email).');
-    parts.push('- POSTUP: (1) geocode_address zobrazí našeptávač adresy, (2) klient vybere a potvrdí adresu, (3) z jeho zprávy s ADDRESS_DATA získej lat/lng/street/city atd., (4) request_valuation s kompletními daty.');
+  const geocodeShown = state.widgetsShown.includes('geocode_address');
+  const hasValidatedAddress = !!(profile.propertyAddress && profile.propertyLat && profile.propertyLng);
+
+  // Proaktivní nabídka ocenění
+  if (profile.propertyType && profile.location && !valuationDone && !geocodeShown) {
+    parts.push('\nOCENĚNÍ ZDARMA: Znáš typ a lokalitu. Nabídni klientovi tržní ocenění zdarma.');
+    parts.push('- "Mimochodem, můžu vám udělat orientační tržní ocenění nemovitosti zdarma. Pomůže to i při jednání s bankou. Chcete?"');
   }
 
-  // Instrukce pro probíhající ocenění
-  if (state.widgetsShown.includes('geocode_address') && !valuationDone) {
-    // Inject validated address data from profile if available
-    if (profile.propertyAddress && profile.propertyLat && profile.propertyLng) {
-      parts.push(`\nVALIDOVANÁ ADRESA (z našeptávače): address="${profile.propertyAddress}", lat=${profile.propertyLat}, lng=${profile.propertyLng}. POUŽIJ tyto hodnoty v request_valuation.`);
+  // SCÉNÁŘ OCENĚNÍ -- kompletní instrukce
+  if (!valuationDone) {
+    parts.push(`
+SCÉNÁŘ OCENĚNÍ -- PRAVIDLA:
+1. EXTRAHUJ VŠECHNA DATA Z PRVNÍ ZPRÁVY: Klient často řekne víc najednou ("byt 2+1 v Plzni Dřevěná 3, 65m2, cihla").
+   Okamžitě zavolej update_profile se VŠEMI údaji které rozpoznáš (propertyType, location, propertySize, floorArea...).
+2. ADRESA: Jakmile znáš jakoukoliv adresu (i neúplnou), HNED zavolej geocode_address s tím co máš.
+   Klient uvidí našeptávač a vybere správnou adresu. NEPTEJ SE na adresu znovu pokud ji klient už řekl.
+3. PO VÝBĚRU ADRESY: Klient pošle zprávu s potvrzenou adresou. Adresní data (lat, lng, street...) jsou v systému.
+4. CHYBĚJÍCÍ DATA: Po výběru adresy se zeptej na VŠECHNA chybějící povinná pole V JEDNÉ ZPRÁVĚ.
+   Příklad: "Ještě potřebuji vědět: jaká je užitná plocha, stav nemovitosti, vlastnictví a z čeho je dům postavený?"
+   NIKDY se neptej po jednom údaji.
+5. KONTAKT: Až máš všechna data o nemovitosti, požádej o jméno, příjmení a email V JEDNÉ ZPRÁVĚ.
+6. SHRNUTÍ: Před odesláním VŽDY shrň všechny údaje a požádej o potvrzení.
+7. ODESLÁNÍ: Po potvrzení zavolej request_valuation se VŠEMI údaji.
+
+POVINNÁ POLE PODLE TYPU:
+- BYT: floorArea, rating, localType (dispozice), ownership, construction
+- DŮM: floorArea, lotArea, rating, ownership, construction (+ houseType se doplní automaticky)
+- POZEMEK: lotArea (+ landType se doplní automaticky)
+- VŽDY: firstName, lastName, email, address, lat, lng, kind (default "sale")
+
+MAPOVÁNÍ (ptej se česky, odesílej anglicky):
+- Stav: špatný=bad, nic moc=nothing_much, dobrý=good, velmi dobrý=very_good, nový/novostavba=new, po rekonstrukci/výborný=excellent
+- Vlastnictví: osobní=private, družstevní=cooperative
+- Konstrukce: cihla/cihlová=brick, panel/panelová=panel, dřevo/dřevěná=wood
+- Typ: byt=flat, dům=house, pozemek=land`);
+  }
+
+  // Injektuj validovanou adresu pokud existuje
+  if (hasValidatedAddress) {
+    parts.push(`\nVALIDOVANÁ ADRESA: address="${profile.propertyAddress}", lat=${profile.propertyLat}, lng=${profile.propertyLng}. Tyto hodnoty POUŽIJ v request_valuation.`);
+  }
+
+  // Stav ocenění -- co ještě chybí
+  if (geocodeShown && !valuationDone) {
+    const missingForValuation: string[] = [];
+    if (!hasValidatedAddress) missingForValuation.push('adresa (klient ještě nevybral z našeptávače)');
+    if (!profile.floorArea && profile.propertyType !== 'pozemek') missingForValuation.push('užitná plocha');
+    if (!profile.lotArea && (profile.propertyType === 'dum' || profile.propertyType === 'pozemek')) missingForValuation.push('plocha pozemku');
+    if (!profile.propertyRating && profile.propertyType !== 'pozemek') missingForValuation.push('stav nemovitosti');
+    if (!profile.propertyOwnership && profile.propertyType !== 'pozemek') missingForValuation.push('vlastnictví');
+    if (!profile.propertyConstruction && profile.propertyType !== 'pozemek') missingForValuation.push('konstrukce');
+    if (!profile.propertySize && profile.propertyType === 'byt') missingForValuation.push('dispozice (1+kk, 2+1...)');
+    if (!profile.name) missingForValuation.push('jméno a příjmení');
+    if (!profile.email) missingForValuation.push('email');
+    if (missingForValuation.length > 0) {
+      parts.push(`\nPRO OCENĚNÍ JEŠTĚ CHYBÍ: ${missingForValuation.join(', ')}. Zeptej se na vše najednou.`);
+    } else {
+      parts.push('\nVŠECHNA DATA PRO OCENĚNÍ SESBÍRÁNA. Shrň údaje a požádej o potvrzení, pak zavolej request_valuation.');
     }
-    parts.push('\nOCENĚNÍ PROBÍHÁ: Zkontroluj, že máš VŠECHNA povinná data pro request_valuation:');
-    parts.push('- Byt: floorArea + rating + localType (dispozice) + ownership (vlastnictví) + construction (konstrukce) -- vše POVINNÉ');
-    parts.push('- Dům: floorArea + lotArea + rating + ownership + construction + houseType (default family_house) -- vše POVINNÉ');
-    parts.push('- Pozemek: lotArea -- POVINNÉ');
-    parts.push('- Kontakt: firstName + lastName + email (povinné), phone (doporučený)');
-    parts.push('- DŮLEŽITÉ: Zeptej se na VŠECHNA povinná pole NAJEDNOU v jedné zprávě, ne po jednom.');
   }
 
   // Doporučené widgety

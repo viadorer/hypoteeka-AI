@@ -226,9 +226,9 @@ export const toolDefinitions = {
   },
 
   geocode_address: {
-    description: 'Zobraz naseptavac adresy pro overeni nemovitosti. POVINNY krok PRED odeslanim oceneni (request_valuation). Klient vybere adresu z naseptavace Mapy.com a potvrdi ji. Po potvrzeni klient posle zpravu s ADDRESS_DATA obsahujici lat, lng, street, streetNumber, city, district, region, postalCode -- VSECHNY tyto hodnoty si ZAPAMATUJ a pouzij v request_valuation. Zavolej tento nastroj kdyz klient chce oceneni a jeste nemas validovanou adresu.',
+    description: 'Zobraz naseptavac adresy pro overeni nemovitosti. POVINNY krok PRED odeslanim oceneni. Klient vybere adresu z naseptavace a system ji ulozi. VZDY predvyplni query adresou kterou klient zminil (napr. "drevena 3 Plzen"). Zavolej SPOLECNE s update_profile pokud klient zminil i dalsi udaje (typ, plocha, stav...).',
     inputSchema: z.object({
-      query: z.string().optional().describe('Volitelny text adresy pro predvyplneni naseptavace, napr. "drevena 3 Plzen"'),
+      query: z.string().optional().describe('Adresa z klientovy zpravy pro predvyplneni naseptavace -- VZDY vyplnit pokud klient zminil adresu'),
     }),
     execute: async ({ query }: { query?: string }) => {
       return {
@@ -386,7 +386,7 @@ export const toolDefinitions = {
   },
 
   update_profile: {
-    description: 'VZDY zavolej tento nastroj kdyz klient uvede jakakoliv nova data (cena, zdroje, prijem, vek, jmeno, typ nemovitosti, lokalita, najem atd.). Ulozi data pro dalsi pouziti. Zavolej PRED nebo SPOLECNE s widgety.',
+    description: 'VZDY zavolej tento nastroj kdyz klient uvede jakakoliv nova data. Ulozi data pro dalsi pouziti. Zavolej PRED nebo SPOLECNE s widgety. Pri oceneni: kdyz klient rekne "byt 2+1 v Plzni Drevena 3, 65m2, cihla" -> zavolej update_profile(propertyType="byt", propertySize="2+1", location="Plzen", floorArea=65, propertyConstruction="brick") + geocode_address(query="Drevena 3 Plzen") SOUCASNE.',
     inputSchema: z.object({
       propertyPrice: z.number().optional().describe('Cena nemovitosti v CZK'),
       propertyType: z.string().optional().describe('byt, dum, pozemek, rekonstrukce'),

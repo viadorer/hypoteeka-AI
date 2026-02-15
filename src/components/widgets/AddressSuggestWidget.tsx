@@ -92,6 +92,15 @@ export function AddressSuggestWidget({ onSend, context }: AddressSuggestWidgetPr
     return () => document.removeEventListener('mousedown', handleClick);
   }, []);
 
+  // Auto-fill from context (query from Hugo) and trigger search
+  useEffect(() => {
+    if (context && context.length >= 2 && !selected) {
+      setQuery(context);
+      fetchSuggestions(context);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [context]);
+
   // Auto-focus input
   useEffect(() => {
     inputRef.current?.focus();
