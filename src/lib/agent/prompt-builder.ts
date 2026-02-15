@@ -128,25 +128,28 @@ export async function buildAgentPrompt(
   // Lead score (interní, nezobrazuj klientovi)
   parts.push(`\nLEAD: ${leadScore.score}/100 (${leadScore.temperature})`);
 
+  // HLAVNÍ ÚKOL -- hypotéka je primární, ocenění je volitelná služba
+  parts.push(`
+HLAVNÍ ÚKOL: Jsi hypoteční poradce. Tvůj primární cíl je pomoci klientovi s HYPOTÉKOU -- splátka, bonita, srovnání bank, refinancování, investice.
+- Ocenění nemovitosti je VOLITELNÁ DOPLŇKOVÁ SLUŽBA. Nabízej ji JEN když klient SÁM zmíní že chce ocenit/ohodnotit nemovitost nebo zjistit její cenu.
+- NIKDY netlač na ocenění. NIKDY nepřesměrovávej konverzaci k ocenění pokud klient řeší hypotéku.
+- Když klient zadá kontakt (jméno, email, telefon) v kontextu hypotéky, ULOŽ ho a POKRAČUJ v hypotečním poradenství. NEPŘESKAKUJ na ocenění.
+- NIKDY si NEVYMÝŠLEJ jméno klienta. Používej JEN to co klient napsal. Pokud jméno neznáš, neoslovuj jménem.
+- Pokud máš kontaktní údaje klienta (email, telefon) v profilu, NEPTEJ SE na ně znovu.`);
+
   // === OCENĚNÍ NEMOVITOSTI ===
   const valuationDone = state.widgetsShown.includes('request_valuation') || !!profile.valuationId;
   const geocodeShown = state.widgetsShown.includes('geocode_address');
   const hasValidatedAddress = !!(profile.propertyAddress && profile.propertyLat && profile.propertyLng);
 
-  // === FÁZE 1: TEASER -- vzbudit zájem ===
-  if (profile.propertyType && profile.location && !valuationDone && !geocodeShown) {
-    parts.push(`
-OCENĚNÍ -- FÁZE 1 (TEASER):
-Klient zmínil nemovitost a lokalitu. NEVYSKAKUJ s "ocenění zdarma". Místo toho vzbuď zvědavost:
-- "Zajímavé, u ${profile.propertyType === 'byt' ? 'bytů' : profile.propertyType === 'dum' ? 'domů' : 'pozemků'} v ${profile.location} vidíme v posledních měsících zajímavý cenový vývoj. Chcete vědět, jakou má vaše nemovitost aktuální tržní hodnotu? Mám přístup k datům z reálných transakcí."
-- Cíl: klient řekne "ano, chci vědět" -- teprve pak pokračuj na sběr dat.
-- NIKDY neříkej "ocenění zdarma" v této fázi. Prodáváš HODNOTU, ne slevu.`);
-  }
+  // Detekce zda klient chce ocenění -- JEN pokud už je v procesu ocenění (geocode/adresa/show_valuation)
+  // Ocenění se NIKDY nenabízí automaticky. Hugo ho nabídne jen když klient SÁM řekne že chce ocenit.
+  const wantsValuation = geocodeShown || hasValidatedAddress || state.widgetsShown.includes('show_valuation');
 
-  // === SCÉNÁŘ OCENĚNÍ -- kompletní prodejní flow ===
-  if (!valuationDone) {
+  // === SCÉNÁŘ OCENĚNÍ -- JEN KDYŽ KLIENT CHCE OCENĚNÍ ===
+  if (!valuationDone && wantsValuation) {
     parts.push(`
-SCÉNÁŘ OCENĚNÍ -- PRODEJNÍ FLOW:
+SCÉNÁŘ OCENĚNÍ (klient chce ocenění):
 
 !!! ABSOLUTNÍ ZÁKAZY !!!
 - NIKDY NEVOLEJ request_valuation VÍCKRÁT NEŽ JEDNOU. Každé volání stojí kredit. Pokud ocenění už proběhlo (valuationId existuje), NEVOLEJ ZNOVU.
@@ -207,8 +210,8 @@ MAPOVÁNÍ (ptej se česky, ukládej anglicky):
     parts.push(`\nVALIDOVANÁ ADRESA: address="${profile.propertyAddress}", lat=${profile.propertyLat}, lng=${profile.propertyLng}. Tyto hodnoty POUŽIJ v request_valuation.`);
   }
 
-  // Stav ocenění -- co ještě chybí (zobrazuj i před geocode)
-  if (!valuationDone) {
+  // Stav ocenění -- co ještě chybí (jen pokud klient chce ocenění)
+  if (!valuationDone && wantsValuation) {
     const missingForValuation: string[] = [];
     if (!hasValidatedAddress) missingForValuation.push('validovaná adresa (klient musí vybrat z našeptávače)');
     if (!profile.floorArea && profile.propertyType !== 'pozemek') missingForValuation.push('užitná plocha');
@@ -351,7 +354,11 @@ TAKTIKY PRO ROZPOVÍDÁNÍ:
 - TÓN: Pozitivní, podpůrný. NIKDY nezpochybňuj klienta. Žádné "nicméně", "ovšem", "na druhou stranu" po klientově tvrzení.
 - VALIDACE: Klient má pravdu. Když řekne sazbu, použij ji. Když řekne svůj pohled, souhlasíš a pracuješ s ním.
 - DÉLKA: Max 2-3 věty mezi widgety. Žádné zdi textu.
-- CTA: Specialistu nabídni MAX JEDNOU. Pokud klient nereaguje, pokračuj v analýze.`);
+- CTA: Specialistu nabídni MAX JEDNOU. Pokud klient nereaguje, pokračuj v analýze.
+- JMÉNO: NIKDY si nevymýšlej jméno klienta. Pokud ho neznáš, neoslovuj jménem. Používej JEN jméno z profilu.
+- KONTAKT: Pokud máš email/telefon v profilu, NEPTEJ SE na ně znovu.
+- OCENĚNÍ: Netlač na ocenění. Nabízej JEN když klient SÁM chce ocenit nemovitost. Hlavní úkol = HYPOTÉKA.
+- TÉMA: Drž se tématu které klient řeší. Nepřeskakuj na jiné služby bez vyzvání.`);
 
   return parts.join('\n');
 }
