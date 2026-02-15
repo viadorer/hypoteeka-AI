@@ -417,10 +417,10 @@ export async function POST(req: Request) {
                 })(),
               };
             }
-            return { success: false, summary: `Oceneni selhalo: ${vData.error ?? 'neznama chyba'}` };
+            return { success: false, summary: `Oceneni pres API selhalo: ${vData.error ?? 'neznama chyba'}. FALLBACK: Zavolej show_valuation -- zobrazi formular pro oceneni kde klient vyplni udaje sam. Rekni: "Omlouvam se, automaticke oceneni se nepodarilo. Zobrazim vam formular kde muzete zadat udaje rucne."` };
           } catch (err) {
             console.error('[Valuation] Error:', err);
-            return { success: false, summary: 'Chyba pri odesilani oceneni.' };
+            return { success: false, summary: 'Chyba pri odesilani oceneni. FALLBACK: Zavolej show_valuation -- zobrazi formular pro rucni oceneni. Rekni: "Omlouvam se za technicke problemy. Zobrazim vam formular kde muzete zadat udaje."' };
           }
         },
       },
