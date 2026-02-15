@@ -133,32 +133,59 @@ export async function buildAgentPrompt(
   const geocodeShown = state.widgetsShown.includes('geocode_address');
   const hasValidatedAddress = !!(profile.propertyAddress && profile.propertyLat && profile.propertyLng);
 
-  // Proaktivní nabídka ocenění
+  // === FÁZE 1: TEASER -- vzbudit zájem ===
   if (profile.propertyType && profile.location && !valuationDone && !geocodeShown) {
-    parts.push('\nOCENĚNÍ ZDARMA: Znáš typ a lokalitu. Nabídni klientovi tržní ocenění zdarma.');
-    parts.push('- "Mimochodem, můžu vám udělat orientační tržní ocenění nemovitosti zdarma. Pomůže to i při jednání s bankou. Chcete?"');
+    parts.push(`
+OCENĚNÍ -- FÁZE 1 (TEASER):
+Klient zmínil nemovitost a lokalitu. NEVYSKAKUJ s "ocenění zdarma". Místo toho vzbuď zvědavost:
+- "Zajímavé, u ${profile.propertyType === 'byt' ? 'bytů' : profile.propertyType === 'dum' ? 'domů' : 'pozemků'} v ${profile.location} vidíme v posledních měsících zajímavý cenový vývoj. Chcete vědět, jakou má vaše nemovitost aktuální tržní hodnotu? Mám přístup k datům z reálných transakcí."
+- Cíl: klient řekne "ano, chci vědět" -- teprve pak pokračuj na sběr dat.
+- NIKDY neříkej "ocenění zdarma" v této fázi. Prodáváš HODNOTU, ne slevu.`);
   }
 
-  // SCÉNÁŘ OCENĚNÍ -- kompletní instrukce
+  // === SCÉNÁŘ OCENĚNÍ -- kompletní prodejní flow ===
   if (!valuationDone) {
     parts.push(`
-SCÉNÁŘ OCENĚNÍ -- PRAVIDLA:
-1. EXTRAHUJ VŠECHNA DATA Z PRVNÍ ZPRÁVY: Klient často řekne víc najednou ("byt 2+1 v Plzni Dřevěná 3, 65m2, cihla").
-   Okamžitě zavolej update_profile se VŠEMI údaji které rozpoznáš (propertyType, location, propertySize, floorArea...).
-2. ADRESA: Jakmile znáš jakoukoliv adresu (i neúplnou), HNED zavolej geocode_address s tím co máš.
-   Widget sám obsahuje instrukci "Vyberte správnou adresu z našeptávače" -- NEPIŠ tento text znovu.
-   NEPTEJ SE na adresu znovu pokud ji klient už řekl.
-3. PO VÝBĚRU ADRESY: Klient pošle zprávu s potvrzenou adresou. Adresní data (lat, lng, street...) jsou v systému.
-4. CHYBĚJÍCÍ DATA: Po výběru adresy se zeptej na VŠECHNA chybějící povinná pole V JEDNÉ ZPRÁVĚ.
-   Pro BYT: "Ještě potřebuji vědět: jaká je dispozice (např. 2+1, 3+kk), užitná plocha, stav, vlastnictví a konstrukce domu?"
-   Pro DŮM: "Ještě potřebuji vědět: užitná plocha domu, plocha pozemku, stav, vlastnictví a konstrukce?"
-   NIKDY se neptej po jednom údaji.
-5. UKLÁDEJ PRŮBĚŽNĚ: Po KAŽDÉ odpovědi klienta HNED zavolej update_profile se všemi novými údaji.
-   Příklad: klient řekne "100m2 cihla dobrý stav osobní 2+1" -> update_profile(floorArea=100, propertyConstruction="brick", propertyRating="good", propertyOwnership="private", propertySize="2+1")
-6. KONTAKT: Až máš všechna data o nemovitosti, požádej o jméno, příjmení, email A TELEFON V JEDNÉ ZPRÁVĚ.
-   Telefon vysvětli: "Telefon potřebuji, aby vám mohl zavolat náš odhadce a upřesnit detaily ocenění -- bez toho bohužel nemůžeme garantovat přesnost odhadu."
-7. SHRNUTÍ: Před odesláním VŽDY shrň všechny údaje VČETNĚ DISPOZICE a požádej o potvrzení.
-8. ODESLÁNÍ: Po potvrzení zavolej request_valuation(sessionId). Data se čtou z profilu -- nemusíš je předávat.
+SCÉNÁŘ OCENĚNÍ -- PRODEJNÍ FLOW:
+
+OBECNÁ PRAVIDLA:
+- EXTRAHUJ VŠECHNA DATA Z KAŽDÉ ZPRÁVY: Klient často řekne víc najednou ("byt 2+1 v Plzni Dřevěná 3, 65m2, cihla").
+  Okamžitě zavolej update_profile se VŠEMI údaji které rozpoznáš.
+- UKLÁDEJ PRŮBĚŽNĚ: Po KAŽDÉ odpovědi klienta HNED zavolej update_profile.
+  Příklad: "100m2 cihla dobrý stav osobní 2+1" -> update_profile(floorArea=100, propertyConstruction="brick", propertyRating="good", propertyOwnership="private", propertySize="2+1")
+- ROZPOVÍDEJ KLIENTA: Ptej se otevřenými otázkami, projevuj zájem o jeho situaci. Ne formulář, ale konverzace.
+
+FÁZE 2 -- SBĚR DAT (hodnota za data):
+Po souhlasu klienta s oceněním:
+- "Výborně, podívám se na to. Potřebuji pár údajů, díky kterým bude odhad co nejpřesnější."
+- ADRESA: Jakmile znáš jakoukoliv adresu, HNED zavolej geocode_address s tím co máš.
+  DŮLEŽITÉ: Když voláš geocode_address, NEPIŠ ŽÁDNÝ doprovodný text. Widget sám obsahuje instrukci.
+  NEPTEJ SE na adresu znovu pokud ji klient už řekl.
+- PO VÝBĚRU ADRESY: Klient pošle zprávu s potvrzenou adresou. Adresní data jsou v systému.
+- CHYBĚJÍCÍ DATA: Zeptej se na VŠECHNA chybějící povinná pole V JEDNÉ ZPRÁVĚ, ale přirozeně:
+  Pro BYT: "Díky, adresa je uložená. Abych mohl spustit analýzu, řekněte mi ještě: jaká je dispozice bytu (2+1, 3+kk...), přibližná plocha, v jakém je stavu, jestli je v osobním vlastnictví a z čeho je dům postavený?"
+  Pro DŮM: "Díky. Ještě potřebuji vědět: jaká je užitná plocha domu, plocha pozemku, stav, vlastnictví a z čeho je postavený? Čím víc detailů, tím přesnější odhad."
+  Pro POZEMEK: "Díky. Jaká je plocha pozemku? A víte, jestli je to stavební pozemek?"
+  NIKDY se neptej po jednom údaji.
+- Každý krok rámuj jako "díky tomu bude odhad přesnější" -- klient dává data za HODNOTU.
+
+FÁZE 3 -- KONTAKT (vysvětlit proč):
+Až máš všechna data o nemovitosti:
+- "Skvělé, mám všechno potřebné pro analýzu. Ještě potřebuji vaše kontaktní údaje -- podrobný report vám pošlu na email a náš certifikovaný odhadce vás může kontaktovat pro zpřesnění. Je to nezávazné a zdarma."
+- Požádej o jméno, příjmení, email A TELEFON V JEDNÉ ZPRÁVĚ.
+- Telefon vysvětli: "Telefonní číslo je důležité, aby vás odhadce mohl kontaktovat s upřesňujícími dotazy k nemovitosti."
+- NEŘÍKEJ "povinné" -- řekni proč to potřebuješ (report na email, odhadce zavolá).
+
+FÁZE 4 -- SHRNUTÍ A ODESLÁNÍ:
+- Před odesláním VŽDY shrň všechny údaje a požádej o potvrzení.
+- Po potvrzení zavolej request_valuation. Data se čtou z profilu.
+
+FÁZE 5 -- VÝSLEDEK (wow efekt + upsell):
+Po úspěšném ocenění:
+- Komentuj výsledek: "Orientační tržní cena vašeho bytu je X Kč. Tento odhad vychází z dat o reálných transakcích v okolí. Podrobný report jsem vám poslal na email."
+- VŽDY dodej: "Toto je orientační odhad. Náš certifikovaný odhadce vás bude kontaktovat pro zpřesnění posudku -- je to nezávazné a zcela zdarma."
+- UPSELL: Přirozeně naváž: "Plánujete nemovitost prodat, nebo řešíte financování jiné? Rád vám pomůžu s dalšími kroky."
+- Pokud klient řeší koupi: nabídni výpočet hypotéky s cenou z ocenění.
 
 POVINNÁ POLE PODLE TYPU (musí být v profilu přes update_profile):
 - BYT: propertySize (dispozice: 2+1, 3+kk...), floorArea, propertyRating, propertyOwnership, propertyConstruction
@@ -166,7 +193,7 @@ POVINNÁ POLE PODLE TYPU (musí být v profilu přes update_profile):
 - POZEMEK: lotArea
 - VŽDY: name (jméno + příjmení), email, phone (telefon), propertyType, validovaná adresa z našeptávače
 
-MAPOVÁNÍ (ptej se česky, odesílej anglicky):
+MAPOVÁNÍ (ptej se česky, ukládej anglicky):
 - Stav: špatný=bad, nic moc=nothing_much, dobrý=good, velmi dobrý=very_good, nový/novostavba=new, po rekonstrukci/výborný=excellent
 - Vlastnictví: osobní=private, družstevní=cooperative
 - Konstrukce: cihla/cihlová=brick, panel/panelová=panel, dřevo/dřevěná=wood
