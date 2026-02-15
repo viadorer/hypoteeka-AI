@@ -134,12 +134,12 @@ export async function buildAgentPrompt(
     parts.push('\nOCENĚNÍ ZDARMA: Znáš typ a lokalitu nemovitosti. Nabídni klientovi tržní ocenění zdarma.');
     parts.push('- Řekni: "Mimochodem, můžu vám udělat orientační tržní ocenění nemovitosti zdarma. Pomůže to i při jednání s bankou. Chcete?"');
     parts.push('- Pokud klient souhlasí, potřebuješ: adresu, plochu, stav, kontakt (jméno, příjmení, email).');
-    parts.push('- POSTUP: (1) geocode_address pro validaci adresy, (2) nabídni výběr z výsledků, (3) request_valuation s kompletními daty.');
+    parts.push('- POSTUP: (1) geocode_address zobrazí našeptávač adresy, (2) klient vybere a potvrdí adresu, (3) z jeho zprávy s ADDRESS_DATA získej lat/lng/street/city atd., (4) request_valuation s kompletními daty.');
   }
 
   // Instrukce pro probíhající ocenění
   if (state.widgetsShown.includes('geocode_address') && !valuationDone) {
-    parts.push('\nOCENĚNÍ PROBÍHÁ: Adresa validována. Zkontroluj, že máš všechna povinná data pro request_valuation:');
+    parts.push('\nOCENĚNÍ PROBÍHÁ: Našeptávač adresy zobrazen. Pokud klient potvrdil adresu (zpráva s ADDRESS_DATA), zapamatuj si všechny údaje. Zkontroluj, že máš všechna povinná data pro request_valuation:');
     parts.push('- Byt: floorArea + rating + localType (dispozice) + ownership (vlastnictví) + construction (konstrukce) -- vše POVINNÉ');
     parts.push('- Dům: floorArea + lotArea + rating + ownership + construction -- vše POVINNÉ');
     parts.push('- Pozemek: lotArea -- POVINNÉ');

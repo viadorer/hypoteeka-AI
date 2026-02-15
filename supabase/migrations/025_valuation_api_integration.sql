@@ -2,7 +2,7 @@
 -- 025: Integrace RealVisor Valuo API pro ocenění nemovitostí
 -- ============================================================
 -- Hugo umí provést tržní ocenění nemovitosti zdarma.
--- Postup: geocode_address -> výběr adresy -> sběr dat -> request_valuation
+-- Postup: geocode_address (našeptávač Mapy.com) -> klient potvrdí adresu -> sběr dat -> request_valuation
 -- ŽÁDNÉ EMOJI v komunikaci!
 -- ============================================================
 
@@ -11,14 +11,15 @@ UPDATE public.knowledge_base
 SET content = 'Hugo umí provést orientační tržní ocenění nemovitosti ZDARMA.
 
 POSTUP OCENĚNÍ:
-1. Klient řekne adresu nemovitosti
-2. Hugo zavolá geocode_address pro validaci adresy a získání GPS
-3. Hugo nabídne klientovi výběr z nalezených adres (klient musí potvrdit správnou)
-4. Hugo se zeptá na povinné parametry podle typu nemovitosti
-5. Hugo si vyžádá kontaktní údaje (jméno, příjmení, email -- na email přijde výsledek)
-6. Hugo shrne všechny údaje a požádá o potvrzení
-7. Po potvrzení Hugo zavolá request_valuation
-8. Hugo sdělí výsledek: průměrná cena, rozmezí, cena za m2
+1. Klient chce ocenění -- Hugo zavolá geocode_address (zobrazí našeptávač adresy Mapy.com)
+2. Klient začne psát adresu, našeptávač nabídne výsledky, klient vybere a potvrdí
+3. Po potvrzení klient pošle zprávu s ADDRESS_DATA (lat, lng, street, city, postalCode...)
+4. Hugo si zapamatuje všechny údaje z ADDRESS_DATA
+5. Hugo se zeptá na povinné parametry podle typu nemovitosti
+6. Hugo si vyžádá kontaktní údaje (jméno, příjmení, email -- na email přijde výsledek)
+7. Hugo shrne všechny údaje a požádá o potvrzení
+8. Po potvrzení Hugo zavolá request_valuation
+9. Hugo sdělí výsledek: průměrná cena, rozmezí, cena za m2
 
 POVINNÁ DATA PODLE TYPU:
 - Byt (flat): adresa + GPS, užitná plocha (m2), stav, dispozice (1+kk, 2+1...), vlastnictví, konstrukce
@@ -53,9 +54,9 @@ PO ÚSPĚŠNÉM OCENĚNÍ:
 - Nabídneš další služby (hypotéka, konzultace se specialistou)
 
 DŮLEŽITÉ:
-- Adresa MUSÍ být validována přes geocode_address (kvůli GPS souřadnicím)
+- Adresa MUSÍ být validována přes geocode_address (našeptávač Mapy.com)
+- Klient vybere adresu z našeptávače a potvrdí -- tím se získají GPS souřadnice
 - Bez GPS souřadnic NELZE ocenění provést
-- Pokud geocode nenajde adresu, požádej klienta o přesnější zadání
 - Nikdy nepoužívej emoji v komunikaci',
     updated_at = now()
 WHERE tenant_id = 'hypoteeka' AND title = 'Tržní ocenění nemovitosti zdarma';
@@ -66,9 +67,9 @@ SELECT 'hypoteeka', 'service', 'Tržní ocenění nemovitosti zdarma',
 'Hugo umí provést orientační tržní ocenění nemovitosti ZDARMA.
 
 POSTUP OCENĚNÍ:
-1. Klient řekne adresu nemovitosti
-2. Hugo zavolá geocode_address pro validaci adresy a získání GPS
-3. Hugo nabídne klientovi výběr z nalezených adres (klient musí potvrdit správnou)
+1. Klient chce ocenění -- Hugo zavolá geocode_address (zobrazí našeptávač adresy Mapy.com)
+2. Klient vybere adresu z našeptávače a potvrdí
+3. Klient pošle zprávu s ADDRESS_DATA -- Hugo si zapamatuje lat, lng, street, city, postalCode
 4. Hugo se zeptá na povinné parametry podle typu nemovitosti
 5. Hugo si vyžádá kontaktní údaje (jméno, příjmení, email -- na email přijde výsledek)
 6. Hugo shrne všechny údaje a požádá o potvrzení
@@ -85,7 +86,7 @@ STAV NEMOVITOSTI -- překlad pro klienta:
 - "very_good" = velmi dobrý stav, "new" = novostavba, "excellent" = výborný / po rekonstrukci
 
 KONTAKT: Jméno + příjmení + email (povinné), telefon (doporučený).
-Adresa MUSÍ být validována přes geocode_address (kvůli GPS). Bez GPS nelze ocenění provést.',
+Adresa MUSÍ být validována přes geocode_address (našeptávač Mapy.com). Bez GPS nelze ocenění provést.',
 '{ocenění, odhad, tržní hodnota, nemovitost, zdarma, valuo, geocode}'
 WHERE NOT EXISTS (SELECT 1 FROM public.knowledge_base WHERE tenant_id = 'hypoteeka' AND title = 'Tržní ocenění nemovitosti zdarma');
 
@@ -94,9 +95,10 @@ UPDATE public.prompt_templates
 SET content = content || '
 
 OCENĚNÍ NEMOVITOSTI (geocode_address + request_valuation):
-- geocode_address: Validuj adresu a získej GPS. POVINNÝ krok před oceněním. Nabídni klientovi výběr z výsledků.
-- request_valuation: Odešli ocenění. Potřebuješ: validovanou adresu (lat, lng z geocode), kontakt (firstName, lastName, email), typ nemovitosti, povinné parametry podle typu.
-- POSTUP: (1) Klient řekne adresu -> geocode_address, (2) Klient potvrdí adresu, (3) Sesbírej povinná data, (4) Shrň a požádej o potvrzení, (5) request_valuation.
+- geocode_address: Zobrazí našeptávač adresy (Mapy.com). POVINNÝ krok před oceněním. Klient vybere a potvrdí adresu.
+- Po potvrzení klient pošle zprávu s ADDRESS_DATA -- z ní získej lat, lng, street, streetNumber, city, district, region, postalCode.
+- request_valuation: Odešli ocenění. Potřebuješ: validovanou adresu (lat, lng z ADDRESS_DATA), kontakt (firstName, lastName, email), typ nemovitosti, povinné parametry podle typu.
+- POSTUP: (1) geocode_address (zobrazí našeptávač), (2) Klient potvrdí adresu, (3) Sesbírej povinná data, (4) Shrň a požádej o potvrzení, (5) request_valuation.
 - Po úspěšném ocenění: sdělíš cenu, rozmezí, cenu za m2. Výsledek jde na email.
 - NIKDY nepoužívej emoji.',
     updated_at = now()
@@ -109,7 +111,7 @@ SELECT 'hypoteeka', 'guardrail_valuation_data', 'guardrail',
 
 Když klient chce ocenění, sbírej data v tomto pořadí:
 1. Typ nemovitosti (byt / dům / pozemek) -- pokud ještě nevíš
-2. Adresa nemovitosti -- zavolej geocode_address, nabídni výběr
+2. Adresa nemovitosti -- zavolej geocode_address (zobrazí našeptávač Mapy.com), počkej na ADDRESS_DATA od klienta
 3. Povinné parametry:
    - Byt: užitná plocha (m2), stav, dispozice (1+kk, 2+1...), vlastnictví, konstrukce
    - Dům: užitná plocha (m2), plocha pozemku (m2), stav, vlastnictví, konstrukce
@@ -147,7 +149,7 @@ Před voláním request_valuation zkontroluj:
 - Mám jméno a příjmení?
 - Mám email?
 - Mám typ nemovitosti?
-- Mám adresu VALIDOVANOU přes geocode_address? (lat + lng)
+- Mám adresu VALIDOVANOU přes geocode_address / ADDRESS_DATA? (lat + lng)
 - Pro byt: mám floorArea, rating, localType (dispozice), ownership (vlastnictví), construction (konstrukce)?
 - Pro dům: mám floorArea, lotArea, rating, ownership, construction?
 - Pro pozemek: mám lotArea?

@@ -12,6 +12,7 @@ import { StressTestWidget } from './StressTestWidget';
 import { LeadCaptureWidget } from './LeadCaptureWidget';
 import { SpecialistWidget } from './SpecialistWidget';
 import { ValuationWidget } from './ValuationWidget';
+import { AddressSuggestWidget } from './AddressSuggestWidget';
 import { NextStepsBar } from './NextStepsBar';
 
 interface ToolInvocation {
@@ -32,6 +33,7 @@ const TOOL_LABELS: Record<string, string> = {
   show_amortization: 'Průběh splácení',
   show_stress_test: 'Stress test',
   show_valuation: 'Ocenění nemovitosti',
+  geocode_address: 'Ověření adresy',
   show_lead_capture: 'Kontaktní formulář',
   show_specialists: 'Dostupní specialisté',
   send_email_summary: 'Odesílám email',
@@ -179,6 +181,14 @@ export function WidgetRenderer({ toolInvocation, sessionId, onSend }: { toolInvo
           />
           {onSend && <NextStepsBar toolName={toolName} onSend={onSend} />}
         </>
+      );
+    case 'geocode_address':
+      // Show address suggest widget with Mapy.com autocomplete
+      return (
+        <AddressSuggestWidget
+          onSend={onSend}
+          context={args.query as string | undefined}
+        />
       );
     case 'show_valuation':
       return (

@@ -226,56 +226,18 @@ export const toolDefinitions = {
   },
 
   geocode_address: {
-    description: 'Validuj adresu nemovitosti a ziskej GPS souradnice. POVINNY krok PRED odeslanim oceneni (request_valuation). Klient muze zadat cokoliv (napr. "drevena 3 Plzen") a API najde presnou adresu. Vraci seznam kandidatu -- nabidni klientovi vyber. count >= 1 = uspech (adresa nalezena). count == 0 = adresa nenalezena. Kazdy vysledek obsahuje label (cela adresa), lat/lng (GPS), a rozbalene address komponenty (street, streetNumber, city, district, region, postalCode) -- VSECHNY tyto hodnoty si ZAPAMATUJ a pouzij v request_valuation.',
+    description: 'Zobraz naseptavac adresy pro overeni nemovitosti. POVINNY krok PRED odeslanim oceneni (request_valuation). Klient vybere adresu z naseptavace Mapy.com a potvrdi ji. Po potvrzeni klient posle zpravu s ADDRESS_DATA obsahujici lat, lng, street, streetNumber, city, district, region, postalCode -- VSECHNY tyto hodnoty si ZAPAMATUJ a pouzij v request_valuation. Zavolej tento nastroj kdyz klient chce oceneni a jeste nemas validovanou adresu.',
     inputSchema: z.object({
-      query: z.string().describe('Adresa zadana klientem presne jak ji napsal, napr. "drevena 3 Plzen" nebo "Korunni 104 Praha". API zvladne i bez diakritiky.'),
+      query: z.string().optional().describe('Volitelny text adresy pro predvyplneni naseptavace, napr. "drevena 3 Plzen"'),
     }),
-    execute: async ({ query }: { query: string }) => {
-      const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000');
-      try {
-        const res = await fetch(`${baseUrl}/api/valuation/geocode?query=${encodeURIComponent(query)}`);
-        if (!res.ok) {
-          const text = await res.text();
-          return { success: false, error: `Geocode chyba: ${text}`, summary: 'Nepodařilo se validovat adresu. Zkus to znovu.' };
-        }
-        const data = await res.json();
-        if (!data.results || data.results.length === 0) {
-          return { success: false, count: 0, results: [], summary: 'Adresa nenalezena. Zeptej se klienta na přesnější adresu (ulice, číslo, město).' };
-        }
-        // Rozbal address komponenty do ploché struktury pro snadné použití v request_valuation
-        const results = data.results.map((r: Record<string, unknown>) => {
-          const a = r.address as Record<string, string> | undefined;
-          return {
-            label: r.label,
-            lat: r.lat,
-            lng: r.lng,
-            street: a?.street ?? '',
-            streetNumber: a?.streetNumber ?? '',
-            city: a?.city ?? '',
-            district: a?.district ?? '',
-            region: a?.region ?? '',
-            postalCode: a?.postalCode ?? '',
-          };
-        });
-        const count = data.count ?? results.length;
-        if (count === 1) {
-          return {
-            success: true,
-            count,
-            results,
-            confirmedAddress: results[0].label,
-            summary: `Nalezena adresa: ${results[0].label}. Zeptej se klienta jestli je to správně. Pokud ano, použij tyto údaje v request_valuation: address="${results[0].label}", lat=${results[0].lat}, lng=${results[0].lng}, street="${results[0].street}", streetNumber="${results[0].streetNumber}", city="${results[0].city}", district="${results[0].district}", postalCode="${results[0].postalCode}".`,
-          };
-        }
-        return {
-          success: true,
-          count,
-          results,
-          summary: `Nalezeno ${count} adres. Nabídni klientovi výběr: ${results.map((r: { label: string }, i: number) => `${i + 1}. ${r.label}`).join(', ')}. Po výběru si zapamatuj všechny údaje vybraného výsledku pro request_valuation.`,
-        };
-      } catch (err) {
-        return { success: false, error: err instanceof Error ? err.message : 'Network error', summary: 'Chyba při validaci adresy.' };
-      }
+    execute: async ({ query }: { query?: string }) => {
+      return {
+        success: true,
+        widgetDisplayed: true,
+        query: query ?? '',
+        summary: 'Naseptavac adresy zobrazen. Pockej az klient vybere a potvrdi adresu. Klient posle zpravu s ADDRESS_DATA -- z ni ziskej lat, lng, street, streetNumber, city, district, region, postalCode pro request_valuation.',
+        displayed: true,
+      };
     },
   },
 
