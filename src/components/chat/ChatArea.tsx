@@ -92,8 +92,17 @@ export function ChatArea({ initialSessionId = null }: ChatAreaProps) {
   const prevStatusRef = useRef(status);
   const inputRef = useRef<HTMLInputElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const hasStarted = messages.length > 0;
+  const greetingSentRef = useRef(false);
+  // Greeting-only state: [GREETING] trigger + Hugo's response = still on welcome screen
+  const isGreetingOnly = messages.length <= 2 && messages.every(m =>
+    (m.role === 'user' && getTextContent(m).trim() === '[GREETING]') || m.role === 'assistant'
+  ) && greetingSentRef.current;
+  const hasStarted = messages.length > 0 && !isGreetingOnly;
   const isLoading = status === 'submitted' || status === 'streaming';
+  // Extract greeting text from Hugo's response for welcome screen
+  const greetingMessage = isGreetingOnly
+    ? messages.find(m => m.role === 'assistant')
+    : null;
 
   // Fetch today's rates for welcome screen
   useEffect(() => {
@@ -117,7 +126,6 @@ export function ChatArea({ initialSessionId = null }: ChatAreaProps) {
   }, [status, messages, sessionId]);
 
   // Load conversation history for existing session, or trigger auto-greeting for new chats
-  const greetingSentRef = useRef(false);
   useEffect(() => {
     if (historyLoaded) return;
     setHistoryLoaded(true);
@@ -141,8 +149,10 @@ export function ChatArea({ initialSessionId = null }: ChatAreaProps) {
     function triggerGreeting() {
       if (greetingSentRef.current) return;
       greetingSentRef.current = true;
-      // Send hidden trigger to backend so Hugo greets dynamically based on profile/history
-      sendMessage({ text: '[GREETING]' });
+      // Send hidden trigger to backend after 1s delay so welcome screen renders first
+      setTimeout(() => {
+        sendMessage({ text: '[GREETING]' });
+      }, 1000);
     }
   }, [sessionId, historyLoaded, setMessages, sendMessage]);
 
@@ -265,6 +275,23 @@ export function ChatArea({ initialSessionId = null }: ChatAreaProps) {
                   : 'Spočítám splátku, ověřím bonitu a porovnám nabídky bank. Za minutu víte, na co dosáhnete.'}
             </p>
           </div>
+
+          {/* Hugo's dynamic greeting bubble on welcome screen */}
+          {(greetingMessage || (isLoading && greetingSentRef.current && !greetingMessage)) && (
+            <div className="w-full max-w-[560px] mb-6 min-w-0 animate-in fade-in slide-in-from-bottom-2 duration-500">
+              <div className={`text-gray-900 px-4 py-3 rounded-2xl rounded-bl-md text-base md:text-[15px] leading-relaxed ${glass}`}>
+                {greetingMessage ? (
+                  <ReactMarkdown>{getTextContent(greetingMessage)}</ReactMarkdown>
+                ) : (
+                  <span className="inline-flex gap-1 items-center">
+                    <span className="w-1.5 h-1.5 bg-gray-300 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                    <span className="w-1.5 h-1.5 bg-gray-300 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                    <span className="w-1.5 h-1.5 bg-gray-300 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                  </span>
+                )}
+              </div>
+            </div>
+          )}
 
           {/* Input */}
           <div className="w-full max-w-[560px] mb-6 min-w-0">
