@@ -12,6 +12,9 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
 
     const url = `${REALVISOR_API_URL}/valuo`;
+    console.log('[Valuation/Valuo] URL:', url);
+    console.log('[Valuation/Valuo] API key present:', !!apiKey, 'length:', apiKey.length);
+    console.log('[Valuation/Valuo] Body keys:', Object.keys(body));
     const res = await fetch(url, {
       method: 'POST',
       headers: {
@@ -21,13 +24,15 @@ export async function POST(req: NextRequest) {
       body: JSON.stringify(body),
     });
 
+    const text = await res.text();
+    console.log(`[Valuation/Valuo] Response ${res.status}:`, text.substring(0, 500));
+
     if (!res.ok) {
-      const text = await res.text();
-      console.error(`[Valuation/Valuo] API error ${res.status}: ${text}`);
       return NextResponse.json({ error: 'Valuation API error', detail: text }, { status: res.status });
     }
 
-    const data = await res.json();
+    let data;
+    try { data = JSON.parse(text); } catch { data = { raw: text }; }
     return NextResponse.json(data);
   } catch (err) {
     console.error('[Valuation/Valuo] Network error:', err instanceof Error ? err.message : err);

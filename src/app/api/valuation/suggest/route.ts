@@ -18,12 +18,16 @@ export async function GET(req: NextRequest) {
       query,
       lang: 'cs',
       limit: '5',
-      type: 'regional.address',
       locality: 'cz',
       apikey: apiKey,
     });
+    params.append('type', 'regional.address');
 
-    const res = await fetch(`${MAPY_API_URL}?${params.toString()}`);
+    const url = `${MAPY_API_URL}?${params.toString()}`;
+    console.log('[Suggest] Fetching:', url.replace(apiKey, '***'));
+    const res = await fetch(url, {
+      headers: { 'X-Mapy-Api-Key': apiKey },
+    });
 
     if (!res.ok) {
       const text = await res.text();

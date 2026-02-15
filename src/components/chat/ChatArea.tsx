@@ -396,7 +396,7 @@ export function ChatArea({ initialSessionId = null }: ChatAreaProps) {
               {message.role === 'user' && (
                 <div className="flex justify-end mb-2">
                   <div className="bg-[#E91E63]/90 backdrop-blur-sm text-white px-4 py-3 md:py-2.5 rounded-2xl rounded-br-md max-w-[85%] text-base md:text-[15px] leading-relaxed shadow-lg shadow-pink-500/10 break-words overflow-hidden">
-                    {getTextContent(message)}
+                    {getTextContent(message).replace(/\s*\[ADDRESS_DATA:.*?\]/g, '')}
                   </div>
                 </div>
               )}
@@ -429,7 +429,7 @@ export function ChatArea({ initialSessionId = null }: ChatAreaProps) {
                       const toolName = p.toolName ?? part.type.replace(/^tool-/, '');
                       if (toolName === 'update_profile' || toolName === 'get_news' || toolName === 'step-start') return null;
                       return (
-                        <div key={index} className="w-full min-w-0 overflow-hidden">
+                        <div key={index} className="w-full min-w-0">
                           <WidgetRenderer
                             toolInvocation={{ toolName, state: p.state, args: (p.input ?? {}) as Record<string, unknown>, output: p.output }}
                             sessionId={sessionId}

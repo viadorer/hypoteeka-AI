@@ -28,7 +28,6 @@ export function AddressSuggestWidget({ onSend, context }: AddressSuggestWidgetPr
   const [isLoading, setIsLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const [selected, setSelected] = useState<SuggestItem | null>(null);
-  const [confirmed, setConfirmed] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -57,7 +56,6 @@ export function AddressSuggestWidget({ onSend, context }: AddressSuggestWidgetPr
   const handleInputChange = (value: string) => {
     setQuery(value);
     setSelected(null);
-    setConfirmed(false);
     if (debounceRef.current) clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(() => fetchSuggestions(value), 300);
   };
@@ -66,25 +64,21 @@ export function AddressSuggestWidget({ onSend, context }: AddressSuggestWidgetPr
     setSelected(item);
     setQuery(item.label);
     setIsOpen(false);
-    setConfirmed(false);
-  };
-
-  const handleConfirm = () => {
-    if (!selected || !onSend) return;
-    setConfirmed(true);
-    // Send structured address data back to Hugo as a chat message
-    const msg = `Potvrzuji adresu: ${selected.label} [ADDRESS_DATA:${JSON.stringify({
-      address: selected.label,
-      lat: selected.lat,
-      lng: selected.lng,
-      street: selected.street,
-      streetNumber: selected.streetNumber,
-      city: selected.city,
-      district: selected.district,
-      region: selected.region,
-      postalCode: selected.postalCode,
-    })}]`;
-    onSend(msg);
+    // Immediately send address data back to Hugo
+    if (onSend) {
+      const msg = `${item.name}, ${item.location} [ADDRESS_DATA:${JSON.stringify({
+        address: `${item.name}, ${item.location}`,
+        lat: item.lat,
+        lng: item.lng,
+        street: item.street,
+        streetNumber: item.streetNumber,
+        city: item.city,
+        district: item.district,
+        region: item.region,
+        postalCode: item.postalCode,
+      })}]`;
+      onSend(msg);
+    }
   };
 
   // Close dropdown on outside click
@@ -103,12 +97,12 @@ export function AddressSuggestWidget({ onSend, context }: AddressSuggestWidgetPr
     inputRef.current?.focus();
   }, []);
 
-  if (confirmed && selected) {
+  if (selected) {
     return (
-      <div className="bg-white rounded-2xl p-4 md:p-6 shadow-sm border border-gray-100 animate-in slide-in-from-bottom-4 duration-500 overflow-hidden w-full min-w-0">
+      <div className="bg-white rounded-2xl p-4 md:p-6 shadow-sm border border-gray-100 animate-in slide-in-from-bottom-4 duration-500 w-full min-w-0">
         <div className="w-8 h-[3px] rounded-full bg-emerald-500 mb-4" />
         <p className="text-[11px] font-semibold uppercase tracking-wider text-gray-400 mb-3">
-          Adresa potvrzena
+          Adresa vybrána
         </p>
         <div className="flex items-start gap-3">
           <div className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center flex-shrink-0">
@@ -117,9 +111,6 @@ export function AddressSuggestWidget({ onSend, context }: AddressSuggestWidgetPr
           <div>
             <p className="text-sm font-semibold text-gray-900">{selected.name}</p>
             <p className="text-xs text-gray-500 mt-0.5">{selected.location}</p>
-            <p className="text-[10px] text-gray-400 mt-1">
-              GPS: {selected.lat.toFixed(5)}, {selected.lng.toFixed(5)}
-            </p>
           </div>
         </div>
       </div>
@@ -127,7 +118,7 @@ export function AddressSuggestWidget({ onSend, context }: AddressSuggestWidgetPr
   }
 
   return (
-    <div className="bg-white rounded-2xl p-4 md:p-6 shadow-sm border border-gray-100 animate-in slide-in-from-bottom-4 duration-500 overflow-hidden w-full min-w-0">
+    <div className="bg-white rounded-2xl p-4 md:p-6 shadow-sm border border-gray-100 animate-in slide-in-from-bottom-4 duration-500 w-full min-w-0">
       <div className="w-8 h-[3px] rounded-full bg-[#E91E63] mb-4" />
       <p className="text-[11px] font-semibold uppercase tracking-wider text-gray-400 mb-1">
         Ověření adresy
@@ -177,22 +168,6 @@ export function AddressSuggestWidget({ onSend, context }: AddressSuggestWidgetPr
           </div>
         )}
       </div>
-
-      {/* Selected address + confirm button */}
-      {selected && (
-        <div className="mt-4 flex items-center gap-3">
-          <div className="flex-1 bg-gray-50 rounded-xl px-4 py-3">
-            <p className="text-sm font-medium text-gray-900">{selected.name}</p>
-            <p className="text-xs text-gray-500">{selected.location}</p>
-          </div>
-          <button
-            onClick={handleConfirm}
-            className="px-5 py-3 rounded-xl bg-[#E91E63] hover:bg-[#C2185B] text-white text-sm font-medium transition-all flex-shrink-0"
-          >
-            Potvrdit
-          </button>
-        </div>
-      )}
 
       <p className="text-[10px] text-gray-400 mt-3">
         Zdroj: Mapy.com
