@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-const REALVISOR_API_URL = process.env.REALVISOR_API_URL ?? 'https://api-production-88cf.up.railway.app/api/v1/public/api-leads';
+// Valuo endpoint is always under /public/api-leads, regardless of REALVISOR_API_URL
+const VALUO_BASE = 'https://api-production-88cf.up.railway.app/api/v1/public/api-leads';
 
 export async function POST(req: NextRequest) {
   const apiKey = process.env.REALVISOR_API_KEY;
@@ -11,7 +12,7 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
 
-    const url = `${REALVISOR_API_URL}/valuo`;
+    const url = `${VALUO_BASE}/valuo`;
     console.log('[Valuation/Valuo] URL:', url);
     console.log('[Valuation/Valuo] API key present:', !!apiKey, 'length:', apiKey.length);
     console.log('[Valuation/Valuo] Body keys:', Object.keys(body));
