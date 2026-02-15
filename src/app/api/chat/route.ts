@@ -231,16 +231,18 @@ export async function POST(req: Request) {
           if (!profile.email) miss.push('email');
           if (!profile.phone) miss.push('telefon (phone) - vysvetli ze odhadce potrebuje zavolat');
           if (!profile.propertyLat || !profile.propertyLng) miss.push('adresa (GPS souradnice - klient musi vybrat z naseptavace)');
+          // Required per RealVisor API docs:
+          // flat: floorArea, rating
+          // house: floorArea, lotArea, rating
+          // land: lotArea
+          // construction, localType, ownership are OPTIONAL (improve accuracy)
           if (pt === 'flat') {
             if (!profile.floorArea) miss.push('uzitna plocha (floorArea)');
             if (!profile.propertyRating) miss.push('stav (propertyRating)');
-            if (!profile.propertySize) miss.push('dispozice (propertySize: 2+1, 3+kk...)');
-            if (!profile.propertyConstruction) miss.push('konstrukce (propertyConstruction)');
           } else if (pt === 'house') {
             if (!profile.floorArea) miss.push('uzitna plocha (floorArea)');
             if (!profile.lotArea) miss.push('plocha pozemku (lotArea)');
             if (!profile.propertyRating) miss.push('stav (propertyRating)');
-            if (!profile.propertyConstruction) miss.push('konstrukce (propertyConstruction)');
           } else if (pt === 'land') {
             if (!profile.lotArea) miss.push('plocha pozemku (lotArea)');
           }

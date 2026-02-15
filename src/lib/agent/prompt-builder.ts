@@ -183,15 +183,20 @@ FÁZE 5 -- VÝSLEDEK:
 - "Toto je orientační odhad. Náš odhadce vás bude kontaktovat pro zpřesnění -- nezávazně a zdarma."
 - Naváž: "Plánujete prodat, nebo řešíte financování jiné nemovitosti?"
 
-POVINNÁ POLE:
-- BYT: propertySize (dispozice), floorArea, propertyRating, propertyConstruction
-- DŮM: floorArea, lotArea, propertyRating, propertyConstruction
-- POZEMEK: lotArea
+POVINNÁ POLE (bez nich API vrátí chybu):
+- BYT: floorArea (užitná plocha), propertyRating (stav)
+- DŮM: floorArea (užitná plocha), lotArea (plocha pozemku), propertyRating (stav)
+- POZEMEK: lotArea (plocha pozemku)
 - VŽDY: name, email, phone, propertyType, validovaná adresa
+
+VOLITELNÁ POLE (zlepšují přesnost -- ptej se na ně ale NEBLOKUJ odeslání):
+- propertySize/localType (dispozice: 2+1, 3+kk) -- pro byty
+- propertyConstruction (konstrukce: brick, panel, wood)
+- propertyFloor, propertyTotalFloors, propertyElevator -- pro byty
 
 MAPOVÁNÍ (ptej se česky, ukládej anglicky):
 - Stav: špatný=bad, nic moc=nothing_much, dobrý=good, velmi dobrý=very_good, nový/novostavba=new, po rekonstrukci/výborný=excellent
-- Konstrukce: cihla=brick, panel=panel, dřevo=wood
+- Konstrukce: cihla=brick, panel=panel, dřevo=wood, kámen=stone, montovaná=montage
 - Typ: byt=flat, dům=house, pozemek=land`);
   }
 
@@ -207,8 +212,7 @@ MAPOVÁNÍ (ptej se česky, ukládej anglicky):
     if (!profile.floorArea && profile.propertyType !== 'pozemek') missingForValuation.push('užitná plocha');
     if (!profile.lotArea && (profile.propertyType === 'dum' || profile.propertyType === 'pozemek')) missingForValuation.push('plocha pozemku');
     if (!profile.propertyRating && profile.propertyType !== 'pozemek') missingForValuation.push('stav nemovitosti');
-    if (!profile.propertyConstruction && profile.propertyType !== 'pozemek') missingForValuation.push('konstrukce');
-    if (!profile.propertySize && profile.propertyType === 'byt') missingForValuation.push('dispozice (1+kk, 2+1...)');
+    // construction and dispozice are OPTIONAL -- don't block valuation
     if (!profile.name) missingForValuation.push('jméno a příjmení');
     if (!profile.email) missingForValuation.push('email');
     if (!profile.phone) missingForValuation.push('telefon');
