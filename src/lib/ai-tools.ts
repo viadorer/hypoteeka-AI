@@ -349,12 +349,12 @@ export const toolDefinitions = {
   },
 
   show_valuation: {
-    description: 'ZASTARALE - pouzij geocode_address a request_valuation misto toho. Tento nastroj pouze zobrazi informaci ze oceneni je k dispozici.',
+    description: 'Zobraz formular pro oceneni nemovitosti (FALLBACK). Preferuj geocode_address + request_valuation pro presnejsi vysledky pres API. Tento widget pouzij jen kdyz API cesta neni mozna nebo klient chce jednodussi formular.',
     inputSchema: z.object({
-      context: z.string().optional().describe('Kratky kontext proc klient chce oceneni'),
+      context: z.string().optional().describe('Kratky kontext proc klient chce oceneni (napr. "pro ucel hypoteky", "pred prodejem")'),
     }),
     execute: async ({ context }: { context?: string }) => {
-      return { context, summary: 'Pro oceneni pouzij geocode_address (validace adresy) a nasledne request_valuation (odeslani oceneni).' };
+      return { context, formDisplayed: true, summary: 'Formular pro oceneni nemovitosti zobrazen.', displayed: true };
     },
   },
 
