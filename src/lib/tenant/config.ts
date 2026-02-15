@@ -30,6 +30,7 @@ export interface TenantConfig {
     leadCapture: boolean;
     knowledgeBaseRag: boolean;
     ctaIntensity: 'low' | 'medium' | 'high';
+    primaryFlow: 'mortgage' | 'valuation';
   };
 }
 
@@ -57,6 +58,7 @@ const TENANT_CONFIGS: Record<string, TenantConfig> = {
       leadCapture: true,
       knowledgeBaseRag: false,
       ctaIntensity: 'medium',
+      primaryFlow: 'mortgage',
     },
   },
   odhad: {
@@ -82,6 +84,7 @@ const TENANT_CONFIGS: Record<string, TenantConfig> = {
       leadCapture: true,
       knowledgeBaseRag: false,
       ctaIntensity: 'medium',
+      primaryFlow: 'valuation',
     },
   },
 };

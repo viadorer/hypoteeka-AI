@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import { AuthProvider } from "@/lib/auth/auth-context";
 import { StructuredData } from "./structured-data";
+import { getTenantConfig, getDefaultTenantId } from "@/lib/tenant/config";
 import "./globals.css";
 
 const inter = Inter({
@@ -9,24 +10,31 @@ const inter = Inter({
   subsets: ["latin", "latin-ext"],
 });
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://hypoteeka.cz';
+const tenant = getTenantConfig(getDefaultTenantId());
+const isValuation = tenant.features.primaryFlow === 'valuation';
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || `https://${tenant.domain}`;
+
+const siteTitle = isValuation
+  ? 'Odhad.online - Orientační odhad ceny nemovitosti zdarma'
+  : 'Hypoteeka AI - Hypoteční poradce | Kalkulačka hypotéky online';
+const siteDescription = isValuation
+  ? 'Zjistěte orientační tržní cenu nebo výši nájmu vaší nemovitosti. Odhad bytu, domu i pozemku zdarma a nezávazně.'
+  : 'Spočítejte si hypotéku online s AI poradcem Hugo. Kalkulačka splátky, ověření bonity, porovnání sazeb bank. Bezplatná konzultace s hypotečním specialistou.';
+const siteKeywords = isValuation
+  ? ['odhad nemovitosti', 'cena nemovitosti', 'odhad bytu', 'odhad domu', 'cena pozemku', 'tržní cena', 'odhad nájmu', 'pronájem', 'odhad online', 'odhad zdarma']
+  : ['hypotéka', 'hypoteční kalkulačka', 'kalkulačka hypotéky', 'splátka hypotéky', 'úroková sazba', 'bonita', 'LTV', 'DSTI', 'DTI', 'refinancování hypotéky', 'hypoteční poradce', 'srovnání hypoték', 'hypotéka online', 'AI poradce', 'Česká národní banka', 'ČNB sazby', 'fixace hypotéky'];
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
-    default: 'Hypoteeka AI - Hypoteční poradce | Kalkulačka hypotéky online',
-    template: '%s | Hypoteeka AI',
+    default: siteTitle,
+    template: `%s | ${tenant.branding.title}`,
   },
-  description: 'Spočítejte si hypotéku online s AI poradcem Hugo. Kalkulačka splátky, ověření bonity, porovnání sazeb bank. Bezplatná konzultace s hypotečním specialistou.',
-  keywords: [
-    'hypotéka', 'hypoteční kalkulačka', 'kalkulačka hypotéky', 'splátka hypotéky',
-    'úroková sazba', 'bonita', 'LTV', 'DSTI', 'DTI', 'refinancování hypotéky',
-    'hypoteční poradce', 'srovnání hypoték', 'hypotéka online', 'AI poradce',
-    'Česká národní banka', 'ČNB sazby', 'fixace hypotéky',
-  ],
-  authors: [{ name: 'Hypoteeka.cz' }],
-  creator: 'Hypoteeka.cz',
-  publisher: 'Hypoteeka.cz',
+  description: siteDescription,
+  keywords: siteKeywords,
+  authors: [{ name: tenant.name }],
+  creator: tenant.name,
+  publisher: tenant.name,
   robots: {
     index: true,
     follow: true,
@@ -45,23 +53,23 @@ export const metadata: Metadata = {
     type: 'website',
     locale: 'cs_CZ',
     url: '/',
-    siteName: 'Hypoteeka AI',
-    title: 'Hypoteeka AI - Hypoteční poradce | Kalkulačka hypotéky online',
-    description: 'Spočítejte si hypotéku online s AI poradcem Hugo. Kalkulačka splátky, ověření bonity, porovnání sazeb bank. Bezplatná konzultace s hypotečním specialistou.',
+    siteName: tenant.branding.title,
+    title: siteTitle,
+    description: siteDescription,
     images: [
       {
         url: '/og-image',
         width: 1200,
         height: 630,
-        alt: 'Hypoteeka AI - Váš hypoteční poradce',
+        alt: tenant.branding.title,
         type: 'image/png',
       },
     ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Hypoteeka AI - Hypoteční poradce',
-    description: 'Spočítejte si hypotéku online s AI poradcem Hugo. Kalkulačka splátky, ověření bonity, porovnání sazeb bank.',
+    title: siteTitle,
+    description: siteDescription,
     images: ['/og-image'],
   },
   icons: {
@@ -73,7 +81,7 @@ export const metadata: Metadata = {
     ],
   },
   manifest: '/manifest.webmanifest',
-  category: 'finance',
+  category: isValuation ? 'real estate' : 'finance',
 };
 
 export const viewport: Viewport = {
@@ -81,7 +89,7 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 1,
   viewportFit: 'cover',
-  themeColor: '#E91E63',
+  themeColor: tenant.branding.primaryColor,
 };
 
 export default function RootLayout({

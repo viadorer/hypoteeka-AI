@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { Menu, X, Plus, MessageSquare, BarChart3, LogIn, LogOut, KeyRound, User, Trash2 } from 'lucide-react';
 import { useAuth } from '@/lib/auth/auth-context';
+import { useTenant } from '@/lib/tenant/use-tenant';
 
 interface SessionSummary {
   id: string;
@@ -100,6 +101,8 @@ function sessionSubtitle(s: SessionSummary): string {
 type AuthView = 'none' | 'login' | 'signup' | 'change-password';
 
 export function Sidebar({ activeSessionId, currentView, onSelectSession, onContinueChat, onNewChat, onShowNews }: SidebarProps) {
+  const tenant = useTenant();
+  const isValuation = tenant.features.primaryFlow === 'valuation';
   const [mobileOpen, setMobileOpen] = useState(false);
   const [sessions, setSessions] = useState<SessionSummary[]>([]);
   const [hiddenSessions, setHiddenSessions] = useState<Set<string>>(() => {
@@ -156,9 +159,9 @@ export function Sidebar({ activeSessionId, currentView, onSelectSession, onConti
           <Menu className="w-6 h-6 text-gray-700" />
         </button>
         <div className="w-11 h-11 rounded-full bg-white shadow-sm border border-gray-100 flex items-center justify-center flex-shrink-0">
-          <Image src="/logo.png" alt="Hypoteeka" width={28} height={28} className="object-contain" />
+          <Image src="/logo.png" alt={tenant.branding.title} width={28} height={28} className="object-contain" />
         </div>
-        <h1 className="text-lg font-extrabold text-[#0A1E5C] tracking-tight">Hypoteeka AI</h1>
+        <h1 className="text-lg font-extrabold text-[#0A1E5C] tracking-tight">{tenant.branding.title}</h1>
       </div>
 
       {/* Mobile overlay */}
@@ -177,9 +180,9 @@ export function Sidebar({ activeSessionId, currentView, onSelectSession, onConti
         <div className="flex items-center justify-between p-5 pb-4">
           <div className="flex items-center gap-3">
             <div className="w-12 h-12 rounded-full bg-white shadow-sm border border-gray-100 flex items-center justify-center flex-shrink-0">
-              <Image src="/logo.png" alt="Hypoteeka" width={30} height={30} className="object-contain" />
+              <Image src="/logo.png" alt={tenant.branding.title} width={30} height={30} className="object-contain" />
             </div>
-            <h1 className="text-xl font-extrabold text-[#0A1E5C] tracking-tight">Hypoteeka AI</h1>
+            <h1 className="text-xl font-extrabold text-[#0A1E5C] tracking-tight">{tenant.branding.title}</h1>
           </div>
           <button onClick={() => setMobileOpen(false)} className="md:hidden p-1">
             <X className="w-5 h-5 text-gray-400" />
@@ -190,10 +193,11 @@ export function Sidebar({ activeSessionId, currentView, onSelectSession, onConti
         <div className="px-4 mb-4">
           <button
             onClick={() => { onNewChat(); setMobileOpen(false); }}
-            className="w-full flex items-center gap-2 px-4 py-3 rounded-xl text-base font-semibold bg-[#E91E63] text-white hover:bg-[#C2185B] transition-colors shadow-sm"
+            className="w-full flex items-center gap-2 px-4 py-3 rounded-xl text-base font-semibold text-white transition-colors shadow-sm"
+            style={{ backgroundColor: tenant.branding.primaryColor }}
           >
             <Plus className="w-4 h-4" />
-            Nová konzultace
+            {isValuation ? 'Nový odhad' : 'Nová konzultace'}
           </button>
         </div>
 
@@ -206,14 +210,14 @@ export function Sidebar({ activeSessionId, currentView, onSelectSession, onConti
             }`}
           >
             <MessageSquare className="w-5 h-5" />
-            Konzultace
+            {isValuation ? 'Odhady' : 'Konzultace'}
           </button>
         </div>
 
         {/* Previous chats */}
         <div className="flex-1 overflow-y-auto px-4 py-2 border-t border-gray-100/50">
           <p className="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2 px-1">
-            Předchozí konzultace
+            {isValuation ? 'Předchozí odhady' : 'Předchozí konzultace'}
           </p>
 
           {chatSessions.length === 0 && (

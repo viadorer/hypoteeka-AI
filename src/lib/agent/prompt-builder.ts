@@ -129,22 +129,34 @@ export async function buildAgentPrompt(
   parts.push(`\nLEAD: ${leadScore.score}/100 (${leadScore.temperature})`);
 
   // Provozní pravidla (právní role a komunikační styl se načítají z DB)
-  parts.push(`
+  const isValuationPrimary = tenantConfig.features.primaryFlow === 'valuation';
+  if (isValuationPrimary) {
+    parts.push(`
+PROVOZNÍ PRAVIDLA:
+- PRIMÁRNÍ SLUŽBA: Odhad ceny nemovitosti (prodej i pronájem). Nabízej AKTIVNĚ.
+- DOPLŇKOVÁ SLUŽBA: Orientační výpočet hypotéky. Nabízej JEN když klient SÁM zmíní hypotéku nebo financování.
+- Když klient zadá kontakt v kontextu odhadu, ULOŽ ho a POKRAČUJ v procesu odhadu.
+- NIKDY si NEVYMÝŠLEJ jméno klienta. Používej JEN to co klient napsal. Pokud jméno neznáš, neoslovuj jménem.
+- Pokud máš kontaktní údaje klienta (email, telefon) v profilu, NEPTEJ SE na ně znovu.`);
+  } else {
+    parts.push(`
 PROVOZNÍ PRAVIDLA:
 - Ocenění nemovitosti je VOLITELNÁ DOPLŇKOVÁ SLUŽBA. Nabízej ji JEN když klient SÁM zmíní že chce ocenit/ohodnotit nemovitost.
 - NIKDY netlač na ocenění. NIKDY nepřesměrovávej konverzaci k ocenění pokud klient řeší hypotéku.
 - Když klient zadá kontakt v kontextu hypotéky, ULOŽ ho a POKRAČUJ v hypotečním poradenství.
 - NIKDY si NEVYMÝŠLEJ jméno klienta. Používej JEN to co klient napsal. Pokud jméno neznáš, neoslovuj jménem.
 - Pokud máš kontaktní údaje klienta (email, telefon) v profilu, NEPTEJ SE na ně znovu.`);
+  }
 
   // === OCENĚNÍ NEMOVITOSTI ===
   const valuationDone = state.widgetsShown.includes('request_valuation') || !!profile.valuationId;
   const geocodeShown = state.widgetsShown.includes('geocode_address');
   const hasValidatedAddress = !!(profile.propertyAddress && profile.propertyLat && profile.propertyLng);
 
-  // Detekce zda klient chce ocenění -- JEN pokud už je v procesu ocenění (geocode/adresa/show_valuation)
-  // Ocenění se NIKDY nenabízí automaticky. Hugo ho nabídne jen když klient SÁM řekne že chce ocenit.
-  const wantsValuation = geocodeShown || hasValidatedAddress || state.widgetsShown.includes('show_valuation');
+  // Detekce zda klient chce ocenění
+  // Pro valuation-primary tenants (odhad.online): ocenění je VŽDY aktivní
+  // Pro mortgage-primary tenants (hypoteeka.cz): jen když klient SÁM zmíní ocenění
+  const wantsValuation = isValuationPrimary || geocodeShown || hasValidatedAddress || state.widgetsShown.includes('show_valuation');
 
   // === SCÉNÁŘ OCENĚNÍ -- JEN KDYŽ KLIENT CHCE OCENĚNÍ ===
   if (!valuationDone && wantsValuation) {
@@ -364,7 +376,7 @@ TAKTIKY PRO ROZPOVÍDÁNÍ:
 - CTA: Specialistu nabídni MAX JEDNOU. Pokud klient nereaguje, pokračuj v analýze.
 - JMÉNO: NIKDY si nevymýšlej jméno klienta. Pokud ho neznáš, neoslovuj jménem. Používej JEN jméno z profilu.
 - KONTAKT: Pokud máš email/telefon v profilu, NEPTEJ SE na ně znovu.
-- OCENĚNÍ: Netlač na ocenění. Nabízej JEN když klient SÁM chce ocenit nemovitost. Hlavní úkol = HYPOTÉKA.
+- OCENĚNÍ: ${isValuationPrimary ? 'Odhad ceny je tvůj HLAVNÍ ÚKOL. Hypotéka je doplňková služba.' : 'Netlač na ocenění. Nabízej JEN když klient SÁM chce ocenit nemovitost. Hlavní úkol = HYPOTÉKA.'}
 - TÉMA: Drž se tématu které klient řeší. Nepřeskakuj na jiné služby bez vyzvání.
 - DISCLAIMER: V KAŽDÉ odpovědi s čísly/výpočty PŘIROZENĚ zmíň že jde o orientační údaj. Střídej formulace. NIKDY nepiš disclaimer jako robotický odstavec.
 - GDPR: Když klient dá kontakt, VŽDY se zeptej na souhlas se zpracováním údajů v rámci skupiny. BEZ souhlasu neukládej kontakt.

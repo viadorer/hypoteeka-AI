@@ -10,20 +10,35 @@ import { DefaultChatTransport } from 'ai';
 import type { UIMessage } from 'ai';
 import { CtaIntensityDial } from './CtaIntensityDial';
 import type { CtaIntensity } from './CtaIntensityDial';
+import { useTenant } from '@/lib/tenant/use-tenant';
 
-const QUICK_ACTIONS_PRIMARY = [
+const QUICK_ACTIONS_MORTGAGE_PRIMARY = [
   { label: 'Spočítat splátku', icon: Calculator, prompt: 'Chci si spočítat splátku hypotéky.' },
   { label: 'Ověřit bonitu', icon: ShieldCheck, prompt: 'Chci si ověřit, jestli dosáhnu na hypotéku.' },
   { label: 'Kolik si mohu půjčit?', icon: TrendingUp, prompt: 'Kolik si mohu maximálně půjčit na hypotéku?' },
   { label: 'Refinancování hypotéky', icon: RefreshCw, prompt: 'Chci refinancovat hypotéku, jaké jsou aktuální podmínky?' },
 ];
 
-const QUICK_ACTIONS_MORE = [
+const QUICK_ACTIONS_MORTGAGE_MORE = [
   { label: 'Nájem vs. hypotéka', icon: ArrowDownUp, prompt: 'Vyplatí se mi víc nájem nebo hypotéka?' },
   { label: 'Nejlepší sazby na trhu', icon: Percent, prompt: 'Jaké jsou aktuální nejlepší sazby hypoték na trhu?' },
   { label: 'Koupě první nemovitosti', icon: Home, prompt: 'Kupuji první nemovitost, jak postupovat s hypotékou?' },
   { label: 'Investiční nemovitost', icon: PiggyBank, prompt: 'Chci koupit investiční nemovitost, vyplatí se to?' },
   { label: 'Ocenění nemovitosti', icon: Search, prompt: 'Chci zjistit hodnotu své nemovitosti.' },
+];
+
+const QUICK_ACTIONS_VALUATION_PRIMARY = [
+  { label: 'Odhad ceny bytu', icon: Home, prompt: 'Chci zjistit tržní cenu svého bytu.' },
+  { label: 'Odhad ceny domu', icon: Home, prompt: 'Chci zjistit tržní cenu svého domu.' },
+  { label: 'Odhad nájmu', icon: PiggyBank, prompt: 'Chci zjistit, za kolik bych mohl pronajímat svou nemovitost.' },
+  { label: 'Cena pozemku', icon: Search, prompt: 'Chci zjistit cenu svého pozemku.' },
+];
+
+const QUICK_ACTIONS_VALUATION_MORE = [
+  { label: 'Spočítat splátku hypotéky', icon: Calculator, prompt: 'Chci si spočítat splátku hypotéky.' },
+  { label: 'Nájem vs. hypotéka', icon: ArrowDownUp, prompt: 'Vyplatí se mi víc nájem nebo hypotéka?' },
+  { label: 'Investiční nemovitost', icon: PiggyBank, prompt: 'Chci koupit investiční nemovitost, vyplatí se to?' },
+  { label: 'Ověřit bonitu', icon: ShieldCheck, prompt: 'Chci si ověřit, jestli dosáhnu na hypotéku.' },
 ];
 
 
@@ -56,6 +71,10 @@ interface ChatAreaProps {
 }
 
 export function ChatArea({ initialSessionId = null }: ChatAreaProps) {
+  const tenant = useTenant();
+  const isValuation = tenant.features.primaryFlow === 'valuation';
+  const QUICK_ACTIONS_PRIMARY = isValuation ? QUICK_ACTIONS_VALUATION_PRIMARY : QUICK_ACTIONS_MORTGAGE_PRIMARY;
+  const QUICK_ACTIONS_MORE = isValuation ? QUICK_ACTIONS_VALUATION_MORE : QUICK_ACTIONS_MORTGAGE_MORE;
   const sessionId = useMemo(() => getSessionId(initialSessionId), [initialSessionId]);
   const [ctaIntensity, setCtaIntensity] = useState<CtaIntensity>('medium');
   const transport = useMemo(() => new DefaultChatTransport({
@@ -190,7 +209,7 @@ export function ChatArea({ initialSessionId = null }: ChatAreaProps) {
         value={inputValue}
         onChange={(e) => setInputValue(e.target.value)}
         onKeyDown={(e) => { if (e.key === 'Escape') setInputValue(''); }}
-        placeholder="Zeptejte se na cokoliv ohledně hypotéky..."
+        placeholder={isValuation ? 'Zeptejte se na cenu nemovitosti...' : 'Zeptejte se na cokoliv ohledně hypotéky...'}
         className="flex-1 bg-transparent border-none outline-none text-base md:text-[15px] text-gray-900 placeholder:text-gray-400 py-3 md:py-2.5"
         autoComplete="off"
         disabled={isLoading}
@@ -198,7 +217,8 @@ export function ChatArea({ initialSessionId = null }: ChatAreaProps) {
       <button
         type="submit"
         disabled={isLoading || !inputValue.trim()}
-        className="w-11 h-11 md:w-10 md:h-10 rounded-xl bg-[#E91E63] hover:bg-[#C2185B] disabled:bg-gray-200 flex items-center justify-center transition-all flex-shrink-0 ml-2"
+        className="w-11 h-11 md:w-10 md:h-10 rounded-xl disabled:bg-gray-200 flex items-center justify-center transition-all flex-shrink-0 ml-2"
+            style={{ backgroundColor: inputValue.trim() ? tenant.branding.primaryColor : undefined }}
       >
         <Send className="w-[18px] h-[18px] md:w-4 md:h-4 text-white" />
       </button>
@@ -216,19 +236,21 @@ export function ChatArea({ initialSessionId = null }: ChatAreaProps) {
           {/* Hero */}
           <div className="text-center mb-8 max-w-lg">
             {!visitorName && (
-              <div className="w-20 h-20 rounded-full overflow-hidden border-3 border-[#E91E63]/20 shadow-lg mx-auto mb-4">
+              <div className="w-20 h-20 rounded-full overflow-hidden shadow-lg mx-auto mb-4" style={{ borderColor: `${tenant.branding.primaryColor}33`, borderWidth: 3 }}>
                 <img src="/images/hugo-avatar.jpg" alt="Hugo" className="w-full h-full object-cover" />
               </div>
             )}
             <h1 className="text-[28px] md:text-4xl font-extrabold text-[#0A1E5C] tracking-tight mb-3">
               {visitorName
                 ? `Zdravím, ${visitorNameVocative ?? visitorName}!`
-                : 'Jsem Hugo, váš hypoteční poradce'}
+                : isValuation ? 'Zjistěte cenu své nemovitosti' : 'Jsem Hugo, váš hypoteční poradce'}
             </h1>
             <p className="text-gray-500 text-base md:text-lg leading-relaxed">
               {visitorName
-                ? 'Pokračujte tam, kde jste skončili, nebo začněte novou konzultaci.'
-                : 'Spočítám splátku, ověřím bonitu a porovnám nabídky bank. Za minutu víte, na co dosáhnete.'}
+                ? (isValuation ? 'Pokračujte tam, kde jste skončili, nebo začněte nový odhad.' : 'Pokračujte tam, kde jste skončili, nebo začněte novou konzultaci.')
+                : isValuation
+                  ? 'Orientační odhad tržní ceny nebo výše nájmu. Zdarma a nezávazně.'
+                  : 'Spočítám splátku, ověřím bonitu a porovnám nabídky bank. Za minutu víte, na co dosáhnete.'}
             </p>
           </div>
 
@@ -244,7 +266,8 @@ export function ChatArea({ initialSessionId = null }: ChatAreaProps) {
                 key={label}
                 onClick={() => useBadge(prompt)}
                 disabled={isLoading}
-                className={`inline-flex items-center gap-2 px-4 py-3 md:py-2.5 rounded-xl text-[15px] md:text-sm text-gray-600 transition-all disabled:opacity-50 active:scale-[0.97] ${glass} ${glassHover} hover:text-[#E91E63]`}
+                className={`inline-flex items-center gap-2 px-4 py-3 md:py-2.5 rounded-xl text-[15px] md:text-sm text-gray-600 transition-all disabled:opacity-50 active:scale-[0.97] ${glass} ${glassHover}`}
+                style={{ ['--tw-hover-text' as string]: tenant.branding.primaryColor }}
               >
                 <Icon className="w-4 h-4" />
                 {label}
@@ -275,8 +298,8 @@ export function ChatArea({ initialSessionId = null }: ChatAreaProps) {
             ))}
           </div>
 
-          {/* Today's rates - compact on mobile */}
-          {todayRates && todayRates.mortgage.avgRate > 0 && (
+          {/* Today's rates - compact on mobile (only for mortgage tenants) */}
+          {!isValuation && todayRates && todayRates.mortgage.avgRate > 0 && (
             <div className="w-full max-w-[700px] mb-8 min-w-0">
               <div className="flex items-center justify-center gap-2 mb-3">
                 <BarChart3 className="w-4 h-4 text-[#E91E63]" />
