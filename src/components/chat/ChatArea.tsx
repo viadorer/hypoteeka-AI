@@ -235,22 +235,26 @@ export function ChatArea({ initialSessionId = null }: ChatAreaProps) {
 
           {/* Hero */}
           <div className="text-center mb-8 max-w-lg">
-            {!visitorName && (
-              <div className="w-20 h-20 rounded-full overflow-hidden shadow-lg mx-auto mb-4" style={{ borderColor: `${tenant.branding.primaryColor}33`, borderWidth: 3 }}>
-                <img src={isValuation ? (tenant.branding.logoUrl ?? '/images/hugo-avatar.jpg') : '/images/hugo-avatar.jpg'} alt={tenant.branding.title} className="w-full h-full object-cover" />
-              </div>
-            )}
+            <div className="w-20 h-20 rounded-full overflow-hidden shadow-lg mx-auto mb-4" style={{ borderColor: `${tenant.branding.primaryColor}33`, borderWidth: 3 }}>
+              <img src={isValuation ? (tenant.branding.logoUrl ?? '/images/hugo-avatar.jpg') : '/images/hugo-avatar.jpg'} alt={tenant.agentName} className="w-full h-full object-cover" />
+            </div>
             <h1 className="text-[28px] md:text-4xl font-extrabold text-[#0A1E5C] tracking-tight mb-3">
               {visitorName
-                ? `Zdravím, ${visitorNameVocative ?? visitorName}!`
-                : isValuation ? `Jsem ${tenant.agentName}, váš odhadce nemovitostí` : `Jsem ${tenant.agentName}, váš hypoteční poradce`}
+                ? isValuation
+                  ? `Zdravím, ${visitorNameVocative ?? visitorName}! Jsem ${tenant.agentName}.`
+                  : `Zdravím, ${visitorNameVocative ?? visitorName}! Jsem ${tenant.agentName}.`
+                : isValuation
+                  ? `Jsem ${tenant.agentName}, váš odhadce nemovitostí`
+                  : `Jsem ${tenant.agentName}, váš hypoteční poradce`}
             </h1>
             <p className="text-gray-500 text-base md:text-lg leading-relaxed">
               {visitorName
-                ? (isValuation ? 'Pokračujte tam, kde jste skončili, nebo začněte nový odhad.' : 'Pokračujte tam, kde jste skončili, nebo začněte novou konzultaci.')
+                ? isValuation
+                  ? 'Pokračujte tam, kde jste skončili, nebo začněte nový odhad. Vaše předchozí konzultace najdete v bočním panelu.'
+                  : 'Pokračujte tam, kde jste skončili, nebo začněte novou konzultaci. Vaše předchozí konzultace najdete v bočním panelu.'
                 : isValuation
-                  ? 'Orientační odhad tržní ceny nebo výše nájmu. Zdarma a nezávazně.'
-                  : 'Spočítám splátku, ověřím bonitu a porovnám nabídky bank. Za minutu víte, na co dosáhnete.'}
+                  ? 'Orientační odhad tržní ceny nebo výše nájmu. Zdarma a nezávazně. Každá konzultace se automaticky ukládá do bočního panelu.'
+                  : 'Spočítám splátku, ověřím bonitu a porovnám nabídky bank. Za minutu víte, na co dosáhnete. Každá konzultace se automaticky ukládá do bočního panelu.'}
             </p>
           </div>
 
