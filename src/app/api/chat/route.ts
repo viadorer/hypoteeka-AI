@@ -212,15 +212,63 @@ export async function POST(req: Request) {
       request_valuation: {
         ...toolDefinitions.request_valuation,
         execute: async () => {
-          const typeMap: Record<string, string> = { byt: 'flat', dum: 'house', pozemek: 'land' };
-          const pt = typeMap[profile.propertyType ?? ''] ?? profile.propertyType ?? 'flat';
+          // STEP 0: Normalize all profile values (Czech -> English, fix types)
+          const ratingMap: Record<string, string> = {
+            'spatny': 'bad', 'špatný': 'bad', 'bad': 'bad',
+            'nic_moc': 'nothing_much', 'nothing_much': 'nothing_much', 'nic moc': 'nothing_much', 'ucházející': 'nothing_much',
+            'dobry': 'good', 'dobrý': 'good', 'good': 'good',
+            'velmi_dobry': 'very_good', 'very_good': 'very_good', 'velmi dobrý': 'very_good', 'velmi dobry': 'very_good',
+            'novy': 'new', 'nový': 'new', 'new': 'new', 'novostavba': 'new',
+            'excellent': 'excellent', 'excelentni': 'excellent', 'excelentní': 'excellent',
+            'po_rekonstrukci': 'excellent', 'po rekonstrukci': 'excellent', 'rekonstrukce': 'excellent',
+            'vyborny': 'excellent', 'výborný': 'excellent', 'perfektni': 'excellent', 'perfektní': 'excellent',
+          };
+          const constructionMap: Record<string, string> = {
+            'cihla': 'brick', 'brick': 'brick', 'cihlovy': 'brick', 'cihlova': 'brick', 'cihlový': 'brick',
+            'panel': 'panel', 'panelový': 'panel', 'panelova': 'panel',
+            'drevo': 'wood', 'dřevo': 'wood', 'wood': 'wood', 'dřevěný': 'wood', 'dreveny': 'wood',
+            'kamen': 'stone', 'kámen': 'stone', 'stone': 'stone',
+            'montovana': 'montage', 'montovaná': 'montage', 'montage': 'montage',
+            'smisena': 'mixed', 'smíšená': 'mixed', 'mixed': 'mixed',
+          };
+          const ownershipMap: Record<string, string> = {
+            'osobni': 'private', 'osobní': 'private', 'private': 'private',
+            'druzstevni': 'cooperative', 'družstevní': 'cooperative', 'cooperative': 'cooperative',
+            'obecni': 'council', 'obecní': 'council', 'council': 'council',
+          };
+          const typeMap: Record<string, string> = { byt: 'flat', dum: 'house', dům: 'house', pozemek: 'land', flat: 'flat', house: 'house', land: 'land' };
+
+          // Normalize propertyType
+          const pt = typeMap[(profile.propertyType ?? '').toLowerCase()] ?? profile.propertyType ?? 'flat';
+
+          // Normalize rating
+          if (profile.propertyRating) {
+            const normalized = ratingMap[profile.propertyRating.toLowerCase()];
+            if (normalized) profile.propertyRating = normalized;
+          }
+          // Normalize construction
+          if (profile.propertyConstruction) {
+            const normalized = constructionMap[profile.propertyConstruction.toLowerCase()];
+            if (normalized) profile.propertyConstruction = normalized;
+          }
+          // Normalize ownership
+          if (profile.propertyOwnership) {
+            const normalized = ownershipMap[profile.propertyOwnership.toLowerCase()];
+            if (normalized) profile.propertyOwnership = normalized;
+          }
+          // Auto-fill ownership as private (always)
+          if (!profile.propertyOwnership) profile.propertyOwnership = 'private';
+
+          // Ensure numeric fields are actually numbers
+          if (profile.floorArea && typeof profile.floorArea === 'string') profile.floorArea = parseFloat(profile.floorArea) || undefined;
+          if (profile.lotArea && typeof profile.lotArea === 'string') profile.lotArea = parseFloat(profile.lotArea) || undefined;
+
           const nameParts = (profile.name ?? '').trim().split(/\s+/);
           const firstName = nameParts[0] || 'Klient';
           const lastName = nameParts.slice(1).join(' ') || firstName;
           const p = profile as ClientProfile & Record<string, unknown>;
 
-          // Auto-fill ownership as private (always)
-          if (!profile.propertyOwnership) profile.propertyOwnership = 'private';
+          console.log(`[Valuation] Pre-validation profile: type=${pt}, rating=${profile.propertyRating}, floor=${profile.floorArea}, lot=${profile.lotArea}, lat=${profile.propertyLat}, name=${profile.name}, email=${profile.email}, phone=${profile.phone}`);
 
           // STEP 1: Validate ALL required fields FIRST (free, can retry)
           const miss: string[] = [];
@@ -228,10 +276,7 @@ export async function POST(req: Request) {
           if (!profile.email) miss.push('email');
           if (!profile.phone) miss.push('telefon (phone) - vysvetli ze odhadce potrebuje zavolat');
           if (!profile.propertyLat || !profile.propertyLng) miss.push('adresa (GPS souradnice - klient musi vybrat z naseptavace)');
-          // Required per RealVisor API docs:
-          // flat: floorArea, rating
-          // house: floorArea, lotArea, rating
-          // land: lotArea
+          // Required per RealVisor API docs
           if (pt === 'flat') {
             if (!profile.floorArea) miss.push('uzitna plocha (floorArea)');
             if (!profile.propertyRating) miss.push('stav (propertyRating)');
@@ -244,7 +289,7 @@ export async function POST(req: Request) {
           }
 
           if (miss.length > 0) {
-            console.log(`[Valuation] Missing: ${miss.join(', ')}. Profile: ${JSON.stringify({name: profile.name, email: profile.email, type: profile.propertyType, lat: profile.propertyLat, floor: profile.floorArea, rating: profile.propertyRating, size: profile.propertySize, own: profile.propertyOwnership, constr: profile.propertyConstruction})}`);
+            console.log(`[Valuation] Missing: ${miss.join(', ')}`);
             return {
               success: false, missingFields: miss,
               summary: `NELZE odeslat oceneni -- v profilu chybi: ${miss.join(', ')}. Zeptej se klienta a ULOZ pres update_profile. Pak zavolej request_valuation znovu.`,
