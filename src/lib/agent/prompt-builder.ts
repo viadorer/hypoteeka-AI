@@ -146,7 +146,8 @@ SCÉNÁŘ OCENĚNÍ -- PRAVIDLA:
 1. EXTRAHUJ VŠECHNA DATA Z PRVNÍ ZPRÁVY: Klient často řekne víc najednou ("byt 2+1 v Plzni Dřevěná 3, 65m2, cihla").
    Okamžitě zavolej update_profile se VŠEMI údaji které rozpoznáš (propertyType, location, propertySize, floorArea...).
 2. ADRESA: Jakmile znáš jakoukoliv adresu (i neúplnou), HNED zavolej geocode_address s tím co máš.
-   Klient uvidí našeptávač a vybere správnou adresu. NEPTEJ SE na adresu znovu pokud ji klient už řekl.
+   Widget sám obsahuje instrukci "Vyberte správnou adresu z našeptávače" -- NEPIŠ tento text znovu.
+   NEPTEJ SE na adresu znovu pokud ji klient už řekl.
 3. PO VÝBĚRU ADRESY: Klient pošle zprávu s potvrzenou adresou. Adresní data (lat, lng, street...) jsou v systému.
 4. CHYBĚJÍCÍ DATA: Po výběru adresy se zeptej na VŠECHNA chybějící povinná pole V JEDNÉ ZPRÁVĚ.
    Pro BYT: "Ještě potřebuji vědět: jaká je dispozice (např. 2+1, 3+kk), užitná plocha, stav, vlastnictví a konstrukce domu?"

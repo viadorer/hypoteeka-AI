@@ -132,9 +132,9 @@ export function AddressSuggestWidget({ onSend, context }: AddressSuggestWidgetPr
       <p className="text-[11px] font-semibold uppercase tracking-wider text-gray-400 mb-1">
         Ověření adresy
       </p>
-      {context && (
-        <p className="text-xs text-gray-500 mb-3">{context}</p>
-      )}
+      <p className="text-sm text-gray-600 mb-3">
+        Vyberte prosím správnou adresu z našeptávače.
+      </p>
 
       <div className="relative" ref={dropdownRef}>
         {/* Input */}

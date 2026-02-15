@@ -303,7 +303,9 @@ export async function POST(req: Request) {
                 valuationId: vData.valuationId, propertyId: vData.propertyId,
                 avgPrice: v.avgPrice, minPrice: v.minPrice, maxPrice: v.maxPrice,
                 avgPriceM2: v.avgPriceM2, avgDuration: v.avgDuration, emailSent: vData.emailSent,
-                summary: `Oceneni dokonceno. Odhadni cena: ${fmt(v.avgPrice)} Kc (rozmezi ${fmt(v.minPrice)} - ${fmt(v.maxPrice)} Kc). Cena za m2: ${fmt(v.avgPriceM2)} Kc/m2. Prumerna doba prodeje: ${v.avgDuration} dni. Vysledek odeslan na email ${profile.email}.`,
+                // Data for widget display
+                address: profile.propertyAddress, propertyType: pt, contactEmail: profile.email,
+                summary: `Oceneni dokonceno. Odhadni cena: ${fmt(v.avgPrice)} Kc (rozmezi ${fmt(v.minPrice)} - ${fmt(v.maxPrice)} Kc). Cena za m2: ${fmt(v.avgPriceM2)} Kc/m2. Prumerna doba prodeje: ${v.avgDuration} dni. Vysledek odeslan na email ${profile.email}. DULEZITE: Rekni klientovi ze toto je orientacni odhad na zaklade dostupnych dat. Nas specialista ho bude kontaktovat pro upresneni posudku -- je to nezavazne a zcela zdarma. Pokud klient planuje koupi jine nemovitosti, nabidni vypocet hypoteky.`,
               };
             }
             return { success: false, summary: `Oceneni selhalo: ${vData.error ?? 'neznama chyba'}` };

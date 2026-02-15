@@ -12,6 +12,7 @@ import { StressTestWidget } from './StressTestWidget';
 import { LeadCaptureWidget } from './LeadCaptureWidget';
 import { SpecialistWidget } from './SpecialistWidget';
 import { ValuationWidget } from './ValuationWidget';
+import { ValuationResultWidget } from './ValuationResultWidget';
 import { AddressSuggestWidget } from './AddressSuggestWidget';
 import { NextStepsBar } from './NextStepsBar';
 
@@ -33,6 +34,7 @@ const TOOL_LABELS: Record<string, string> = {
   show_amortization: 'Průběh splácení',
   show_stress_test: 'Stress test',
   show_valuation: 'Ocenění nemovitosti',
+  request_valuation: 'Ocenění nemovitosti',
   geocode_address: 'Ověření adresy',
   show_lead_capture: 'Kontaktní formulář',
   show_specialists: 'Dostupní specialisté',
@@ -182,6 +184,27 @@ export function WidgetRenderer({ toolInvocation, sessionId, onSend }: { toolInvo
           {onSend && <NextStepsBar toolName={toolName} onSend={onSend} />}
         </>
       );
+    case 'request_valuation': {
+      const out = toolInvocation.output;
+      if (!out || out.pending) return <WidgetSkeleton toolName={toolName} />;
+      if (!out.success) return null; // Hugo handles error in text
+      return (
+        <>
+          <ValuationResultWidget
+            avgPrice={out.avgPrice as number}
+            minPrice={out.minPrice as number}
+            maxPrice={out.maxPrice as number}
+            avgPriceM2={out.avgPriceM2 as number}
+            avgDuration={out.avgDuration as number | undefined}
+            address={out.address as string | undefined}
+            propertyType={out.propertyType as string | undefined}
+            emailSent={out.emailSent as boolean | undefined}
+            contactEmail={out.contactEmail as string | undefined}
+          />
+          {onSend && <NextStepsBar toolName={toolName} onSend={onSend} />}
+        </>
+      );
+    }
     case 'geocode_address':
       // Show address suggest widget with Mapy.com autocomplete
       return (
