@@ -222,6 +222,9 @@ export async function POST(req: Request) {
           const lastName = nameParts.slice(1).join(' ') || firstName;
           const p = profile as ClientProfile & Record<string, unknown>;
 
+          // Auto-fill ownership as private (always)
+          if (!profile.propertyOwnership) profile.propertyOwnership = 'private';
+
           // Validate
           const miss: string[] = [];
           if (!firstName || firstName === 'Klient') miss.push('jmeno');
@@ -232,13 +235,11 @@ export async function POST(req: Request) {
             if (!profile.floorArea) miss.push('uzitna plocha (floorArea)');
             if (!profile.propertyRating) miss.push('stav (propertyRating)');
             if (!profile.propertySize) miss.push('dispozice (propertySize: 2+1, 3+kk...)');
-            if (!profile.propertyOwnership) miss.push('vlastnictvi (propertyOwnership)');
             if (!profile.propertyConstruction) miss.push('konstrukce (propertyConstruction)');
           } else if (pt === 'house') {
             if (!profile.floorArea) miss.push('uzitna plocha (floorArea)');
             if (!profile.lotArea) miss.push('plocha pozemku (lotArea)');
             if (!profile.propertyRating) miss.push('stav (propertyRating)');
-            if (!profile.propertyOwnership) miss.push('vlastnictvi (propertyOwnership)');
             if (!profile.propertyConstruction) miss.push('konstrukce (propertyConstruction)');
           } else if (pt === 'land') {
             if (!profile.lotArea) miss.push('plocha pozemku (lotArea)');

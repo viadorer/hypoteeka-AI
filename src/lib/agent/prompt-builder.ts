@@ -163,8 +163,8 @@ Po souhlasu klienta s oceněním:
   NEPTEJ SE na adresu znovu pokud ji klient už řekl.
 - PO VÝBĚRU ADRESY: Klient pošle zprávu s potvrzenou adresou. Adresní data jsou v systému.
 - CHYBĚJÍCÍ DATA: Zeptej se na VŠECHNA chybějící povinná pole V JEDNÉ ZPRÁVĚ, ale přirozeně:
-  Pro BYT: "Díky, adresa je uložená. Abych mohl spustit analýzu, řekněte mi ještě: jaká je dispozice bytu (2+1, 3+kk...), přibližná plocha, v jakém je stavu, jestli je v osobním vlastnictví a z čeho je dům postavený?"
-  Pro DŮM: "Díky. Ještě potřebuji vědět: jaká je užitná plocha domu, plocha pozemku, stav, vlastnictví a z čeho je postavený? Čím víc detailů, tím přesnější odhad."
+  Pro BYT: "Díky, adresa je uložená. Abych mohl spustit analýzu, řekněte mi ještě: jaká je dispozice bytu (2+1, 3+kk...), přibližná plocha, v jakém je stavu a z čeho je dům postavený?"
+  Pro DŮM: "Díky. Ještě potřebuji vědět: jaká je užitná plocha domu, plocha pozemku, v jakém je stavu a z čeho je postavený? Čím víc detailů, tím přesnější odhad."
   Pro POZEMEK: "Díky. Jaká je plocha pozemku? A víte, jestli je to stavební pozemek?"
   NIKDY se neptej po jednom údaji.
 - Každý krok rámuj jako "díky tomu bude odhad přesnější" -- klient dává data za HODNOTU.
@@ -173,8 +173,10 @@ FÁZE 3 -- KONTAKT (vysvětlit proč):
 Až máš všechna data o nemovitosti:
 - "Skvělé, mám všechno potřebné pro analýzu. Ještě potřebuji vaše kontaktní údaje -- podrobný report vám pošlu na email a náš certifikovaný odhadce vás může kontaktovat pro zpřesnění. Je to nezávazné a zdarma."
 - Požádej o jméno, příjmení, email A TELEFON V JEDNÉ ZPRÁVĚ.
+- Když klient napíše "david choc david@ptf.cz" -> name="david choc", email="david@ptf.cz". NEPIŠ znovu na příjmení.
 - Telefon vysvětli: "Telefonní číslo je důležité, aby vás odhadce mohl kontaktovat s upřesňujícími dotazy k nemovitosti."
 - NEŘÍKEJ "povinné" -- řekni proč to potřebuješ (report na email, odhadce zavolá).
+- Pokud klient zadá vše najednou, ULOŽ vše a pokračuj. Neptej se na údaje které už máš.
 
 FÁZE 4 -- SHRNUTÍ A ODESLÁNÍ:
 - Před odesláním VŽDY shrň všechny údaje a požádej o potvrzení.
@@ -188,8 +190,9 @@ Po úspěšném ocenění:
 - Pokud klient řeší koupi: nabídni výpočet hypotéky s cenou z ocenění.
 
 POVINNÁ POLE PODLE TYPU (musí být v profilu přes update_profile):
-- BYT: propertySize (dispozice: 2+1, 3+kk...), floorArea, propertyRating, propertyOwnership, propertyConstruction
-- DŮM: floorArea, lotArea, propertyRating, propertyOwnership, propertyConstruction
+- BYT: propertySize (dispozice: 2+1, 3+kk...), floorArea, propertyRating, propertyConstruction
+- DŮM: floorArea, lotArea, propertyRating, propertyConstruction
+- VLASTNICTVÍ: Vždy nastav na "private" (osobní) -- NEPTEJ SE na to.
 - POZEMEK: lotArea
 - VŽDY: name (jméno + příjmení), email, phone (telefon), propertyType, validovaná adresa z našeptávače
 
@@ -212,7 +215,6 @@ MAPOVÁNÍ (ptej se česky, ukládej anglicky):
     if (!profile.floorArea && profile.propertyType !== 'pozemek') missingForValuation.push('užitná plocha');
     if (!profile.lotArea && (profile.propertyType === 'dum' || profile.propertyType === 'pozemek')) missingForValuation.push('plocha pozemku');
     if (!profile.propertyRating && profile.propertyType !== 'pozemek') missingForValuation.push('stav nemovitosti');
-    if (!profile.propertyOwnership && profile.propertyType !== 'pozemek') missingForValuation.push('vlastnictví');
     if (!profile.propertyConstruction && profile.propertyType !== 'pozemek') missingForValuation.push('konstrukce');
     if (!profile.propertySize && profile.propertyType === 'byt') missingForValuation.push('dispozice (1+kk, 2+1...)');
     if (!profile.name) missingForValuation.push('jméno a příjmení');
