@@ -206,18 +206,172 @@ export async function POST(req: Request) {
       updatedAt: new Date().toISOString(),
     });
 
+    // Override request_valuation execute with closure over current profile
+    const tools = {
+      ...toolDefinitions,
+      request_valuation: {
+        ...toolDefinitions.request_valuation,
+        execute: async () => {
+          const rvKey = process.env.REALVISOR_API_KEY;
+          if (!rvKey) return { success: false, summary: 'Chybi REALVISOR_API_KEY.' };
+
+          const typeMap: Record<string, string> = { byt: 'flat', dum: 'house', pozemek: 'land' };
+          const pt = typeMap[profile.propertyType ?? ''] ?? profile.propertyType ?? 'flat';
+          const nameParts = (profile.name ?? '').trim().split(/\s+/);
+          const firstName = nameParts[0] || 'Klient';
+          const lastName = nameParts.slice(1).join(' ') || firstName;
+          const p = profile as ClientProfile & Record<string, unknown>;
+
+          // Validate
+          const miss: string[] = [];
+          if (!firstName || firstName === 'Klient') miss.push('jmeno');
+          if (!profile.email) miss.push('email');
+          if (!profile.propertyLat || !profile.propertyLng) miss.push('adresa (GPS souradnice - klient musi vybrat z naseptavace)');
+          if (pt === 'flat') {
+            if (!profile.floorArea) miss.push('uzitna plocha (floorArea)');
+            if (!profile.propertyRating) miss.push('stav (propertyRating)');
+            if (!profile.propertySize) miss.push('dispozice (propertySize: 2+1, 3+kk...)');
+            if (!profile.propertyOwnership) miss.push('vlastnictvi (propertyOwnership)');
+            if (!profile.propertyConstruction) miss.push('konstrukce (propertyConstruction)');
+          } else if (pt === 'house') {
+            if (!profile.floorArea) miss.push('uzitna plocha (floorArea)');
+            if (!profile.lotArea) miss.push('plocha pozemku (lotArea)');
+            if (!profile.propertyRating) miss.push('stav (propertyRating)');
+            if (!profile.propertyOwnership) miss.push('vlastnictvi (propertyOwnership)');
+            if (!profile.propertyConstruction) miss.push('konstrukce (propertyConstruction)');
+          } else if (pt === 'land') {
+            if (!profile.lotArea) miss.push('plocha pozemku (lotArea)');
+          }
+
+          if (miss.length > 0) {
+            console.log(`[Valuation] Missing: ${miss.join(', ')}. Profile: ${JSON.stringify({name: profile.name, email: profile.email, type: profile.propertyType, lat: profile.propertyLat, floor: profile.floorArea, rating: profile.propertyRating, size: profile.propertySize, own: profile.propertyOwnership, constr: profile.propertyConstruction})}`);
+            return {
+              success: false, missingFields: miss,
+              summary: `NELZE odeslat oceneni -- v profilu chybi: ${miss.join(', ')}. Zeptej se klienta a ULOZ pres update_profile. Pak zavolej request_valuation znovu.`,
+            };
+          }
+
+          // Build payload from profile
+          const payload: Record<string, unknown> = {
+            firstName, lastName, email: profile.email, phone: profile.phone,
+            kind: 'sale', propertyType: pt,
+            address: profile.propertyAddress ?? '', lat: profile.propertyLat, lng: profile.propertyLng,
+            street: p._addrStreet ?? '', streetNumber: p._addrStreetNumber ?? '',
+            city: profile.location ?? '', district: p._addrDistrict ?? '',
+            region: p._addrRegion ?? '', postalCode: p._addrPostalCode ?? '',
+          };
+          if (pt === 'flat') {
+            Object.assign(payload, {
+              floorArea: profile.floorArea, rating: profile.propertyRating,
+              localType: profile.propertySize, ownership: profile.propertyOwnership,
+              construction: profile.propertyConstruction,
+            });
+            if (profile.propertyFloor !== undefined) payload.floor = profile.propertyFloor;
+            if (profile.propertyTotalFloors) payload.totalFloors = profile.propertyTotalFloors;
+            if (profile.propertyElevator !== undefined) payload.elevator = profile.propertyElevator;
+          } else if (pt === 'house') {
+            Object.assign(payload, {
+              floorArea: profile.floorArea, lotArea: profile.lotArea,
+              rating: profile.propertyRating, ownership: profile.propertyOwnership,
+              construction: profile.propertyConstruction, houseType: 'family_house',
+            });
+          } else if (pt === 'land') {
+            Object.assign(payload, { lotArea: profile.lotArea, landType: 'building' });
+          }
+          const clean = Object.fromEntries(Object.entries(payload).filter(([, v]) => v != null && v !== ''));
+          console.log('[Valuation] Submitting:', JSON.stringify(clean));
+
+          try {
+            const vRes = await fetch('https://api-production-88cf.up.railway.app/api/v1/public/api-leads/valuo', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json', 'X-API-Key': rvKey },
+              body: JSON.stringify(clean),
+            });
+            const vText = await vRes.text();
+            console.log(`[Valuation] Response ${vRes.status}: ${vText.substring(0, 300)}`);
+            let vData;
+            try { vData = JSON.parse(vText); } catch { return { success: false, summary: `Oceneni selhalo: neplatna odpoved API` }; }
+
+            if (vData.success && vData.valuation) {
+              const v = vData.valuation;
+              const fmt = (n: number) => Math.round(n).toLocaleString('cs-CZ');
+              profile.valuationId = vData.valuationId;
+              profile.valuationAvgPrice = v.avgPrice;
+              return {
+                success: true, displayed: true,
+                valuationId: vData.valuationId, propertyId: vData.propertyId,
+                avgPrice: v.avgPrice, minPrice: v.minPrice, maxPrice: v.maxPrice,
+                avgPriceM2: v.avgPriceM2, avgDuration: v.avgDuration, emailSent: vData.emailSent,
+                summary: `Oceneni dokonceno. Odhadni cena: ${fmt(v.avgPrice)} Kc (rozmezi ${fmt(v.minPrice)} - ${fmt(v.maxPrice)} Kc). Cena za m2: ${fmt(v.avgPriceM2)} Kc/m2. Prumerna doba prodeje: ${v.avgDuration} dni. Vysledek odeslan na email ${profile.email}.`,
+              };
+            }
+            return { success: false, summary: `Oceneni selhalo: ${vData.error ?? 'neznama chyba'}` };
+          } catch (err) {
+            console.error('[Valuation] Error:', err);
+            return { success: false, summary: 'Chyba pri odesilani oceneni.' };
+          }
+        },
+      },
+    };
+
     const modelMessages = await convertToModelMessages(messages, {
-      tools: toolDefinitions,
+      tools: tools,
     });
 
     const result = streamText({
       model: createGoogleGenerativeAI({ apiKey })(tenantConfig.aiConfig.model),
       system: systemPrompt,
       messages: modelMessages,
-      tools: toolDefinitions,
+      tools: tools,
       stopWhen: stepCountIs(tenantConfig.aiConfig.maxSteps),
-      onStepFinish: ({ toolResults }) => {
+      onStepFinish: async ({ toolResults }) => {
         if (toolResults) {
+          // PASS 1: Process update_profile FIRST so profile has latest data
+          for (const tr of toolResults) {
+            const toolName = typeof tr.toolName === 'string' ? tr.toolName : '';
+            const input = ('input' in tr && tr.input && typeof tr.input === 'object')
+              ? tr.input as Record<string, unknown>
+              : {};
+            if (toolName === 'update_profile' && Object.keys(input).length > 0) {
+              const hadEmail = !!profile.email;
+              const hadPhone = !!profile.phone;
+              Object.assign(profile, Object.fromEntries(
+                Object.entries(input).filter(([, v]) => v !== undefined)
+              ));
+              console.log(`[Profile] update_profile (pass 1): ${Object.keys(input).filter(k => input[k] !== undefined).join(', ')}`);
+              const fields = getCollectedFields(profile);
+              state.dataCollected = fields;
+              state.phase = determinePhase(state, fields);
+
+              // Auto-submit lead to Realvisor when we get new contact info
+              const gotNewContact = (!hadEmail && profile.email) || (!hadPhone && profile.phone);
+              if (gotNewContact && (profile.email || profile.phone)) {
+                const leadName = profile.name ?? 'Neznamy';
+                const leadTemp = state.leadQualified ? 'qualified' : (state.leadScore >= 40 ? 'hot' : (state.leadScore >= 20 ? 'warm' : 'cold'));
+                const rvPayload = buildRealvisorPayload(
+                  leadName, profile.email ?? '', profile.phone ?? '',
+                  `Auto-lead z chatu (${state.phase})`,
+                  profile as Record<string, unknown>,
+                  { sessionId, tenantId, leadScore: state.leadScore, leadTemperature: leadTemp }
+                );
+                submitLeadToRealvisor(rvPayload)
+                  .then(rv => {
+                    console.log(`[Lead] Auto-submitted to Realvisor: ${rv.success ? rv.leadId : 'failed'}`);
+                    storage.saveLead({
+                      id: uuidv4(), tenantId, sessionId,
+                      name: leadName, email: profile.email ?? '', phone: profile.phone ?? '',
+                      context: `Auto-lead z chatu (${state.phase})`, profile,
+                      leadScore: state.leadScore ?? 0, leadTemperature: leadTemp,
+                      realvisorLeadId: rv.leadId, realvisorContactId: rv.contactId,
+                      createdAt: new Date().toISOString(),
+                    }).catch(e => console.error('[Storage] Lead save error:', e));
+                  })
+                  .catch(err => console.error('[Lead] Realvisor submit error:', err));
+              }
+            }
+          }
+
+          // PASS 2: Process all other tools (including request_valuation which needs updated profile)
           for (const tr of toolResults) {
             const toolName = typeof tr.toolName === 'string' ? tr.toolName : '';
             const input = ('input' in tr && tr.input && typeof tr.input === 'object')
@@ -300,34 +454,12 @@ export async function POST(req: Request) {
               console.log(`[Profile] Geocode called for: ${input.query}`);
             }
             if (toolName === 'request_valuation') {
-              if (input.email) profile.email = input.email as string;
-              if (input.phone) profile.phone = input.phone as string;
-              if (input.firstName) {
-                const fullName = `${input.firstName}${input.lastName ? ' ' + input.lastName : ''}`;
-                if (!profile.name) profile.name = fullName;
-              }
-              if (input.address) profile.propertyAddress = input.address as string;
-              if (input.lat) profile.propertyLat = input.lat as number;
-              if (input.lng) profile.propertyLng = input.lng as number;
-              if (input.floorArea) profile.floorArea = input.floorArea as number;
-              if (input.lotArea) profile.lotArea = input.lotArea as number;
-              if (input.rating) profile.propertyRating = input.rating as string;
-              if (input.construction) profile.propertyConstruction = input.construction as string;
-              if (input.floor !== undefined) profile.propertyFloor = input.floor as number;
-              if (input.totalFloors) profile.propertyTotalFloors = input.totalFloors as number;
-              if (input.elevator !== undefined) profile.propertyElevator = input.elevator as boolean;
-              if (input.ownership) profile.propertyOwnership = input.ownership as string;
-              if (input.localType) profile.propertySize = input.localType as string;
-              if (input.city) profile.location = input.city as string;
-              // Map propertyType from API format to profile format
-              const ptMap: Record<string, string> = { flat: 'byt', house: 'dum', land: 'pozemek' };
-              if (input.propertyType) profile.propertyType = (ptMap[input.propertyType as string] ?? input.propertyType) as ClientProfile['propertyType'];
-              console.log(`[Profile] Auto-captured from request_valuation: address, contact, property details`);
-
-              // Check tool result for valuationId
+              // Valuation submission now happens in execute (closure over profile)
+              // Just capture result into profile
               const result = 'output' in tr ? tr.output as Record<string, unknown> : {};
               if (result.valuationId) profile.valuationId = result.valuationId as string;
               if (result.avgPrice) profile.valuationAvgPrice = result.avgPrice as number;
+              console.log(`[Valuation] Result: success=${result.success}, valuationId=${result.valuationId ?? 'none'}`);
             }
 
             // After any show_ widget or valuation tool, refresh dataCollected + phase
@@ -337,53 +469,7 @@ export async function POST(req: Request) {
               state.phase = determinePhase(state, fields);
             }
 
-            // Update profile from update_profile tool
-            if (toolName === 'update_profile' && Object.keys(input).length > 0) {
-              const hadEmail = !!profile.email;
-              const hadPhone = !!profile.phone;
-              Object.assign(profile, Object.fromEntries(
-                Object.entries(input).filter(([, v]) => v !== undefined)
-              ));
-              const fields = getCollectedFields(profile);
-              state.dataCollected = fields;
-              state.phase = determinePhase(state, fields);
-
-              // Auto-submit lead to Realvisor + save to our DB when we get new contact info
-              const gotNewContact = (!hadEmail && profile.email) || (!hadPhone && profile.phone);
-              if (gotNewContact && (profile.email || profile.phone)) {
-                const leadName = profile.name ?? 'Neznamy';
-                const leadTemp = state.leadQualified ? 'qualified' : (state.leadScore >= 40 ? 'hot' : (state.leadScore >= 20 ? 'warm' : 'cold'));
-                const rvPayload = buildRealvisorPayload(
-                  leadName,
-                  profile.email ?? '',
-                  profile.phone ?? '',
-                  `Auto-lead z chatu (${state.phase})`,
-                  profile as Record<string, unknown>,
-                  { sessionId, tenantId, leadScore: state.leadScore, leadTemperature: leadTemp }
-                );
-                submitLeadToRealvisor(rvPayload)
-                  .then(rv => {
-                    console.log(`[Lead] Auto-submitted to Realvisor: ${rv.success ? rv.leadId : 'failed'}`);
-                    // Save lead to our DB
-                    storage.saveLead({
-                      id: uuidv4(),
-                      tenantId,
-                      sessionId,
-                      name: leadName,
-                      email: profile.email ?? '',
-                      phone: profile.phone ?? '',
-                      context: `Auto-lead z chatu (${state.phase})`,
-                      profile,
-                      leadScore: state.leadScore ?? 0,
-                      leadTemperature: leadTemp,
-                      realvisorLeadId: rv.leadId,
-                      realvisorContactId: rv.contactId,
-                      createdAt: new Date().toISOString(),
-                    }).catch(err => console.error('[Lead] DB save error:', err));
-                  })
-                  .catch(err => console.error('[Lead] Auto-submit error:', err));
-              }
-            }
+            // update_profile already processed in PASS 1 above
           }
         }
         // Persist after each step

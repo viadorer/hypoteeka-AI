@@ -242,52 +242,20 @@ export const toolDefinitions = {
   },
 
   request_valuation: {
-    description: 'Odesli zadost o oceneni nemovitosti. Data se ctou z PROFILU klienta -- NEMUSIS je predavat. Pred volanim MUSIS mit v profilu (pres update_profile): (1) validovanou adresu (klient vybral z naseptavace), (2) jmeno + email, (3) typ nemovitosti, (4) povinne parametry. Pokud neco chybi, tool ti rekne co. Zavolej az klient potvrdil shrnuti.',
+    description: 'Odesli zadost o oceneni nemovitosti. Data se ctou z PROFILU klienta -- NEMUSIS je predavat. Pred volanim MUSIS mit v profilu (pres update_profile): (1) validovanou adresu (klient vybral z naseptavace), (2) jmeno + email, (3) typ nemovitosti, (4) povinne parametry. Pokud neco chybi, tool ti rekne co. Zavolej az klient potvrdil shrnuti. VZDY PRED timto toolem zavolej update_profile se vsemi daty.',
     inputSchema: z.object({
-      sessionId: z.string().describe('ID session -- predava se automaticky'),
+      confirm: z.boolean().optional().describe('Klient potvrdil shrnuti'),
     }),
-    execute: async ({ sessionId }: { sessionId: string }) => {
-      const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000');
-      try {
-        const res = await fetch(`${baseUrl}/api/valuation/submit`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ sessionId }),
-        });
-        const data = await res.json();
-
-        if (!data.success) {
-          const missingFields = data.missingFields as string[] | undefined;
-          if (missingFields && missingFields.length > 0) {
-            return {
-              success: false,
-              missingFields,
-              summary: `NELZE odeslat oceneni -- v profilu chybi: ${missingFields.join(', ')}. Zeptej se klienta a uloz pres update_profile. Pak zavolej request_valuation znovu.`,
-            };
-          }
-          return { success: false, error: data.error ?? 'Oceneni selhalo', summary: `Oceneni se nepodarilo: ${data.error ?? 'neznama chyba'}` };
-        }
-
-        const v = data.valuation;
-        const fmtPrice = (n: number) => Math.round(n).toLocaleString('cs-CZ');
-        return {
-          success: true,
-          valuationId: data.valuationId,
-          propertyId: data.propertyId,
-          avgPrice: v?.avgPrice,
-          minPrice: v?.minPrice,
-          maxPrice: v?.maxPrice,
-          avgPriceM2: v?.avgPriceM2,
-          avgDuration: v?.avgDuration,
-          emailSent: data.emailSent,
-          summary: v
-            ? `Oceneni dokonceno. Odhadni cena: ${fmtPrice(v.avgPrice)} Kc (rozmezi ${fmtPrice(v.minPrice)} - ${fmtPrice(v.maxPrice)} Kc). Cena za m2: ${fmtPrice(v.avgPriceM2)} Kc/m2. Prumerna doba prodeje: ${v.avgDuration} dni. Vysledek odeslan na email klienta.`
-            : 'Oceneni dokonceno, ale bez cenoveho vysledku.',
-          displayed: true,
-        };
-      } catch (err) {
-        return { success: false, error: err instanceof Error ? err.message : 'Network error', summary: 'Chyba pri odesilani oceneni.' };
-      }
+    execute: async () => {
+      // Skutečné odeslání probíhá v onStepFinish v chat/route.ts,
+      // kde máme přístup k aktuálnímu profilu s nejnovějšími daty.
+      // Tento execute jen signalizuje intent.
+      return {
+        success: true,
+        pending: true,
+        summary: 'Odesilam zadost o oceneni...',
+        displayed: true,
+      };
     },
   },
 
