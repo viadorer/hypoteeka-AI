@@ -331,8 +331,8 @@ export function ChatArea({ initialSessionId = null }: ChatAreaProps) {
             </div>
           )}
 
-          {/* Social proof - single compact row */}
-          <div className="w-full max-w-[600px] mb-8 min-w-0">
+          {/* Social proof - single compact row (only for mortgage tenants) */}
+          {!isValuation && <div className="w-full max-w-[600px] mb-8 min-w-0">
             <div className="grid grid-cols-4 gap-2 md:gap-3">
               <div className={`rounded-xl p-2.5 md:p-3 text-center ${glass}`}>
                 <p className="text-lg md:text-xl font-bold" style={{ color: tenant.branding.accentColor }}>{isValuation ? '2 400+' : '850+'}</p>
@@ -351,10 +351,10 @@ export function ChatArea({ initialSessionId = null }: ChatAreaProps) {
                 <p className="text-[9px] md:text-[10px] text-gray-400 mt-0.5">{isValuation ? 'bez registrace' : 'bank'}</p>
               </div>
             </div>
-          </div>
+          </div>}
 
-          {/* Co řešíme - hidden on mobile (redundant with badges), visible on desktop */}
-          <div className="hidden md:block w-full max-w-[700px] mb-10 min-w-0">
+          {/* Co řešíme - hidden on mobile (redundant with badges), visible on desktop, only mortgage */}
+          {!isValuation && <div className="hidden md:block w-full max-w-[700px] mb-10 min-w-0">
             <p className="text-center text-[11px] text-gray-400 uppercase tracking-wider mb-5 font-medium">
               Jak vám pomůžeme
             </p>
@@ -380,7 +380,7 @@ export function ChatArea({ initialSessionId = null }: ChatAreaProps) {
                 <p className="text-xs text-gray-400">Konzultace zdarma</p>
               </div>
             </div>
-          </div>
+          </div>}
 
           {/* Banks - compact horizontal scroll on mobile (only for mortgage tenants) */}
           {!isValuation && (
