@@ -24,9 +24,9 @@
   var WIDGET_KEY = cfg.widgetKey || '';
   var PRIMARY = cfg.primaryColor || '#E91E63';
   var POSITION = cfg.position || 'bottom-right';
-  var GREETING = cfg.greeting || 'Ahoj! Jsem Hugo, vas hypotecni poradce. Jak vam mohu pomoci?';
+  var GREETING = cfg.greeting || 'Ahoj! Jsem Hugo, váš hypoteční poradce. Jak vám mohu pomoci?';
   var TITLE = cfg.title || 'Hugo';
-  var SUBTITLE = cfg.subtitle || 'Hypotecni poradce';
+  var SUBTITLE = cfg.subtitle || 'Hypoteční poradce';
   var LOGO = cfg.logoUrl || '';
   var Z_INDEX = cfg.zIndex || 9999;
 
@@ -35,6 +35,7 @@
   var messages = [];
   var sessionId = 'hw_' + Math.random().toString(36).substr(2, 9) + '_' + Date.now();
   var isStreaming = false;
+  var pendingToolCalls = {};
 
   // --- Helpers ---
   function el(tag, attrs, children) {
@@ -302,7 +303,7 @@
     // Bubble button
     var bubble = el('button', {
       id: 'hugo-widget-bubble',
-      'aria-label': 'Otevrit chat s Hugem',
+      'aria-label': 'Otevřít chat s Hugem',
       innerHTML: ICON_CHAT + ICON_CLOSE,
       onClick: toggleWidget,
     });
@@ -329,7 +330,7 @@
     // Input area
     var input = el('input', {
       type: 'text',
-      placeholder: 'Napiste zpravu...',
+      placeholder: 'Napište zprávu...',
       id: 'hugo-input',
       onKeydown: function(e) { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } },
     });
@@ -387,6 +388,13 @@
     if (!area) return;
     area.innerHTML = '';
     messages.forEach(function(msg) {
+      // Render inline widget (address suggest)
+      if (msg._widget === 'address_suggest') {
+        renderAddressSuggest(area, msg._query || '');
+        return;
+      }
+      // Skip empty messages
+      if (!msg.content && !msg._streaming) return;
       var cls = 'hugo-msg hugo-msg-' + msg.role;
       var div = el('div', { className: cls });
       // Simple markdown-like formatting
@@ -408,12 +416,125 @@
     return safe;
   }
 
+  // --- Address Suggest (inline in widget) ---
+  var suggestTimeout = null;
+  function renderAddressSuggest(container, query) {
+    var wrapper = el('div', { className: 'hugo-msg hugo-msg-assistant', style: 'max-width:100%;padding:12px' });
+    wrapper.innerHTML = '<div style="font-weight:600;margin-bottom:8px">Zadejte adresu nemovitosti:</div>';
+    var inp = el('input', {
+      type: 'text',
+      placeholder: 'Začněte psát adresu...',
+      style: 'width:100%;padding:8px 12px;border:1px solid #ddd;border-radius:8px;font-size:14px;font-family:inherit;outline:none',
+    });
+    if (query) inp.value = query;
+    var results = el('div', { style: 'margin-top:8px' });
+    wrapper.appendChild(inp);
+    wrapper.appendChild(results);
+    container.appendChild(wrapper);
+
+    inp.addEventListener('input', function() {
+      clearTimeout(suggestTimeout);
+      var q = inp.value.trim();
+      if (q.length < 3) { results.innerHTML = ''; return; }
+      suggestTimeout = setTimeout(function() { fetchSuggestions(q, results); }, 300);
+    });
+
+    // Auto-search if query provided
+    if (query && query.length >= 3) {
+      setTimeout(function() { fetchSuggestions(query, results); }, 200);
+    }
+
+    container.scrollTop = container.scrollHeight;
+    inp.focus();
+  }
+
+  function fetchSuggestions(query, resultsDiv) {
+    fetch((API_URL || '') + '/api/valuation/suggest?query=' + encodeURIComponent(query))
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        resultsDiv.innerHTML = '';
+        if (!data.items || data.items.length === 0) {
+          resultsDiv.innerHTML = '<div style="color:#999;font-size:13px;padding:4px">Žádná adresa nenalezena</div>';
+          return;
+        }
+        data.items.forEach(function(item) {
+          var btn = el('button', {
+            style: 'display:block;width:100%;text-align:left;padding:10px 12px;margin-top:4px;border:1px solid #e8eaed;border-radius:8px;background:#fff;cursor:pointer;font-size:13px;font-family:inherit;transition:background 0.15s',
+            onMouseenter: function() { this.style.background = '#f5f7fa'; },
+            onMouseleave: function() { this.style.background = '#fff'; },
+          });
+          btn.innerHTML = '<strong>' + (item.name || item.label) + '</strong><br><span style="color:#666;font-size:12px">' + (item.label || '') + '</span>';
+          btn.addEventListener('click', function() {
+            selectAddress(item);
+          });
+          resultsDiv.appendChild(btn);
+        });
+      })
+      .catch(function() {
+        resultsDiv.innerHTML = '<div style="color:#c00;font-size:13px">Chyba při hledání adresy</div>';
+      });
+  }
+
+  function selectAddress(item) {
+    // Send ADDRESS_DATA as user message (same format as main app)
+    var addrData = {
+      address: item.label || item.name,
+      lat: item.lat, lng: item.lng,
+      street: item.street || '', streetNumber: item.streetNumber || '',
+      city: item.city || '', district: item.district || '',
+      region: item.region || '', postalCode: item.postalCode || '',
+    };
+    var displayText = 'Vybraná adresa: ' + addrData.address;
+    var apiText = displayText + ' [ADDRESS_DATA:' + JSON.stringify(addrData) + ']';
+    // Remove the suggest widget from messages
+    messages = messages.filter(function(m) { return !m._widget; });
+    // Add as user message
+    messages.push({ role: 'user', content: displayText, _apiContent: apiText });
+    renderMessages();
+    // Auto-send to get Hugo's response
+    isStreaming = true;
+    setInputEnabled(false);
+    showTyping();
+    sendAfterAddressSelect();
+  }
+
+  async function sendAfterAddressSelect() {
+    try {
+      var apiMessages = messages.filter(function(m, idx) {
+        if (m._streaming || m._widget) return false;
+        if (idx === 0 && m.role === 'assistant' && m._greeting) return false;
+        return true;
+      }).map(function(m) {
+        return {
+          role: m.role,
+          parts: [{ type: 'text', text: m._apiContent || m.content }],
+        };
+      });
+
+      var response = await fetch((API_URL || '') + '/api/widget/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-Widget-Key': WIDGET_KEY },
+        body: JSON.stringify({ messages: apiMessages, sessionId: sessionId, config: { tenantId: cfg.tenantId || '' } }),
+      });
+      if (!response.ok) throw new Error('HTTP ' + response.status);
+      hideTyping();
+      await processStream(response);
+    } catch (err) {
+      hideTyping();
+      console.error('[Hugo Widget] Error:', err);
+      addMessage('assistant', 'Omlouvám se, došlo k technické chybě.');
+    } finally {
+      isStreaming = false;
+      setInputEnabled(true);
+    }
+  }
+
   function showTyping() {
     var area = document.getElementById('hugo-messages');
     if (!area) return;
     var existing = document.getElementById('hugo-typing');
     if (existing) return;
-    var div = el('div', { className: 'hugo-msg hugo-msg-typing', id: 'hugo-typing', textContent: 'Hugo pise...' });
+    var div = el('div', { className: 'hugo-msg hugo-msg-typing', id: 'hugo-typing', textContent: 'Hugo píše...' });
     area.appendChild(div);
     area.scrollTop = area.scrollHeight;
   }
@@ -475,57 +596,80 @@
       }
 
       hideTyping();
+      await processStream(response);
 
-      // Read SSE streaming response (AI SDK v6 data: format)
-      var reader = response.body.getReader();
-      var decoder = new TextDecoder();
-      var assistantText = '';
-      var buffer = '';
-
-      while (true) {
-        var result = await reader.read();
-        if (result.done) break;
-
-        buffer += decoder.decode(result.value, { stream: true });
-        var lines = buffer.split('\n');
-        buffer = lines.pop() || '';
-
-        for (var i = 0; i < lines.length; i++) {
-          var line = lines[i].trim();
-          if (!line || !line.startsWith('data: ')) continue;
-
-          var jsonStr = line.slice(6); // Remove "data: " prefix
-          try {
-            var evt = JSON.parse(jsonStr);
-            // text-delta events contain the streaming text
-            if (evt.type === 'text-delta' && evt.delta) {
-              assistantText += evt.delta;
-              updateAssistantMessage(assistantText);
-            }
-          } catch(e) { /* skip unparseable */ }
-        }
-      }
-
-      // Finalize
-      if (assistantText) {
-        // Mark as no longer streaming
-        if (messages.length > 0 && messages[messages.length - 1]._streaming) {
-          delete messages[messages.length - 1]._streaming;
-        }
-      } else {
-        // No text received -- might be tool-only response
-        addMessage('assistant', 'Zpracovavam vas pozadavek...');
-      }
-
-    } catch (err) {
+    } catch (err2) {
       hideTyping();
-      console.error('[Hugo Widget] Error:', err);
-      addMessage('assistant', 'Omlouvam se, doslo k technicke chybe. Zkuste to prosim znovu.');
+      console.error('[Hugo Widget] Error:', err2);
+      addMessage('assistant', 'Omlouvám se, došlo k technické chybě. Zkuste to prosím znovu.');
     } finally {
       isStreaming = false;
       setInputEnabled(true);
       var inp = document.getElementById('hugo-input');
       if (inp) inp.focus();
+    }
+  }
+
+  // --- Stream processor ---
+  async function processStream(response) {
+    var reader = response.body.getReader();
+    var decoder = new TextDecoder();
+    var assistantText = '';
+    var buffer = '';
+    var toolCallDetected = null;
+
+    while (true) {
+      var result = await reader.read();
+      if (result.done) break;
+
+      buffer += decoder.decode(result.value, { stream: true });
+      var lines = buffer.split('\n');
+      buffer = lines.pop() || '';
+
+      for (var i = 0; i < lines.length; i++) {
+        var line = lines[i].trim();
+        if (!line || !line.startsWith('data: ')) continue;
+
+        var jsonStr = line.slice(6);
+        try {
+          var evt = JSON.parse(jsonStr);
+
+          // Text delta -- streaming text
+          if (evt.type === 'text-delta' && evt.delta) {
+            assistantText += evt.delta;
+            updateAssistantMessage(assistantText);
+          }
+
+          // Tool call start -- detect geocode_address
+          if (evt.type === 'tool-call-start' && evt.toolName) {
+            toolCallDetected = { name: evt.toolName, id: evt.id };
+          }
+
+          // Tool call with input
+          if (evt.type === 'tool-call' && evt.toolName) {
+            toolCallDetected = { name: evt.toolName, id: evt.id, input: evt.input };
+          }
+
+        } catch(e) { /* skip */ }
+      }
+    }
+
+    // Handle tool calls after stream ends
+    if (toolCallDetected && toolCallDetected.name === 'geocode_address') {
+      var query = toolCallDetected.input ? (toolCallDetected.input.query || '') : '';
+      // Show inline address suggest widget
+      messages.push({ role: 'assistant', content: '', _widget: 'address_suggest', _query: query });
+      renderMessages();
+      return;
+    }
+
+    // Finalize text
+    if (assistantText) {
+      if (messages.length > 0 && messages[messages.length - 1]._streaming) {
+        delete messages[messages.length - 1]._streaming;
+      }
+    } else if (!toolCallDetected) {
+      addMessage('assistant', 'Zpracovávám váš požadavek...');
     }
   }
 

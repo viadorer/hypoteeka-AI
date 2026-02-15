@@ -117,11 +117,19 @@ export async function POST(req: Request) {
 
     // Get last user message for knowledge base context
     const msgArray = Array.isArray(messages) ? messages : [];
-    const lastUserMessage = [...msgArray].reverse().find((m: { role: string }) => m.role === 'user')?.content as string | undefined;
+    const lastUserMsg = [...msgArray].reverse().find((m: { role: string }) => m.role === 'user');
+    const lastUserMessage = lastUserMsg?.parts
+      ?.filter((p: AnyPart) => p.type === 'text')
+      .map((p: AnyPart) => p.text)
+      .join('') ?? (typeof lastUserMsg?.content === 'string' ? lastUserMsg.content : '');
 
-    const systemPrompt = await buildAgentPrompt(
-      profile, state, leadScore, tenantId, lastUserMessage,
+    let systemPrompt = await buildAgentPrompt(
+      profile, state, leadScore, tenantId, lastUserMessage || undefined,
     );
+
+    // Widget-specific: reinforce Czech with diacritics + widget context
+    systemPrompt += `\n\nWIDGET KONTEXT: Toto je embedded widget na externím webu. Piš VŽDY česky s háčky a čárkami (č, ř, ž, š, ě, á, í, é, ú, ů, ý, ň, ď, ť). NIKDY nepiš bez diakritiky. Odpovídej stručně (max 2-3 věty). Widget neumí zobrazit tabulky ani složité formátování -- piš prostý text.`;
+    systemPrompt += `\nSESSION_ID: "${sessionId}"`;
 
     const modelMessages = await convertToModelMessages(messages, {
       tools: toolDefinitions,
