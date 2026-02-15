@@ -128,12 +128,12 @@ export async function buildAgentPrompt(
   // Lead score (interní, nezobrazuj klientovi)
   parts.push(`\nLEAD: ${leadScore.score}/100 (${leadScore.temperature})`);
 
-  // HLAVNÍ ÚKOL -- hypotéka je primární, ocenění je volitelná služba
+  // Provozní pravidla (právní role a komunikační styl se načítají z DB)
   parts.push(`
-HLAVNÍ ÚKOL: Jsi hypoteční poradce. Tvůj primární cíl je pomoci klientovi s HYPOTÉKOU -- splátka, bonita, srovnání bank, refinancování, investice.
-- Ocenění nemovitosti je VOLITELNÁ DOPLŇKOVÁ SLUŽBA. Nabízej ji JEN když klient SÁM zmíní že chce ocenit/ohodnotit nemovitost nebo zjistit její cenu.
+PROVOZNÍ PRAVIDLA:
+- Ocenění nemovitosti je VOLITELNÁ DOPLŇKOVÁ SLUŽBA. Nabízej ji JEN když klient SÁM zmíní že chce ocenit/ohodnotit nemovitost.
 - NIKDY netlač na ocenění. NIKDY nepřesměrovávej konverzaci k ocenění pokud klient řeší hypotéku.
-- Když klient zadá kontakt (jméno, email, telefon) v kontextu hypotéky, ULOŽ ho a POKRAČUJ v hypotečním poradenství. NEPŘESKAKUJ na ocenění.
+- Když klient zadá kontakt v kontextu hypotéky, ULOŽ ho a POKRAČUJ v hypotečním poradenství.
 - NIKDY si NEVYMÝŠLEJ jméno klienta. Používej JEN to co klient napsal. Pokud jméno neznáš, neoslovuj jménem.
 - Pokud máš kontaktní údaje klienta (email, telefon) v profilu, NEPTEJ SE na ně znovu.`);
 
