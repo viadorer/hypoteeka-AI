@@ -212,17 +212,6 @@ export async function POST(req: Request) {
       request_valuation: {
         ...toolDefinitions.request_valuation,
         execute: async () => {
-          // HARD LIMIT: max 1 valuation per session (each call costs money)
-          if (profile.valuationId) {
-            return {
-              success: false,
-              summary: `Oceneni jiz bylo provedeno (ID: ${profile.valuationId}). NELZE volat znovu -- kazde volani stoji kredit. Rekni klientovi ze oceneni uz bylo odeslano a nabidni jinou sluzbu (hypoteka, investicni analyza).`,
-            };
-          }
-
-          const rvKey = process.env.REALVISOR_API_KEY;
-          if (!rvKey) return { success: false, summary: 'Chybi REALVISOR_API_KEY.' };
-
           const typeMap: Record<string, string> = { byt: 'flat', dum: 'house', pozemek: 'land' };
           const pt = typeMap[profile.propertyType ?? ''] ?? profile.propertyType ?? 'flat';
           const nameParts = (profile.name ?? '').trim().split(/\s+/);
@@ -233,7 +222,7 @@ export async function POST(req: Request) {
           // Auto-fill ownership as private (always)
           if (!profile.propertyOwnership) profile.propertyOwnership = 'private';
 
-          // Validate
+          // STEP 1: Validate ALL required fields FIRST (free, can retry)
           const miss: string[] = [];
           if (!firstName || firstName === 'Klient') miss.push('jmeno');
           if (!profile.email) miss.push('email');
@@ -243,7 +232,6 @@ export async function POST(req: Request) {
           // flat: floorArea, rating
           // house: floorArea, lotArea, rating
           // land: lotArea
-          // construction, localType, ownership are OPTIONAL (improve accuracy)
           if (pt === 'flat') {
             if (!profile.floorArea) miss.push('uzitna plocha (floorArea)');
             if (!profile.propertyRating) miss.push('stav (propertyRating)');
@@ -262,6 +250,18 @@ export async function POST(req: Request) {
               summary: `NELZE odeslat oceneni -- v profilu chybi: ${miss.join(', ')}. Zeptej se klienta a ULOZ pres update_profile. Pak zavolej request_valuation znovu.`,
             };
           }
+
+          // STEP 2: HARD LIMIT - max 1 successful valuation per session (each API call costs money)
+          if (profile.valuationId) {
+            return {
+              success: false,
+              summary: `Oceneni jiz bylo provedeno (ID: ${profile.valuationId}). NELZE volat znovu -- kazde volani stoji kredit. Rekni klientovi ze oceneni uz bylo odeslano a nabidni jinou sluzbu (hypoteka, investicni analyza).`,
+            };
+          }
+
+          // STEP 3: Check API key
+          const rvKey = process.env.REALVISOR_API_KEY;
+          if (!rvKey) return { success: false, summary: 'Chybi REALVISOR_API_KEY.' };
 
           // Build payload from profile
           const payload: Record<string, unknown> = {
