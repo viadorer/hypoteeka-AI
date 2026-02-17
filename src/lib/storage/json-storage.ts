@@ -78,7 +78,7 @@ export class JsonFileStorage implements StorageProvider {
     }
   }
 
-  async listSessions(tenantId?: string): Promise<SessionData[]> {
+  async listSessions(tenantId?: string, authorId?: string): Promise<SessionData[]> {
     ensureDirs();
     const files = fs.readdirSync(SESSIONS_DIR).filter(f => f.endsWith('.json'));
     const sessions: SessionData[] = [];
@@ -86,9 +86,15 @@ export class JsonFileStorage implements StorageProvider {
       try {
         const raw = fs.readFileSync(path.join(SESSIONS_DIR, file), 'utf-8');
         const session = JSON.parse(raw) as SessionData;
-        if (!tenantId || session.tenantId === tenantId || !session.tenantId) {
-          sessions.push(session);
+        // Filter by tenantId
+        if (tenantId && session.tenantId !== tenantId && session.tenantId) {
+          continue;
         }
+        // Filter by authorId
+        if (authorId && session.authorId !== authorId && session.authorId) {
+          continue;
+        }
+        sessions.push(session);
       } catch { /* skip corrupted files */ }
     }
     sessions.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());

@@ -11,6 +11,7 @@ import type { UIMessage } from 'ai';
 import { CtaIntensityDial } from './CtaIntensityDial';
 import type { CtaIntensity } from './CtaIntensityDial';
 import { useTenant } from '@/lib/tenant/use-tenant';
+import { getBrowserId } from '@/lib/browser-id';
 
 const QUICK_ACTIONS_MORTGAGE_PRIMARY = [
   { label: 'Spočítat splátku', icon: Calculator, prompt: 'Chci si spočítat splátku hypotéky.' },
@@ -73,10 +74,14 @@ export function ChatArea({ initialSessionId = null }: ChatAreaProps) {
   const QUICK_ACTIONS_MORE = isValuation ? QUICK_ACTIONS_VALUATION_MORE : QUICK_ACTIONS_MORTGAGE_MORE;
   const sessionId = useMemo(() => getSessionId(initialSessionId), [initialSessionId]);
   const [ctaIntensity, setCtaIntensity] = useState<CtaIntensity>('medium');
-  const transport = useMemo(() => new DefaultChatTransport({
-    api: '/api/chat',
-    body: { sessionId, tenantId: process.env.NEXT_PUBLIC_TENANT_ID ?? 'hypoteeka', ctaIntensity },
-  }), [sessionId, ctaIntensity]);
+  const transport = useMemo(() => {
+    // Get or generate browser ID for session ownership
+    const authorId = getBrowserId();
+    return new DefaultChatTransport({
+      api: '/api/chat',
+      body: { sessionId, tenantId: process.env.NEXT_PUBLIC_TENANT_ID ?? 'hypoteeka', authorId, ctaIntensity },
+    });
+  }, [sessionId, ctaIntensity]);
   const { messages, setMessages, sendMessage, status, error, clearError } = useChat({ transport });
   const handleCtaChange = useCallback((v: CtaIntensity) => { setCtaIntensity(v); }, []);
   const [inputValue, setInputValue] = useState('');

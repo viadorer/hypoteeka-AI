@@ -30,6 +30,7 @@ export class SupabaseStorage implements StorageProvider {
     return {
       id: data.id,
       tenantId: data.tenant_id,
+      authorId: data.author_id ?? 'anonymous',
       profile: data.client_profile ?? {},
       state: {
         phase: data.phase,
@@ -58,6 +59,7 @@ export class SupabaseStorage implements StorageProvider {
     const upsertData: Record<string, unknown> = {
       id: session.id,
       tenant_id: session.tenantId,
+      author_id: session.authorId,
       phase: session.state.phase,
       lead_score: session.state.leadScore,
       lead_qualified: session.state.leadQualified,
@@ -104,7 +106,7 @@ export class SupabaseStorage implements StorageProvider {
     }
   }
 
-  async listSessions(tenantId?: string): Promise<SessionData[]> {
+  async listSessions(tenantId?: string, authorId?: string): Promise<SessionData[]> {
     let query = this.db
       .from('sessions')
       .select('*')
@@ -114,6 +116,9 @@ export class SupabaseStorage implements StorageProvider {
     if (tenantId) {
       query = query.eq('tenant_id', tenantId);
     }
+    if (authorId) {
+      query = query.eq('author_id', authorId);
+    }
 
     const { data, error } = await query;
 
@@ -122,6 +127,7 @@ export class SupabaseStorage implements StorageProvider {
     return data.map(row => ({
       id: row.id,
       tenantId: row.tenant_id,
+      authorId: row.author_id ?? 'anonymous',
       profile: row.client_profile ?? {},
       state: {
         phase: row.phase,

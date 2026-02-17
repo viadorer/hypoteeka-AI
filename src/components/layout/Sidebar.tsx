@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { Menu, X, Plus, MessageSquare, BarChart3, LogIn, LogOut, KeyRound, User, Trash2 } from 'lucide-react';
 import { useAuth } from '@/lib/auth/auth-context';
 import { useTenant } from '@/lib/tenant/use-tenant';
+import { getBrowserId } from '@/lib/browser-id';
 
 interface SessionSummary {
   id: string;
@@ -122,9 +123,11 @@ export function Sidebar({ activeSessionId, currentView, onSelectSession, onConti
   const { user, login, signup, loginWithOAuth, logout, changePassword } = useAuth();
   const [oauthLoading, setOauthLoading] = useState<string | null>(null);
 
-  // Load sessions for chat history
+  // Load sessions for chat history (filtered by tenant + author)
   useEffect(() => {
-    fetch('/api/sessions')
+    const tenantId = process.env.NEXT_PUBLIC_TENANT_ID ?? 'hypoteeka';
+    const authorId = getBrowserId();
+    fetch(`/api/sessions?tenantId=${tenantId}&authorId=${authorId}`)
       .then(r => r.json())
       .then((data: SessionSummary[]) => setSessions(data))
       .catch(() => setSessions([]));

@@ -20,6 +20,7 @@ import type { ConversationState } from '../agent/conversation-state';
 export interface SessionData {
   id: string;
   tenantId: string;
+  authorId: string; // Browser fingerprint or user ID for session ownership
   profile: ClientProfile;
   state: ConversationState;
   messages: MessageRecord[];
@@ -106,7 +107,7 @@ export interface StorageProvider {
   // Sessions
   getSession(sessionId: string): Promise<SessionData | null>;
   saveSession(session: SessionData): Promise<void>;
-  listSessions(tenantId?: string): Promise<SessionData[]>;
+  listSessions(tenantId?: string, authorId?: string): Promise<SessionData[]>;
 
   // Leads
   saveLead(lead: LeadRecord): Promise<void>;

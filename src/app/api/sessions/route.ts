@@ -6,7 +6,8 @@ export async function GET(req: Request) {
   try {
     const url = new URL(req.url);
     const tenantId = url.searchParams.get('tenantId') ?? undefined;
-    const sessions = await storage.listSessions(tenantId);
+    const authorId = url.searchParams.get('authorId') ?? undefined;
+    const sessions = await storage.listSessions(tenantId, authorId);
     const summaries = await Promise.all(sessions.map(async s => {
       const firstName = s.profile.name?.split(' ')[0];
       const nameVocative = firstName ? await getVocative(firstName, s.tenantId ?? getDefaultTenantId()) : undefined;
