@@ -1,6 +1,7 @@
 'use client';
 
 import { formatCZK } from '@/lib/format';
+import { WidgetCard } from './shared';
 
 interface Props {
   propertyPrice: number;
@@ -8,22 +9,25 @@ interface Props {
   location?: string;
 }
 
+const BuildingIcon = (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+    <rect x="4" y="2" width="16" height="20" rx="2" />
+    <path d="M9 22v-4h6v4M8 6h.01M16 6h.01M12 6h.01M8 10h.01M16 10h.01M12 10h.01M8 14h.01M16 14h.01M12 14h.01" />
+  </svg>
+);
+
 export function PropertyWidget({ propertyPrice, propertyType, location }: Props) {
   return (
-    <div className="bg-white rounded-2xl p-4 md:p-6 shadow-sm border border-gray-100 animate-in slide-in-from-bottom-4 duration-500 overflow-hidden w-full min-w-0">
-      <div className="w-8 h-[3px] rounded-full bg-[#E91E63] mb-4" />
-      <p className="text-[11px] font-semibold uppercase tracking-wider text-gray-400 mb-3">
-        Nemovitost
-      </p>
-      <p className="text-2xl md:text-3xl font-bold text-gray-900 tracking-tight truncate">
+    <WidgetCard label="Nemovitost" icon={BuildingIcon}>
+      <div className="text-[28px] font-semibold text-white tracking-tight truncate">
         {formatCZK(propertyPrice)}
-      </p>
-      <div className="mt-2 text-sm text-gray-500">
+      </div>
+      <div className="text-[13px] text-white/35 mt-1">
         {propertyType && <span className="capitalize">{propertyType}</span>}
         {propertyType && location && <span> / </span>}
         {location && <span>{location}</span>}
         {!propertyType && !location && <span>Odhadní cena nemovitosti</span>}
       </div>
-    </div>
+    </WidgetCard>
   );
 }

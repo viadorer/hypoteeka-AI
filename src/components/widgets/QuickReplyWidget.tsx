@@ -24,26 +24,30 @@ export function QuickReplyWidget({ question, options, onSelect }: QuickReplyWidg
   };
 
   return (
-    <div className="bg-white/60 backdrop-blur-xl border border-white/40 shadow-lg shadow-black/[0.03] rounded-2xl p-4 max-w-md">
-      <p className="text-sm text-gray-700 mb-3 font-medium">{question}</p>
-      <div className="flex flex-col gap-2">
-        {options.map((option) => (
+    <div className="max-w-md">
+      <p className="text-sm text-gray-600 mb-2.5 font-normal">{question}</p>
+      <div className="flex flex-wrap gap-2">
+        {options.map((option, i) => (
           <button
             key={option.value}
             onClick={() => handleSelect(option.value)}
             disabled={selected !== null}
             className={`
-              px-4 py-3 rounded-xl text-sm font-medium text-left transition-all
+              px-4 py-2.5 rounded-full text-[13px] font-normal
+              border transition-all duration-200
+              animate-in slide-in-from-bottom-1 fade-in
               ${selected === option.value
-                ? 'text-white shadow-lg scale-[0.98]'
+                ? 'text-white border-transparent scale-[0.97]'
                 : selected
-                ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                : 'bg-white hover:bg-gray-50 text-gray-800 hover:shadow-md active:scale-[0.98] cursor-pointer'
+                ? 'bg-gray-50 text-gray-300 border-gray-100 cursor-not-allowed'
+                : 'bg-white/80 text-gray-700 border-gray-200 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-900 hover:-translate-y-px active:scale-[0.97] cursor-pointer'
               }
             `}
-            style={selected === option.value ? {
-              backgroundColor: tenant.branding.primaryColor,
-            } : {}}
+            style={{
+              animationDelay: `${i * 60}ms`,
+              animationFillMode: 'both',
+              ...(selected === option.value ? { backgroundColor: tenant.branding.primaryColor } : {}),
+            }}
           >
             {option.label}
           </button>

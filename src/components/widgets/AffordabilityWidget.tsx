@@ -2,6 +2,7 @@
 
 import { formatCZK } from '@/lib/format';
 import { calculateAffordability } from '@/lib/calculations';
+import { WidgetCard, ResultRow, Divider } from './shared';
 
 interface Props {
   monthlyIncome: number;
@@ -9,38 +10,31 @@ interface Props {
   isYoung?: boolean;
 }
 
+const WalletIcon = (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+    <path d="M21 12V7H5a2 2 0 010-4h14v4" />
+    <path d="M3 5v14a2 2 0 002 2h16v-5" />
+    <path d="M18 12a2 2 0 100 4h4v-4h-4z" />
+  </svg>
+);
+
 export function AffordabilityWidget({ monthlyIncome, equity, isYoung }: Props) {
   const result = calculateAffordability(monthlyIncome, equity, isYoung);
 
   return (
-    <div className="bg-white rounded-2xl p-4 md:p-6 shadow-sm border border-gray-100 animate-in slide-in-from-bottom-4 duration-500 overflow-hidden w-full min-w-0">
-      <div className="w-8 h-[3px] rounded-full bg-violet-500 mb-4" />
-      <p className="text-[11px] font-semibold uppercase tracking-wider text-gray-400 mb-3">
-        Kolik si můžete dovolit
-      </p>
-      <p className="text-2xl md:text-3xl font-bold text-gray-900 tracking-tight truncate">
+    <WidgetCard label="Kolik si můžete dovolit" icon={WalletIcon}>
+      <div className="text-[28px] font-semibold text-white tracking-tight truncate">
         {formatCZK(result.maxPropertyPrice)}
-      </p>
-      <p className="text-sm text-gray-400 mt-1">maximální cena nemovitosti</p>
-
-      <div className="mt-4 space-y-2">
-        <div className="flex justify-between text-sm">
-          <span className="text-gray-500">Maximální úvěr</span>
-          <span className="font-medium text-gray-900">{formatCZK(result.maxLoan)}</span>
-        </div>
-        <div className="flex justify-between text-sm">
-          <span className="text-gray-500">Vlastní zdroje</span>
-          <span className="font-medium text-gray-900">{formatCZK(equity)}</span>
-        </div>
-        <div className="flex justify-between text-sm">
-          <span className="text-gray-500">Měsíční splátka</span>
-          <span className="font-medium text-gray-900">{formatCZK(result.monthlyPayment)}</span>
-        </div>
-        <div className="flex justify-between text-sm pt-2 border-t border-gray-100">
-          <span className="text-gray-500">Čistý měsíční příjem</span>
-          <span className="font-medium text-gray-900">{formatCZK(monthlyIncome)}</span>
-        </div>
       </div>
-    </div>
+      <div className="text-[13px] text-white/35 mt-1 mb-4">maximální cena nemovitosti</div>
+
+      <div className="space-y-2">
+        <ResultRow label="Maximální úvěr" value={formatCZK(result.maxLoan)} />
+        <ResultRow label="Vlastní zdroje" value={formatCZK(equity)} />
+        <ResultRow label="Měsíční splátka" value={formatCZK(result.monthlyPayment)} />
+        <Divider />
+        <ResultRow label="Čistý měsíční příjem" value={formatCZK(monthlyIncome)} />
+      </div>
+    </WidgetCard>
   );
 }

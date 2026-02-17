@@ -2,6 +2,7 @@
 
 import { formatCZK, formatPercent } from '@/lib/format';
 import { calculateInvestment } from '@/lib/calculations';
+import { WidgetCard, StatGrid, StatCard, ResultRow, Divider } from './shared';
 
 interface Props {
   purchasePrice: number;
@@ -10,57 +11,41 @@ interface Props {
   monthlyExpenses?: number;
 }
 
+const TrendIcon = (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+    <polyline points="22 7 13.5 15.5 8.5 10.5 2 17" />
+    <polyline points="16 7 22 7 22 13" />
+  </svg>
+);
+
 export function InvestmentWidget({ purchasePrice, equity, monthlyRentalIncome, monthlyExpenses }: Props) {
   const result = calculateInvestment(purchasePrice, equity, monthlyRentalIncome, monthlyExpenses);
+  const cfColor = result.monthlyCashFlow >= 0 ? 'text-emerald-400' : 'text-red-400';
 
   return (
-    <div className="bg-white rounded-2xl p-4 md:p-6 shadow-sm border border-gray-100 animate-in slide-in-from-bottom-4 duration-500 overflow-hidden w-full min-w-0">
-      <div className="w-8 h-[3px] rounded-full bg-amber-500 mb-4" />
-      <p className="text-[11px] font-semibold uppercase tracking-wider text-gray-400 mb-3">
-        Investiční analýza
-      </p>
+    <WidgetCard label="Investiční analýza" icon={TrendIcon}>
+      <StatGrid>
+        <StatCard
+          label="Měsíční cash flow"
+          value={`${result.monthlyCashFlow >= 0 ? '+' : ''}${formatCZK(result.monthlyCashFlow)}`}
+          valueColor={cfColor}
+        />
+        <StatCard
+          label="Roční cash flow"
+          value={`${result.annualCashFlow >= 0 ? '+' : ''}${formatCZK(result.annualCashFlow)}`}
+          valueColor={cfColor}
+        />
+      </StatGrid>
 
-      <div className="grid grid-cols-2 gap-2 md:gap-4 mb-4">
-        <div className="bg-gray-50 rounded-xl p-3 md:p-4 min-w-0">
-          <p className="text-xs text-gray-400 mb-1">Měsíční cash flow</p>
-          <p className={`text-lg md:text-xl font-bold truncate ${result.monthlyCashFlow >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
-            {result.monthlyCashFlow >= 0 ? '+' : ''}{formatCZK(result.monthlyCashFlow)}
-          </p>
-        </div>
-        <div className="bg-gray-50 rounded-xl p-3 md:p-4 min-w-0">
-          <p className="text-xs text-gray-400 mb-1">Roční cash flow</p>
-          <p className={`text-lg md:text-xl font-bold truncate ${result.annualCashFlow >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
-            {result.annualCashFlow >= 0 ? '+' : ''}{formatCZK(result.annualCashFlow)}
-          </p>
-        </div>
+      <div className="mt-3 space-y-2">
+        <ResultRow label="Měsíční příjem z nájmu" value={formatCZK(result.monthlyRentalIncome)} />
+        <ResultRow label="Měsíční splátka" value={formatCZK(result.monthlyMortgage)} />
+        <Divider />
+        <ResultRow label="ROI" value={formatPercent(result.roi)} />
+        <ResultRow label="ROE" value={formatPercent(result.roe)} />
+        <ResultRow label="Cap Rate" value={formatPercent(result.capRate)} />
+        <ResultRow label="Cash-on-Cash" value={formatPercent(result.cashOnCash)} />
       </div>
-
-      <div className="space-y-2">
-        <div className="flex justify-between text-sm">
-          <span className="text-gray-500">Měsíční příjem z nájmu</span>
-          <span className="font-medium text-gray-900">{formatCZK(result.monthlyRentalIncome)}</span>
-        </div>
-        <div className="flex justify-between text-sm">
-          <span className="text-gray-500">Měsíční splátka</span>
-          <span className="font-medium text-gray-900">{formatCZK(result.monthlyMortgage)}</span>
-        </div>
-        <div className="flex justify-between text-sm pt-2 border-t border-gray-100">
-          <span className="text-gray-500">ROI</span>
-          <span className="font-medium text-gray-900">{formatPercent(result.roi)}</span>
-        </div>
-        <div className="flex justify-between text-sm">
-          <span className="text-gray-500">ROE (návratnost vlastního kapitálu)</span>
-          <span className="font-medium text-gray-900">{formatPercent(result.roe)}</span>
-        </div>
-        <div className="flex justify-between text-sm">
-          <span className="text-gray-500">Cap Rate</span>
-          <span className="font-medium text-gray-900">{formatPercent(result.capRate)}</span>
-        </div>
-        <div className="flex justify-between text-sm">
-          <span className="text-gray-500">Cash-on-Cash</span>
-          <span className="font-medium text-gray-900">{formatPercent(result.cashOnCash)}</span>
-        </div>
-      </div>
-    </div>
+    </WidgetCard>
   );
 }

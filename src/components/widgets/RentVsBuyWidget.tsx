@@ -2,6 +2,7 @@
 
 import { formatCZK } from '@/lib/format';
 import { compareRentVsBuy } from '@/lib/calculations';
+import { WidgetCard, StatGrid, StatCard, ResultRow, Divider } from './shared';
 
 interface Props {
   propertyPrice: number;
@@ -9,53 +10,38 @@ interface Props {
   monthlyRent: number;
 }
 
+const ScaleIcon = (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+    <path d="M12 3v18M3 7l3 9h6l3-9M15 7l3 9h3" />
+  </svg>
+);
+
 export function RentVsBuyWidget({ propertyPrice, equity, monthlyRent }: Props) {
   const result = compareRentVsBuy(propertyPrice, equity, monthlyRent);
 
   return (
-    <div className="bg-white rounded-2xl p-4 md:p-6 shadow-sm border border-gray-100 animate-in slide-in-from-bottom-4 duration-500 overflow-hidden w-full min-w-0">
-      <div className="w-8 h-[3px] rounded-full bg-[#0A1E5C] mb-4" />
-      <p className="text-[11px] font-semibold uppercase tracking-wider text-gray-400 mb-3">
-        Nájem vs. Hypotéka
-      </p>
+    <WidgetCard label="Nájem vs. Hypotéka" icon={ScaleIcon}>
+      <StatGrid>
+        <StatCard label="Měsíční nájem" value={formatCZK(result.monthlyRent)} />
+        <StatCard label="Měsíční splátka" value={formatCZK(result.monthlyMortgage)} />
+      </StatGrid>
 
-      <div className="grid grid-cols-2 gap-2 md:gap-4 mb-4">
-        <div className="bg-gray-50 rounded-xl p-3 md:p-4 min-w-0">
-          <p className="text-xs text-gray-400 mb-1">Měsíční nájem</p>
-          <p className="text-lg md:text-xl font-bold text-gray-900 truncate">{formatCZK(result.monthlyRent)}</p>
-        </div>
-        <div className="bg-gray-50 rounded-xl p-3 md:p-4 min-w-0">
-          <p className="text-xs text-gray-400 mb-1">Měsíční splátka</p>
-          <p className="text-lg md:text-xl font-bold text-gray-900 truncate">{formatCZK(result.monthlyMortgage)}</p>
-        </div>
-      </div>
-
-      <div className="space-y-2">
-        <div className="flex justify-between text-sm">
-          <span className="text-gray-500">Rozdíl měsíčně</span>
-          <span className={`font-medium ${result.difference > 0 ? 'text-red-600' : 'text-emerald-600'}`}>
-            {result.difference > 0 ? '+' : ''}{formatCZK(result.difference)}
-          </span>
-        </div>
-        <div className="flex justify-between text-sm">
-          <span className="text-gray-500">Celkem nájem (30 let)</span>
-          <span className="font-medium text-gray-900">{formatCZK(result.totalRentCost)}</span>
-        </div>
-        <div className="flex justify-between text-sm">
-          <span className="text-gray-500">Celkem hypotéka (30 let)</span>
-          <span className="font-medium text-gray-900">{formatCZK(result.totalMortgageCost)}</span>
-        </div>
-        <div className="flex justify-between text-sm">
-          <span className="text-gray-500">Vlastní kapitál po 30 letech</span>
-          <span className="font-medium text-emerald-600">{formatCZK(result.equityAfterYears)}</span>
-        </div>
+      <div className="mt-3 space-y-2">
+        <ResultRow
+          label="Rozdíl měsíčně"
+          value={`${result.difference > 0 ? '+' : ''}${formatCZK(result.difference)}`}
+          valueColor={result.difference > 0 ? 'text-red-400' : 'text-emerald-400'}
+        />
+        <ResultRow label="Celkem nájem (30 let)" value={formatCZK(result.totalRentCost)} />
+        <ResultRow label="Celkem hypotéka (30 let)" value={formatCZK(result.totalMortgageCost)} />
+        <ResultRow label="Vlastní kapitál po 30 letech" value={formatCZK(result.equityAfterYears)} valueColor="text-emerald-400" />
         {result.breakEvenYears && (
-          <div className="flex justify-between text-sm pt-2 border-t border-gray-100">
-            <span className="text-gray-500">Break-even</span>
-            <span className="font-medium text-[#0047FF]">{result.breakEvenYears} let</span>
-          </div>
+          <>
+            <Divider />
+            <ResultRow label="Break-even" value={`${result.breakEvenYears} let`} valueColor="text-white" />
+          </>
         )}
       </div>
-    </div>
+    </WidgetCard>
   );
 }

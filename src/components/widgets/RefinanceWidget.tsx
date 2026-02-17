@@ -2,6 +2,7 @@
 
 import { formatCZK, formatPercent } from '@/lib/format';
 import { calculateRefinance, DEFAULTS } from '@/lib/calculations';
+import { WidgetCard, StatGrid, StatCard, ResultRow, Divider } from './shared';
 
 interface Props {
   remainingBalance: number;
@@ -10,47 +11,48 @@ interface Props {
   remainingYears: number;
 }
 
+const RefreshIcon = (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+    <polyline points="23 4 23 10 17 10" />
+    <polyline points="1 20 1 14 7 14" />
+    <path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15" />
+  </svg>
+);
+
 export function RefinanceWidget({ remainingBalance, currentRate, newRate, remainingYears }: Props) {
   const result = calculateRefinance(remainingBalance, currentRate, newRate ?? DEFAULTS.rate, remainingYears);
+  const savingColor = result.monthlySaving > 0 ? 'text-emerald-400' : 'text-red-400';
 
   return (
-    <div className="bg-white rounded-2xl p-4 md:p-6 shadow-sm border border-gray-100 animate-in slide-in-from-bottom-4 duration-500 overflow-hidden w-full min-w-0">
-      <div className="w-8 h-[3px] rounded-full bg-cyan-500 mb-4" />
-      <p className="text-[11px] font-semibold uppercase tracking-wider text-gray-400 mb-3">
-        Refinancování
-      </p>
+    <WidgetCard label="Refinancování" icon={RefreshIcon}>
+      <StatGrid>
+        <StatCard
+          label="Stávající splátka"
+          value={formatCZK(result.currentPayment)}
+          sub={`${formatPercent(currentRate)} p.a.`}
+        />
+        <StatCard
+          label="Nová splátka"
+          value={formatCZK(result.newPayment)}
+          valueColor="text-emerald-400"
+          sub={`${formatPercent(newRate ?? DEFAULTS.rate)} p.a.`}
+        />
+      </StatGrid>
 
-      <div className="grid grid-cols-2 gap-2 md:gap-4 mb-4">
-        <div className="bg-gray-50 rounded-xl p-3 md:p-4 min-w-0">
-          <p className="text-xs text-gray-400 mb-1">Stávající splátka</p>
-          <p className="text-lg md:text-xl font-bold text-gray-900 truncate">{formatCZK(result.currentPayment)}</p>
-          <p className="text-xs text-gray-400 mt-1">{formatPercent(currentRate)} p.a.</p>
-        </div>
-        <div className="bg-gray-50 rounded-xl p-3 md:p-4 min-w-0">
-          <p className="text-xs text-gray-400 mb-1">Nová splátka</p>
-          <p className="text-lg md:text-xl font-bold text-emerald-600 truncate">{formatCZK(result.newPayment)}</p>
-          <p className="text-xs text-gray-400 mt-1">{formatPercent(newRate ?? DEFAULTS.rate)} p.a.</p>
-        </div>
+      <div className="mt-3 space-y-2">
+        <ResultRow
+          label="Měsíční úspora"
+          value={`${result.monthlySaving > 0 ? '+' : ''}${formatCZK(result.monthlySaving)}`}
+          valueColor={savingColor}
+        />
+        <ResultRow
+          label="Celková úspora"
+          value={`${result.totalSaving > 0 ? '+' : ''}${formatCZK(result.totalSaving)}`}
+          valueColor={savingColor}
+        />
+        <Divider />
+        <ResultRow label="Zbývající splatnost" value={`${remainingYears} let`} />
       </div>
-
-      <div className="space-y-2">
-        <div className="flex justify-between text-sm">
-          <span className="text-gray-500">Měsíční úspora</span>
-          <span className={`font-medium ${result.monthlySaving > 0 ? 'text-emerald-600' : 'text-red-600'}`}>
-            {result.monthlySaving > 0 ? '+' : ''}{formatCZK(result.monthlySaving)}
-          </span>
-        </div>
-        <div className="flex justify-between text-sm">
-          <span className="text-gray-500">Celková úspora</span>
-          <span className={`font-medium ${result.totalSaving > 0 ? 'text-emerald-600' : 'text-red-600'}`}>
-            {result.totalSaving > 0 ? '+' : ''}{formatCZK(result.totalSaving)}
-          </span>
-        </div>
-        <div className="flex justify-between text-sm pt-2 border-t border-gray-100">
-          <span className="text-gray-500">Zbývající splatnost</span>
-          <span className="font-medium text-gray-900">{remainingYears} let</span>
-        </div>
-      </div>
-    </div>
+    </WidgetCard>
   );
 }
