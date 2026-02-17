@@ -1,8 +1,9 @@
 'use client';
 
+import { useState, useMemo } from 'react';
 import { formatCZK } from '@/lib/format';
 import { compareRentVsBuy } from '@/lib/calculations';
-import { WidgetCard, StatGrid, StatCard, ResultRow, Divider } from './shared';
+import { WidgetCard, StatGrid, StatCard, ResultRow, SliderInput, Divider } from './shared';
 
 interface Props {
   propertyPrice: number;
@@ -17,10 +18,25 @@ const ScaleIcon = (
 );
 
 export function RentVsBuyWidget({ propertyPrice, equity, monthlyRent }: Props) {
-  const result = compareRentVsBuy(propertyPrice, equity, monthlyRent);
+  const [adjRent, setAdjRent] = useState(monthlyRent);
+
+  const result = useMemo(
+    () => compareRentVsBuy(propertyPrice, equity, adjRent),
+    [propertyPrice, equity, adjRent]
+  );
 
   return (
     <WidgetCard label="Nájem vs. Hypotéka" icon={ScaleIcon}>
+      <SliderInput
+        label="Měsíční nájem"
+        value={adjRent}
+        min={5000}
+        max={60000}
+        step={500}
+        onChange={setAdjRent}
+        formatValue={(v) => formatCZK(v)}
+      />
+
       <StatGrid>
         <StatCard label="Měsíční nájem" value={formatCZK(result.monthlyRent)} />
         <StatCard label="Měsíční splátka" value={formatCZK(result.monthlyMortgage)} />

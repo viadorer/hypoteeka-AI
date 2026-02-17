@@ -1,8 +1,9 @@
 'use client';
 
+import { useState, useMemo } from 'react';
 import { formatCZK } from '@/lib/format';
 import { calculateAffordability } from '@/lib/calculations';
-import { WidgetCard, ResultRow, Divider } from './shared';
+import { WidgetCard, ResultRow, SliderInput, Divider } from './shared';
 
 interface Props {
   monthlyIncome: number;
@@ -19,10 +20,35 @@ const WalletIcon = (
 );
 
 export function AffordabilityWidget({ monthlyIncome, equity, isYoung }: Props) {
-  const result = calculateAffordability(monthlyIncome, equity, isYoung);
+  const [adjIncome, setAdjIncome] = useState(monthlyIncome);
+  const [adjEquity, setAdjEquity] = useState(equity);
+
+  const result = useMemo(
+    () => calculateAffordability(adjIncome, adjEquity, isYoung),
+    [adjIncome, adjEquity, isYoung]
+  );
 
   return (
     <WidgetCard label="Kolik si můžete dovolit" icon={WalletIcon}>
+      <SliderInput
+        label="Čistý měsíční příjem"
+        value={adjIncome}
+        min={15000}
+        max={200000}
+        step={1000}
+        onChange={setAdjIncome}
+        formatValue={(v) => formatCZK(v)}
+      />
+      <SliderInput
+        label="Vlastní zdroje"
+        value={adjEquity}
+        min={0}
+        max={Math.max(equity * 3, 5000000)}
+        step={50000}
+        onChange={setAdjEquity}
+        formatValue={(v) => formatCZK(v)}
+      />
+
       <div className="text-[28px] font-semibold text-gray-900 tracking-tight truncate">
         {formatCZK(result.maxPropertyPrice)}
       </div>
@@ -30,10 +56,8 @@ export function AffordabilityWidget({ monthlyIncome, equity, isYoung }: Props) {
 
       <div className="space-y-2">
         <ResultRow label="Maximální úvěr" value={formatCZK(result.maxLoan)} />
-        <ResultRow label="Vlastní zdroje" value={formatCZK(equity)} />
+        <ResultRow label="Vlastní zdroje" value={formatCZK(adjEquity)} />
         <ResultRow label="Měsíční splátka" value={formatCZK(result.monthlyPayment)} />
-        <Divider />
-        <ResultRow label="Čistý měsíční příjem" value={formatCZK(monthlyIncome)} />
       </div>
     </WidgetCard>
   );

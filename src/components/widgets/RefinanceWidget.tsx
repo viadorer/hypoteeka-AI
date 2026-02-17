@@ -1,8 +1,9 @@
 'use client';
 
+import { useState, useMemo } from 'react';
 import { formatCZK, formatPercent } from '@/lib/format';
 import { calculateRefinance, DEFAULTS } from '@/lib/calculations';
-import { WidgetCard, StatGrid, StatCard, ResultRow, Divider } from './shared';
+import { WidgetCard, StatGrid, StatCard, ResultRow, SliderInput, Divider } from './shared';
 
 interface Props {
   remainingBalance: number;
@@ -20,11 +21,37 @@ const RefreshIcon = (
 );
 
 export function RefinanceWidget({ remainingBalance, currentRate, newRate, remainingYears }: Props) {
-  const result = calculateRefinance(remainingBalance, currentRate, newRate ?? DEFAULTS.rate, remainingYears);
+  const initNewRate = newRate ?? DEFAULTS.rate;
+  const [adjNewRate, setAdjNewRate] = useState(initNewRate);
+  const [adjYears, setAdjYears] = useState(remainingYears);
+
+  const result = useMemo(
+    () => calculateRefinance(remainingBalance, currentRate, adjNewRate, adjYears),
+    [remainingBalance, currentRate, adjNewRate, adjYears]
+  );
   const savingColor = result.monthlySaving > 0 ? 'text-emerald-600' : 'text-red-600';
 
   return (
     <WidgetCard label="Refinancování" icon={RefreshIcon}>
+      <SliderInput
+        label="Nová sazba"
+        value={Math.round(adjNewRate * 10000) / 100}
+        min={2}
+        max={8}
+        step={0.05}
+        onChange={(v) => setAdjNewRate(v / 100)}
+        suffix=" %"
+      />
+      <SliderInput
+        label="Zbývající splatnost"
+        value={adjYears}
+        min={5}
+        max={30}
+        step={1}
+        onChange={setAdjYears}
+        suffix=" let"
+      />
+
       <StatGrid>
         <StatCard
           label="Stávající splátka"
@@ -35,7 +62,7 @@ export function RefinanceWidget({ remainingBalance, currentRate, newRate, remain
           label="Nová splátka"
           value={formatCZK(result.newPayment)}
           valueColor="text-emerald-600"
-          sub={`${formatPercent(newRate ?? DEFAULTS.rate)} p.a.`}
+          sub={`${formatPercent(adjNewRate)} p.a.`}
         />
       </StatGrid>
 
@@ -50,8 +77,6 @@ export function RefinanceWidget({ remainingBalance, currentRate, newRate, remain
           value={`${result.totalSaving > 0 ? '+' : ''}${formatCZK(result.totalSaving)}`}
           valueColor={savingColor}
         />
-        <Divider />
-        <ResultRow label="Zbývající splatnost" value={`${remainingYears} let`} />
       </div>
     </WidgetCard>
   );

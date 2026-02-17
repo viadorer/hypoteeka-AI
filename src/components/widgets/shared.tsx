@@ -179,6 +179,54 @@ export function Divider() {
   return <div className="border-t border-gray-100 my-3" />;
 }
 
+// ─── SLIDER INPUT ───────────────────────────────────────────
+
+interface SliderInputProps {
+  label: string;
+  value: number;
+  min: number;
+  max: number;
+  step: number;
+  onChange: (v: number) => void;
+  formatValue?: (v: number) => string;
+  suffix?: string;
+}
+
+export function SliderInput({ label, value, min, max, step, onChange, formatValue, suffix }: SliderInputProps) {
+  const display = formatValue ? formatValue(value) : `${value}${suffix ?? ''}`;
+  const pct = max > min ? ((value - min) / (max - min)) * 100 : 0;
+
+  return (
+    <div className="mb-3">
+      <div className="flex justify-between items-baseline mb-1.5">
+        <span className="text-[11px] text-gray-400 font-medium">{label}</span>
+        <span className="text-sm font-semibold text-gray-800 tabular-nums">{display}</span>
+      </div>
+      <div className="relative">
+        <input
+          type="range"
+          min={min}
+          max={max}
+          step={step}
+          value={value}
+          onChange={(e) => onChange(Number(e.target.value))}
+          className="w-full h-1.5 bg-gray-100 rounded-full appearance-none cursor-pointer
+            [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4
+            [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-[#E91E63] [&::-webkit-slider-thumb]:shadow-md
+            [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:transition-transform
+            [&::-webkit-slider-thumb]:hover:scale-110 [&::-webkit-slider-thumb]:active:scale-95
+            [&::-moz-range-thumb]:w-4 [&::-moz-range-thumb]:h-4 [&::-moz-range-thumb]:rounded-full
+            [&::-moz-range-thumb]:bg-[#E91E63] [&::-moz-range-thumb]:border-0 [&::-moz-range-thumb]:shadow-md
+            [&::-moz-range-thumb]:cursor-pointer"
+          style={{
+            background: `linear-gradient(to right, #E91E63 0%, #E91E63 ${pct}%, #f3f4f6 ${pct}%, #f3f4f6 100%)`,
+          }}
+        />
+      </div>
+    </div>
+  );
+}
+
 // ─── SEVERITY COLOR HELPER ──────────────────────────────────
 
 export function severityColor(level: 'ok' | 'warn' | 'danger'): string {

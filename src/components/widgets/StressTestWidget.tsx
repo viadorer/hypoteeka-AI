@@ -1,8 +1,9 @@
 'use client';
 
+import { useState, useMemo } from 'react';
 import { formatCZK, formatPercent } from '@/lib/format';
 import { calculateStressTest, DEFAULTS } from '@/lib/calculations';
-import { WidgetCard, ResultRow, Divider } from './shared';
+import { WidgetCard, ResultRow, SliderInput, Divider } from './shared';
 
 interface Props {
   loanAmount: number;
@@ -19,12 +20,22 @@ const AlertIcon = (
 );
 
 export function StressTestWidget({ loanAmount, rate, years }: Props) {
-  const rateVal = rate ?? DEFAULTS.rate;
+  const initRate = rate ?? DEFAULTS.rate;
   const yearsVal = years ?? DEFAULTS.years;
-  const result = calculateStressTest(loanAmount, rateVal, yearsVal);
+  const [adjRate, setAdjRate] = useState(initRate);
+  const result = useMemo(() => calculateStressTest(loanAmount, adjRate, yearsVal), [loanAmount, adjRate, yearsVal]);
 
   return (
     <WidgetCard label="Stress test" icon={AlertIcon}>
+      <SliderInput
+        label="Aktuální sazba"
+        value={Math.round(adjRate * 10000) / 100}
+        min={2}
+        max={8}
+        step={0.1}
+        onChange={(v) => setAdjRate(v / 100)}
+        suffix=" %"
+      />
       <div className="text-[13px] text-gray-500 mb-3">
         Co když sazba vzroste po refixaci?
       </div>

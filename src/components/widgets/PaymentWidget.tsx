@@ -1,8 +1,9 @@
 'use client';
 
+import { useState, useMemo } from 'react';
 import { formatCZK, formatPercent } from '@/lib/format';
 import { calculateAnnuity, calculateTotalInterest, DEFAULTS } from '@/lib/calculations';
-import { WidgetCard, ResultPanel, ResultBox, ResultRow, RatioBar, Divider } from './shared';
+import { WidgetCard, ResultRow, SliderInput, Divider } from './shared';
 
 interface Scenario {
   rate: number;
@@ -34,78 +35,98 @@ const HomeIcon = (
 );
 
 export function PaymentWidget({ propertyPrice, equity, rate, rpsn, years, scenarios, saving, monthlySaving }: Props) {
-  const yearsVal = years ?? DEFAULTS.years;
-  const loanAmount = propertyPrice - equity;
+  const initYears = years ?? DEFAULTS.years;
+  const initEquity = equity;
 
-  // Fallback for old format (no scenarios)
-  if (!scenarios) {
-    const rateVal = rate ?? DEFAULTS.rate;
-    const monthly = calculateAnnuity(loanAmount, rateVal, yearsVal * 12);
-    const totalInterest = calculateTotalInterest(monthly, loanAmount, yearsVal * 12);
-    const ratio = loanAmount / (loanAmount + totalInterest);
+  const [adjYears, setAdjYears] = useState(initYears);
+  const [adjEquity, setAdjEquity] = useState(initEquity);
 
-    return (
-      <WidgetCard label="Splátka hypotéky" icon={HomeIcon}>
-        <RatioBar ratio={ratio} />
-        <ResultPanel>
-          <div className="grid grid-cols-2 gap-3">
-            <ResultBox label="Měsíční splátka" value={formatCZK(Math.round(monthly))} highlight />
-            <ResultBox label="Výše úvěru" value={formatCZK(loanAmount)} />
-            <ResultBox label="Celkem zaplaceno" value={formatCZK(Math.round(monthly * yearsVal * 12))} />
-            <ResultBox label="Celkem na úrocích" value={formatCZK(Math.round(totalInterest))} />
-          </div>
-        </ResultPanel>
-        <div className="mt-3 space-y-1.5">
-          <ResultRow label="Úroková sazba" value={formatPercent(rateVal)} />
-          <ResultRow label="Splatnost" value={`${yearsVal} let`} />
-        </div>
-      </WidgetCard>
-    );
-  }
+  const loanAmount = propertyPrice - adjEquity;
 
-  const { high, avg, our } = scenarios;
+  // Recalculate scenarios with adjusted values
+  const computed = useMemo(() => {
+    if (!scenarios) {
+      const rateVal = rate ?? DEFAULTS.rate;
+      const monthly = calculateAnnuity(loanAmount, rateVal, adjYears * 12);
+      const totalInterest = calculateTotalInterest(monthly, loanAmount, adjYears * 12);
+      return { mode: 'simple' as const, rateVal, monthly, totalInterest, loanAmount };
+    }
+
+    const recalc = (r: number) => {
+      const m = calculateAnnuity(loanAmount, r, adjYears * 12);
+      const ti = calculateTotalInterest(m, loanAmount, adjYears * 12);
+      return { monthly: Math.round(m), totalInterest: Math.round(ti) };
+    };
+
+    const high = { ...scenarios.high, ...recalc(scenarios.high.rate) };
+    const avg = { ...scenarios.avg, ...recalc(scenarios.avg.rate) };
+    const our = { ...scenarios.our, ...recalc(scenarios.our.rate) };
+    const newSaving = high.totalInterest - our.totalInterest;
+    const newMonthlySaving = high.monthly - our.monthly;
+
+    return { mode: 'scenarios' as const, high, avg, our, saving: newSaving, monthlySaving: newMonthlySaving, loanAmount };
+  }, [loanAmount, adjYears, scenarios, rate]);
+
+  const equityMax = Math.min(propertyPrice * 0.9, propertyPrice);
+  const equityStep = propertyPrice > 5000000 ? 100000 : propertyPrice > 1000000 ? 50000 : 10000;
 
   return (
     <WidgetCard label="Splátka hypotéky" icon={HomeIcon}>
+      {/* Sliders */}
+      <SliderInput
+        label="Vlastní zdroje"
+        value={adjEquity}
+        min={0}
+        max={equityMax}
+        step={equityStep}
+        onChange={setAdjEquity}
+        formatValue={(v) => formatCZK(v)}
+      />
+      <SliderInput
+        label="Splatnost"
+        value={adjYears}
+        min={5}
+        max={30}
+        step={1}
+        onChange={setAdjYears}
+        suffix=" let"
+      />
+
       <div className="text-sm text-gray-500 mb-3">
-        Úvěr {formatCZK(loanAmount)} na {yearsVal} let
+        Úvěr {formatCZK(loanAmount)} na {adjYears} let
       </div>
 
-      {/* 3 scenario columns */}
-      <div className="grid grid-cols-3 gap-1.5">
-        <ScenarioCard
-          label="Nejvyšší na trhu"
-          rate={high.rate}
-          monthly={high.monthly}
-          totalInterest={high.totalInterest}
-          variant="muted"
-        />
-        <ScenarioCard
-          label="Průměr trhu"
-          rate={avg.rate}
-          monthly={avg.monthly}
-          totalInterest={avg.totalInterest}
-          variant="default"
-        />
-        <ScenarioCard
-          label="Nejnižší na trhu"
-          rate={our.rate}
-          monthly={our.monthly}
-          totalInterest={our.totalInterest}
-          variant="highlight"
-        />
-      </div>
+      {computed.mode === 'simple' ? (
+        <>
+          <div className="space-y-2">
+            <ResultRow label="Měsíční splátka" value={formatCZK(Math.round(computed.monthly))} />
+            <ResultRow label="Výše úvěru" value={formatCZK(computed.loanAmount)} />
+            <ResultRow label="Celkem na úrocích" value={formatCZK(Math.round(computed.totalInterest))} valueColor="text-red-600" />
+            <Divider />
+            <ResultRow label="Úroková sazba" value={formatPercent(computed.rateVal)} />
+          </div>
+        </>
+      ) : (
+        <>
+          {/* 3 scenario columns */}
+          <div className="grid grid-cols-3 gap-1.5">
+            <ScenarioCard label="Nejvyšší na trhu" rate={computed.high.rate} monthly={computed.high.monthly} totalInterest={computed.high.totalInterest} variant="muted" />
+            <ScenarioCard label="Průměr trhu" rate={computed.avg.rate} monthly={computed.avg.monthly} totalInterest={computed.avg.totalInterest} variant="default" />
+            <ScenarioCard label="Nejnižší na trhu" rate={computed.our.rate} monthly={computed.our.monthly} totalInterest={computed.our.totalInterest} variant="highlight" />
+          </div>
 
-      {/* Saving callout */}
-      {(saving ?? 0) > 0 && (
-        <div className="mt-3 bg-emerald-50 border border-emerald-200 rounded-xl p-3">
-          <p className="text-sm font-medium text-emerald-700">
-            Rozdíl: {formatCZK(monthlySaving ?? 0)}/měsíc
-          </p>
-          <p className="text-[11px] text-emerald-600 mt-0.5">
-            {formatCZK(saving ?? 0)} za celou dobu splácení
-          </p>
-        </div>
+          {/* Saving callout */}
+          {computed.saving > 0 && (
+            <div className="mt-3 bg-emerald-50 border border-emerald-200 rounded-xl p-3">
+              <p className="text-sm font-medium text-emerald-700">
+                Rozdíl: {formatCZK(computed.monthlySaving)}/měsíc
+              </p>
+              <p className="text-[11px] text-emerald-600 mt-0.5">
+                {formatCZK(computed.saving)} za celou dobu splácení
+              </p>
+            </div>
+          )}
+        </>
       )}
 
       {/* CTA message */}
