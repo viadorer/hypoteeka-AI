@@ -26,7 +26,16 @@ export async function POST(req: Request) {
     const existing = existingUsers?.users?.find(u => u.email === SUPERADMIN_EMAIL);
 
     if (existing) {
-      // User exists - just ensure profile has superadmin role
+      // User exists - reset password and ensure profile has superadmin role
+      const { error: updateError } = await supabase.auth.admin.updateUserById(existing.id, {
+        password: SUPERADMIN_PASSWORD,
+        email_confirm: true,
+      });
+
+      if (updateError) {
+        return Response.json({ error: `Password reset failed: ${updateError.message}` }, { status: 500 });
+      }
+
       const { error: profileError } = await supabase
         .from('profiles')
         .upsert({
@@ -41,7 +50,7 @@ export async function POST(req: Request) {
         return Response.json({ error: `Profile update failed: ${profileError.message}` }, { status: 500 });
       }
 
-      return Response.json({ message: 'Superadmin already exists, profile updated', userId: existing.id });
+      return Response.json({ message: 'Superadmin password reset + profile updated', userId: existing.id });
     }
 
     // Create new user via admin API (bypasses email confirmation)
