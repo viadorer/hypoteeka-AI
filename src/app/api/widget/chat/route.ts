@@ -6,7 +6,7 @@ import { createInitialState, determinePhase, detectPersona } from '@/lib/agent/c
 import type { ConversationState } from '@/lib/agent/conversation-state';
 import { calculateLeadScore } from '@/lib/agent/lead-scoring';
 import { buildAgentPrompt } from '@/lib/agent/prompt-builder';
-import { getDefaultTenantId, getTenantConfig, getTenantApiKey } from '@/lib/tenant/config';
+import { getDefaultTenantId, getTenantConfigFromDB, getTenantApiKeyFromDB } from '@/lib/tenant/config';
 import { v4 as uuidv4 } from 'uuid';
 
 export const maxDuration = 30;
@@ -42,8 +42,8 @@ export async function POST(req: Request) {
     const { messages = [], sessionId = uuidv4(), config = {} } = body;
 
     const tenantId = config.tenantId || getDefaultTenantId();
-    const tenantConfig = getTenantConfig(tenantId);
-    const apiKey = getTenantApiKey(tenantId);
+    const tenantConfig = await getTenantConfigFromDB(tenantId);
+    const apiKey = await getTenantApiKeyFromDB(tenantId);
 
     if (!apiKey) {
       return new Response(JSON.stringify({ error: 'Missing AI API key' }), {

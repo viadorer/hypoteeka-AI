@@ -8,7 +8,7 @@ import { calculateLeadScore } from '@/lib/agent/lead-scoring';
 import { buildAgentPrompt } from '@/lib/agent/prompt-builder';
 import type { CtaIntensity } from '@/lib/agent/prompt-builder';
 import { storage } from '@/lib/storage';
-import { getTenantConfig, getTenantApiKey, getDefaultTenantId } from '@/lib/tenant/config';
+import { getTenantConfigFromDB, getTenantApiKeyFromDB, getDefaultTenantId } from '@/lib/tenant/config';
 import { submitLeadToRealvisor, buildRealvisorPayload } from '@/lib/realvisor';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -108,8 +108,8 @@ export async function POST(req: Request) {
     const userId: string | undefined = body.userId ?? undefined;
     const ctaIntensity: CtaIntensity | undefined = body.ctaIntensity;
 
-    const tenantConfig = getTenantConfig(tenantId);
-    const apiKey = getTenantApiKey(tenantId);
+    const tenantConfig = await getTenantConfigFromDB(tenantId);
+    const apiKey = await getTenantApiKeyFromDB(tenantId);
 
     if (!apiKey || apiKey === 'your-gemini-api-key-here') {
       return new Response(

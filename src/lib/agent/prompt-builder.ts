@@ -17,7 +17,7 @@ import { shouldOfferLeadCapture } from './lead-scoring';
 import { getRatesContext } from '../data/rates';
 import { getCnbLimits } from '../data/cnb-limits';
 import { getBasePromptParts, getPhaseInstruction, getToolInstruction, getRelevantKnowledge, getPersonaPrompt, getOperationalRules, getValuationScenario, getPostValuationStrategy, getFinalReminder } from './prompt-service';
-import { getDefaultTenantId, getTenantConfig } from '../tenant/config';
+import { getDefaultTenantId, getTenantConfigFromDB } from '../tenant/config';
 
 export type CtaIntensity = 'low' | 'medium' | 'high';
 
@@ -29,7 +29,7 @@ export async function buildAgentPrompt(
   lastUserMessage?: string,
   ctaIntensityOverride?: CtaIntensity
 ): Promise<string> {
-  const tenantConfig = getTenantConfig(tenantId);
+  const tenantConfig = await getTenantConfigFromDB(tenantId);
   const ctaIntensity: CtaIntensity = ctaIntensityOverride ?? tenantConfig.features.ctaIntensity;
   // Base prompt z DB (nebo lokální fallback)
   const baseParts = await getBasePromptParts(tenantId);
