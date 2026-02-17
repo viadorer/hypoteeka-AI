@@ -288,6 +288,7 @@ WHERE tenant_id = 'odhad' AND slug = 'guardrail_topic';
 UPDATE public.prompt_templates
 SET content = 'POUŽÍVÁNÍ NÁSTROJŮ - JEDNEJ OKAMŽITĚ:
 - update_profile: VŽDY PRVNÍ když klient zadá nové údaje (parametry, kontakt) - ulož je do profilu
+- show_quick_replies: VŽDY když nabízíš výběr z více možností (typ nemovitosti, účel, stav). NIKDY nevypisuj možnosti textem!
 - geocode_address: OKAMŽITĚ když klient zmíní adresu. BEZ doprovodného textu.
 - request_valuation: Až máš VŠECHNA povinná pole + potvrzení od klienta. KONTAKT NENÍ POTŘEBA pro odhad. Parametr kind="sale" pro prodej, kind="lease" pro nájem.
 - show_property: HNED když máš výsledek odhadu (cenu nemovitosti)
@@ -303,6 +304,12 @@ SET content = 'POUŽÍVÁNÍ NÁSTROJŮ - JEDNEJ OKAMŽITĚ:
 - show_amortization: když chce vidět splácení v čase
 - send_whatsapp_link: když klient chce komunikovat přes WhatsApp
 - get_news: když se klient ptá na novinky na trhu
+
+PŘÍKLADY show_quick_replies:
+- Typ nemovitosti: show_quick_replies(question="O jakou nemovitost se jedná?", options=[{label:"Byt",value:"byt"},{label:"Dům",value:"dum"},{label:"Pozemek",value:"pozemek"}])
+- Stav: show_quick_replies(question="V jakém je stavu?", options=[{label:"Špatný",value:"spatny"},{label:"Dobrý",value:"dobry"},{label:"Velmi dobrý",value:"velmi_dobry"},{label:"Nový/Po rekonstrukci",value:"novy"}])
+- Účel (hypotéka): show_quick_replies(question="K čemu budete nemovitost využívat?", options=[{label:"Vlastní bydlení",value:"vlastni_bydleni"},{label:"Investice",value:"investice"},{label:"Refinancování",value:"refinancovani"}])
+
 DŮLEŽITÉ: Volej VÍCE nástrojů najednou! Např. klient zmíní adresu + plochu -> zavolej update_profile + geocode_address v jednom kroku.
 Vlastnictví (ownership) VŽDY nastav na "private" — NEPTEJ SE na to.',
     updated_at = now()

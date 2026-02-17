@@ -14,6 +14,7 @@ import { SpecialistWidget } from './SpecialistWidget';
 import { ValuationWidget } from './ValuationWidget';
 import { ValuationResultWidget } from './ValuationResultWidget';
 import { AddressSuggestWidget } from './AddressSuggestWidget';
+import { QuickReplyWidget } from './QuickReplyWidget';
 import { NextStepsBar } from './NextStepsBar';
 
 interface ToolInvocation {
@@ -36,6 +37,7 @@ const TOOL_LABELS: Record<string, string> = {
   show_valuation: 'Ocenění nemovitosti',
   request_valuation: 'Ocenění nemovitosti',
   geocode_address: 'Ověření adresy',
+  show_quick_replies: 'Vyberte možnost',
   show_lead_capture: 'Kontaktní formulář',
   show_specialists: 'Dostupní specialisté',
   send_email_summary: 'Odesílám email',
@@ -228,6 +230,14 @@ export function WidgetRenderer({ toolInvocation, sessionId, onSend }: { toolInvo
           />
           {onSend && <NextStepsBar toolName={toolName} onSend={onSend} />}
         </>
+      );
+    case 'show_quick_replies':
+      return (
+        <QuickReplyWidget
+          question={args.question as string}
+          options={args.options as { label: string; value: string }[]}
+          onSelect={(value) => onSend?.(value)}
+        />
       );
     case 'show_lead_capture':
       return (

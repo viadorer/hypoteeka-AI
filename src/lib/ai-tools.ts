@@ -393,6 +393,25 @@ export const toolDefinitions = {
     },
   },
 
+  show_quick_replies: {
+    description: 'Zobraz interaktivni tlacitka s moznostmi k vyber. Pouzij VZDY kdyz nabizis vyber z vice moznosti (napr. typ nemovitosti: byt/dum/pozemek, ucel: vlastni bydleni/investice/refinancovani). NIKDY nevypisuj moznosti textem - vzdy pouzij tato tlacitka.',
+    inputSchema: z.object({
+      question: z.string().describe('Otazka nebo instrukce pro klienta (napr. "O jakou nemovitost se jedna?")'),
+      options: z.array(z.object({
+        label: z.string().describe('Text na tlacitku (napr. "Byt")'),
+        value: z.string().describe('Hodnota ktera se odesle kdyz klient klikne (napr. "byt")'),
+      })).describe('Pole moznosti - kazda ma label (zobrazeny text) a value (odeslana hodnota)'),
+    }),
+    execute: async ({ question, options }: { question: string; options: { label: string; value: string }[] }) => {
+      return {
+        question,
+        options,
+        summary: `Zobrazeno ${options.length} moznosti k vyberu.`,
+        displayed: true,
+      };
+    },
+  },
+
   show_specialists: {
     description: 'Zobraz widget s dostupnymi specialisty. Pouzij VZDY kdyz nabizis osobni konzultaci, schuzku s poradcem, nebo kdyz klient chce mluvit se specialistou.',
     inputSchema: z.object({}),
