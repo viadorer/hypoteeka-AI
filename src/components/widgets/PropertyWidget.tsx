@@ -19,10 +19,10 @@ const BuildingIcon = (
 export function PropertyWidget({ propertyPrice, propertyType, location }: Props) {
   return (
     <WidgetCard label="Nemovitost" icon={BuildingIcon}>
-      <div className="text-[28px] font-semibold text-white tracking-tight truncate">
+      <div className="text-[28px] font-semibold text-gray-900 tracking-tight truncate">
         {formatCZK(propertyPrice)}
       </div>
-      <div className="text-[13px] text-white/35 mt-1">
+      <div className="text-[13px] text-gray-400 mt-1">
         {propertyType && <span className="capitalize">{propertyType}</span>}
         {propertyType && location && <span> / </span>}
         {location && <span>{location}</span>}

@@ -25,42 +25,42 @@ export function StressTestWidget({ loanAmount, rate, years }: Props) {
 
   return (
     <WidgetCard label="Stress test" icon={AlertIcon}>
-      <div className="text-[13px] text-white/35 mb-3">
+      <div className="text-[13px] text-gray-500 mb-3">
         Co když sazba vzroste po refixaci?
       </div>
 
-      <div className="rounded-xl border border-white/[0.06] overflow-hidden">
+      <div className="rounded-xl border border-gray-200 overflow-hidden">
         {/* Header */}
-        <div className="grid grid-cols-3 gap-0 bg-white/[0.03] px-3 py-2 text-[10px] font-medium text-white/40 uppercase tracking-wider">
+        <div className="grid grid-cols-3 gap-0 bg-gray-50 px-3 py-2 text-[10px] font-medium text-gray-400 uppercase tracking-wider">
           <span>Sazba</span>
           <span className="text-right">Splátka</span>
           <span className="text-right">Rozdíl</span>
         </div>
 
         {/* Base row */}
-        <div className="grid grid-cols-3 gap-0 px-3 py-2.5 border-t border-white/[0.04] bg-emerald-500/[0.05]">
-          <span className="text-xs font-medium text-white/80">
+        <div className="grid grid-cols-3 gap-0 px-3 py-2.5 border-t border-gray-100 bg-emerald-50">
+          <span className="text-xs font-medium text-gray-800">
             {formatPercent(result.baseRate)}
           </span>
-          <span className="text-xs font-medium text-white/80 text-right">
+          <span className="text-xs font-medium text-gray-800 text-right">
             {formatCZK(result.basePayment)}
           </span>
-          <span className="text-xs text-emerald-400 text-right font-medium">
+          <span className="text-xs text-emerald-600 text-right font-medium">
             aktuální
           </span>
         </div>
 
         {/* Scenario rows */}
         {result.scenarios.map((s) => {
-          const severity = s.rateChange <= 0.01 ? 'text-amber-400' : s.rateChange <= 0.02 ? 'text-orange-400' : 'text-red-400';
-          const bg = s.rateChange <= 0.01 ? 'bg-amber-500/[0.03]' : s.rateChange <= 0.02 ? 'bg-orange-500/[0.03]' : 'bg-red-500/[0.03]';
+          const severity = s.rateChange <= 0.01 ? 'text-amber-600' : s.rateChange <= 0.02 ? 'text-orange-600' : 'text-red-600';
+          const bg = s.rateChange <= 0.01 ? 'bg-amber-50' : s.rateChange <= 0.02 ? 'bg-orange-50' : 'bg-red-50';
           return (
-            <div key={s.rateChange} className={`grid grid-cols-3 gap-0 px-3 py-2.5 border-t border-white/[0.04] ${bg}`}>
-              <span className="text-xs text-white/70">
+            <div key={s.rateChange} className={`grid grid-cols-3 gap-0 px-3 py-2.5 border-t border-gray-100 ${bg}`}>
+              <span className="text-xs text-gray-700">
                 {formatPercent(s.newRate)}
-                <span className="text-[9px] text-white/30 ml-1">+{(s.rateChange * 100).toFixed(0)}pp</span>
+                <span className="text-[9px] text-gray-400 ml-1">+{(s.rateChange * 100).toFixed(0)}pp</span>
               </span>
-              <span className="text-xs text-white/70 text-right">
+              <span className="text-xs text-gray-700 text-right">
                 {formatCZK(s.monthlyPayment)}
               </span>
               <span className={`text-xs text-right font-medium ${severity}`}>
@@ -78,7 +78,7 @@ export function StressTestWidget({ loanAmount, rate, years }: Props) {
           <ResultRow
             label={`Celkem při +${(result.scenarios[result.scenarios.length - 1].rateChange * 100).toFixed(0)}pp`}
             value={`${formatCZK(result.scenarios[result.scenarios.length - 1].totalCost)} (+${formatCZK(result.scenarios[result.scenarios.length - 1].totalCost - result.baseTotalCost)})`}
-            valueColor="text-red-400"
+            valueColor="text-red-600"
           />
         )}
       </div>

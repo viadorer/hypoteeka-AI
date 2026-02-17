@@ -15,6 +15,10 @@ import { ValuationWidget } from './ValuationWidget';
 import { ValuationResultWidget } from './ValuationResultWidget';
 import { AddressSuggestWidget } from './AddressSuggestWidget';
 import { QuickReplyWidget } from './QuickReplyWidget';
+import { RateComparisonWidget } from './RateComparisonWidget';
+import { TimelineWidget } from './TimelineWidget';
+import { ChecklistWidget } from './ChecklistWidget';
+import { AppointmentWidget } from './AppointmentWidget';
 import { NextStepsBar } from './NextStepsBar';
 
 interface ToolInvocation {
@@ -35,6 +39,10 @@ const TOOL_LABELS: Record<string, string> = {
   show_amortization: 'Průběh splácení',
   show_stress_test: 'Stress test',
   show_valuation: 'Ocenění nemovitosti',
+  show_rate_comparison: 'Porovnání sazeb',
+  show_timeline: 'Proces koupě',
+  show_checklist: 'Dokumenty',
+  show_appointment: 'Rezervace termínu',
   request_valuation: 'Ocenění nemovitosti',
   geocode_address: 'Ověření adresy',
   show_quick_replies: 'Vyberte možnost',
@@ -226,6 +234,54 @@ export function WidgetRenderer({ toolInvocation, sessionId, onSend }: { toolInvo
       return (
         <>
           <ValuationWidget
+            context={args.context as string | undefined}
+          />
+          {onSend && <NextStepsBar toolName={toolName} onSend={onSend} />}
+        </>
+      );
+    case 'show_rate_comparison': {
+      const out = toolInvocation.output;
+      if (!out || !out.banks) return <WidgetSkeleton toolName={toolName} />;
+      return (
+        <>
+          <RateComparisonWidget
+            loanAmount={out.loanAmount as number}
+            years={out.years as number}
+            banks={out.banks as { label: string; rate: number; monthly: number; color: string }[]}
+            bestRate={out.bestRate as number}
+            worstRate={out.worstRate as number}
+            bestMonthly={out.bestMonthly as number}
+            worstMonthly={out.worstMonthly as number}
+            totalDifference={out.totalDifference as number}
+          />
+          {onSend && <NextStepsBar toolName={toolName} onSend={onSend} />}
+        </>
+      );
+    }
+    case 'show_timeline':
+      return (
+        <>
+          <TimelineWidget
+            type={(args.type as 'koupe' | 'prodej' | 'refinancovani') ?? 'koupe'}
+            currentStep={args.currentStep as number | undefined}
+          />
+          {onSend && <NextStepsBar toolName={toolName} onSend={onSend} />}
+        </>
+      );
+    case 'show_checklist':
+      return (
+        <>
+          <ChecklistWidget
+            type={(args.type as 'koupe' | 'prodej' | 'refinancovani') ?? 'koupe'}
+          />
+          {onSend && <NextStepsBar toolName={toolName} onSend={onSend} />}
+        </>
+      );
+    case 'show_appointment':
+      return (
+        <>
+          <AppointmentWidget
+            specialistName={args.specialistName as string | undefined}
             context={args.context as string | undefined}
           />
           {onSend && <NextStepsBar toolName={toolName} onSend={onSend} />}

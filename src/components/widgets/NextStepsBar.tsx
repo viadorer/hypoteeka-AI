@@ -1,6 +1,6 @@
 'use client';
 
-import { ShieldCheck, Calculator, TrendingUp, Users, Home, BarChart3, RefreshCw, ArrowRight, PiggyBank, Search } from 'lucide-react';
+import { ShieldCheck, Calculator, TrendingUp, Users, Home, BarChart3, RefreshCw, ArrowRight, PiggyBank, Search, Clock, FileCheck } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
 interface NextStep {
@@ -88,6 +88,38 @@ const NEXT_STEPS: Record<string, { title: string; steps: NextStep[] }> = {
       { icon: Calculator, label: 'Spočítat splátku', desc: 'Měsíční splátka hypotéky s aktuální sazbou.', message: 'Spočítej mi měsíční splátku hypotéky.' },
       { icon: ShieldCheck, label: 'Zkontrolovat bonitu', desc: 'Ověřím podmínky bank podle pravidel ČNB.', message: 'Chci zkontrolovat, jestli splním podmínky banky.' },
       { icon: Users, label: 'Konzultace se specialistou', desc: 'Bezplatné spojení s poradcem pro osobní řešení.', message: 'Chci se spojit se specialistou na bezplatnou konzultaci.' },
+    ],
+  },
+  show_rate_comparison: {
+    title: 'Další kroky',
+    steps: [
+      { icon: Calculator, label: 'Spočítat splátku', desc: 'Přesný výpočet splátky s konkrétní sazbou.', message: 'Spočítej mi přesnou splátku hypotéky.' },
+      { icon: ShieldCheck, label: 'Zkontrolovat bonitu', desc: 'Ověřím, jestli splníte podmínky bank.', message: 'Chci zkontrolovat, jestli splním podmínky banky.' },
+      { icon: Clock, label: 'Jak probíhá koupě', desc: 'Časová osa celého procesu koupě nemovitosti.', message: 'Jak probíhá proces koupě nemovitosti?' },
+      { icon: Users, label: 'Konzultace se specialistou', desc: 'Poradce vám může zajistit ještě lepší sazbu.', message: 'Chci se spojit se specialistou na bezplatnou konzultaci.' },
+    ],
+  },
+  show_timeline: {
+    title: 'Další kroky',
+    steps: [
+      { icon: FileCheck, label: 'Potřebné dokumenty', desc: 'Seznam dokumentů, které budete potřebovat.', message: 'Jaké dokumenty budu potřebovat?' },
+      { icon: Calculator, label: 'Spočítat splátku', desc: 'Měsíční splátka hypotéky s aktuální sazbou.', message: 'Spočítej mi měsíční splátku hypotéky.' },
+      { icon: Users, label: 'Konzultace se specialistou', desc: 'Bezplatné spojení s poradcem pro osobní řešení.', message: 'Chci se spojit se specialistou na bezplatnou konzultaci.' },
+    ],
+  },
+  show_checklist: {
+    title: 'Další kroky',
+    steps: [
+      { icon: Clock, label: 'Jak probíhá proces', desc: 'Časová osa celého procesu krok za krokem.', message: 'Jak probíhá celý proces koupě nemovitosti?' },
+      { icon: Calculator, label: 'Spočítat splátku', desc: 'Měsíční splátka hypotéky s aktuální sazbou.', message: 'Spočítej mi měsíční splátku hypotéky.' },
+      { icon: Users, label: 'Konzultace se specialistou', desc: 'Bezplatné spojení s poradcem pro osobní řešení.', message: 'Chci se spojit se specialistou na bezplatnou konzultaci.' },
+    ],
+  },
+  show_appointment: {
+    title: 'Další kroky',
+    steps: [
+      { icon: Calculator, label: 'Spočítat splátku', desc: 'Měsíční splátka hypotéky s aktuální sazbou.', message: 'Spočítej mi měsíční splátku hypotéky.' },
+      { icon: FileCheck, label: 'Potřebné dokumenty', desc: 'Co si připravit na schůzku.', message: 'Jaké dokumenty si mám připravit na schůzku?' },
     ],
   },
 };

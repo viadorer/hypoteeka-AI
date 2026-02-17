@@ -56,7 +56,7 @@ export function LeadCaptureWidget({ context, prefilledName, prefilledEmail, pref
 
   if (submitted) {
     return (
-      <div className="bg-white/60 backdrop-blur-xl border border-white/40 rounded-2xl p-4 md:p-6 shadow-lg shadow-black/[0.03] animate-in slide-in-from-bottom-4 duration-500 overflow-hidden w-full min-w-0">
+      <div className="bg-white rounded-2xl p-4 md:p-6 shadow-sm border border-gray-100 animate-in slide-in-from-bottom-4 duration-500 overflow-hidden w-full min-w-0">
         <div className="w-8 h-[3px] rounded-full bg-emerald-500 mb-4" />
         <div className="text-center py-4">
           <p className="text-lg font-semibold text-gray-900 mb-2">Děkujeme za váš zájem</p>
@@ -67,7 +67,7 @@ export function LeadCaptureWidget({ context, prefilledName, prefilledEmail, pref
   }
 
   return (
-    <div className="bg-white/60 backdrop-blur-xl border border-white/40 rounded-2xl p-4 md:p-6 shadow-lg shadow-black/[0.03] animate-in slide-in-from-bottom-4 duration-500 overflow-hidden w-full min-w-0">
+    <div className="bg-white rounded-2xl p-4 md:p-6 shadow-sm border border-gray-100 animate-in slide-in-from-bottom-4 duration-500 overflow-hidden w-full min-w-0">
       <div className="w-8 h-[3px] rounded-full bg-[#E91E63] mb-4" />
       <p className="text-[11px] font-semibold uppercase tracking-wider text-gray-400 mb-1">
         Nezávazná konzultace

@@ -2,7 +2,7 @@
 
 import { ReactNode } from 'react';
 
-// ─── WIDGET CARD (glass card wrapper) ───────────────────────
+// ─── WIDGET CARD (light card wrapper) ───────────────────────
 
 interface WidgetCardProps {
   children: ReactNode;
@@ -13,10 +13,11 @@ interface WidgetCardProps {
 
 export function WidgetCard({ children, accentColor = '#E91E63', label, icon }: WidgetCardProps) {
   return (
-    <div className="bg-white/[0.025] border border-white/[0.07] rounded-[18px] p-[18px] w-full animate-in slide-in-from-bottom-3 duration-400">
-      <div className="flex items-center gap-2 mb-3.5 pb-3 border-b border-white/[0.05]">
-        {icon && <span className="text-white/50">{icon}</span>}
-        <span className="text-[11px] font-medium uppercase tracking-[0.06em] text-white/50">
+    <div className="bg-white rounded-2xl p-4 md:p-6 shadow-sm border border-gray-100 w-full animate-in slide-in-from-bottom-4 duration-500 overflow-hidden min-w-0">
+      <div className="w-8 h-[3px] rounded-full mb-4" style={{ backgroundColor: accentColor }} />
+      <div className="flex items-center gap-2 mb-3">
+        {icon && <span className="text-gray-400">{icon}</span>}
+        <span className="text-[11px] font-semibold uppercase tracking-wider text-gray-400">
           {label}
         </span>
       </div>
@@ -36,12 +37,12 @@ interface ResultBoxProps {
 export function ResultBox({ label, value, highlight }: ResultBoxProps) {
   return (
     <div>
-      <div className="text-[10px] text-white/30 uppercase tracking-[0.05em] mb-1">{label}</div>
+      <div className="text-[10px] text-gray-400 uppercase tracking-wider mb-1">{label}</div>
       <div
         className={`tabular-nums ${
           highlight
-            ? 'text-lg font-semibold text-white'
-            : 'text-sm font-medium text-white/70'
+            ? 'text-lg font-semibold text-gray-900'
+            : 'text-sm font-medium text-gray-700'
         }`}
       >
         {value}
@@ -61,13 +62,13 @@ interface ResultRowProps {
 export function ResultRow({ label, value, valueColor }: ResultRowProps) {
   return (
     <div className="flex justify-between text-sm">
-      <span className="text-white/40">{label}</span>
-      <span className={`font-medium tabular-nums ${valueColor || 'text-white/70'}`}>{value}</span>
+      <span className="text-gray-500">{label}</span>
+      <span className={`font-medium tabular-nums ${valueColor || 'text-gray-800'}`}>{value}</span>
     </div>
   );
 }
 
-// ─── RESULT PANEL (glass background for results) ────────────
+// ─── RESULT PANEL (light background for results) ────────────
 
 interface ResultPanelProps {
   children: ReactNode;
@@ -76,7 +77,7 @@ interface ResultPanelProps {
 
 export function ResultPanel({ children, className = '' }: ResultPanelProps) {
   return (
-    <div className={`mt-4 p-4 bg-white/[0.03] rounded-[14px] border border-white/[0.06] ${className}`}>
+    <div className={`mt-4 p-4 bg-gray-50 rounded-xl border border-gray-100 ${className}`}>
       {children}
     </div>
   );
@@ -90,7 +91,7 @@ interface RatioBarProps {
   rightColor?: string;
 }
 
-export function RatioBar({ ratio, leftColor = 'bg-white', rightColor = 'bg-white/[0.12]' }: RatioBarProps) {
+export function RatioBar({ ratio, leftColor = 'bg-[#E91E63]', rightColor = 'bg-gray-100' }: RatioBarProps) {
   const pct = Math.max(0, Math.min(100, ratio * 100));
   return (
     <div className="flex h-1.5 rounded-full overflow-hidden mb-3.5">
@@ -106,7 +107,7 @@ export function StatusDot({ ok }: { ok: boolean }) {
   return (
     <span
       className={`inline-block w-2 h-2 rounded-full ${
-        ok ? 'bg-emerald-400 shadow-[0_0_6px_rgba(52,199,89,0.4)]' : 'bg-red-400 shadow-[0_0_6px_rgba(239,68,68,0.4)]'
+        ok ? 'bg-emerald-500 shadow-[0_0_6px_rgba(52,199,89,0.4)]' : 'bg-red-500 shadow-[0_0_6px_rgba(239,68,68,0.4)]'
       }`}
     />
   );
@@ -121,7 +122,7 @@ interface CtaButtonProps {
 }
 
 export function CtaButton({ children, onClick, href }: CtaButtonProps) {
-  const cls = "w-full mt-3.5 py-3 px-4 rounded-full bg-white text-[#111] text-[13px] font-medium text-center transition-all hover:opacity-90 active:scale-[0.98] cursor-pointer block";
+  const cls = "w-full mt-3.5 py-3 px-4 rounded-full bg-[#E91E63] text-white text-[13px] font-medium text-center transition-all hover:opacity-90 active:scale-[0.98] cursor-pointer block";
   if (href) {
     return (
       <a href={href} target="_blank" rel="noopener noreferrer" className={cls}>
@@ -162,12 +163,12 @@ interface StatCardProps {
 
 export function StatCard({ label, value, valueColor, sub }: StatCardProps) {
   return (
-    <div className="bg-white/[0.03] rounded-xl p-3 border border-white/[0.06] min-w-0">
-      <div className="text-[11px] text-white/35 mb-1">{label}</div>
-      <div className={`text-lg font-semibold truncate tabular-nums ${valueColor || 'text-white'}`}>
+    <div className="bg-gray-50 rounded-xl p-3 border border-gray-100 min-w-0">
+      <div className="text-[11px] text-gray-400 mb-1">{label}</div>
+      <div className={`text-lg font-semibold truncate tabular-nums ${valueColor || 'text-gray-900'}`}>
         {value}
       </div>
-      {sub && <div className="text-[11px] text-white/30 mt-0.5">{sub}</div>}
+      {sub && <div className="text-[11px] text-gray-400 mt-0.5">{sub}</div>}
     </div>
   );
 }
@@ -175,15 +176,15 @@ export function StatCard({ label, value, valueColor, sub }: StatCardProps) {
 // ─── DIVIDER ────────────────────────────────────────────────
 
 export function Divider() {
-  return <div className="border-t border-white/[0.06] my-3" />;
+  return <div className="border-t border-gray-100 my-3" />;
 }
 
 // ─── SEVERITY COLOR HELPER ──────────────────────────────────
 
 export function severityColor(level: 'ok' | 'warn' | 'danger'): string {
   switch (level) {
-    case 'ok': return 'text-emerald-400';
-    case 'warn': return 'text-amber-400';
-    case 'danger': return 'text-red-400';
+    case 'ok': return 'text-emerald-600';
+    case 'warn': return 'text-amber-600';
+    case 'danger': return 'text-red-600';
   }
 }

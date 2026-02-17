@@ -21,7 +21,7 @@ const RefreshIcon = (
 
 export function RefinanceWidget({ remainingBalance, currentRate, newRate, remainingYears }: Props) {
   const result = calculateRefinance(remainingBalance, currentRate, newRate ?? DEFAULTS.rate, remainingYears);
-  const savingColor = result.monthlySaving > 0 ? 'text-emerald-400' : 'text-red-400';
+  const savingColor = result.monthlySaving > 0 ? 'text-emerald-600' : 'text-red-600';
 
   return (
     <WidgetCard label="Refinancování" icon={RefreshIcon}>
@@ -34,7 +34,7 @@ export function RefinanceWidget({ remainingBalance, currentRate, newRate, remain
         <StatCard
           label="Nová splátka"
           value={formatCZK(result.newPayment)}
-          valueColor="text-emerald-400"
+          valueColor="text-emerald-600"
           sub={`${formatPercent(newRate ?? DEFAULTS.rate)} p.a.`}
         />
       </StatGrid>

@@ -393,6 +393,122 @@ export const toolDefinitions = {
     },
   },
 
+  show_rate_comparison: {
+    description: 'Zobraz porovnani urokovych sazeb na trhu. Pouzij kdyz se klient pta na sazby, porovnani bank, nebo chce videt aktualni sazby. Sazby jsou anonymni (bez nazvu bank) a vychazi z prumeru CNB.',
+    inputSchema: z.object({
+      loanAmount: z.number().describe('Vyse uveru v CZK'),
+      years: z.number().optional().describe('Doba splatnosti v letech. Pokud klient neuvedl, NEZADAVEJ - system pouzije 30 let.'),
+    }),
+    execute: async ({ loanAmount, years }: { loanAmount: number; years?: number }) => {
+      const rates = await getMarketRates();
+      const y = years ?? DEFAULTS.years;
+
+      const fixRates = [
+        rates.mortgageRateFix1y,
+        rates.mortgageRateFix5y,
+        rates.mortgageRateFix10y,
+        rates.mortgageRateFix10yPlus,
+      ].filter(r => r > 0);
+
+      const avgRate = rates.mortgageRateFix5y > 0
+        ? rates.mortgageRateFix5y / 100
+        : (rates.mortgageAvgRate > 0 ? rates.mortgageAvgRate / 100 : DEFAULTS.rate);
+
+      const highRate = fixRates.length > 0
+        ? Math.max(...fixRates) / 100
+        : avgRate + 0.005;
+      const lowRate = fixRates.length > 0
+        ? Math.min(...fixRates) / 100
+        : avgRate - 0.005;
+
+      // Generate 5 anonymous "bank" tiers from real ČNB data
+      const spread = highRate - lowRate;
+      const tiers = [
+        { label: 'Banka A', rate: lowRate, color: '#22c55e' },
+        { label: 'Banka B', rate: lowRate + spread * 0.25, color: '#06b6d4' },
+        { label: 'Banka C', rate: avgRate, color: '#f59e0b' },
+        { label: 'Banka D', rate: lowRate + spread * 0.75, color: '#6366f1' },
+        { label: 'Banka E', rate: highRate, color: '#ef4444' },
+      ].sort((a, b) => a.rate - b.rate);
+
+      const calc = (rate: number) => {
+        const mr = rate / 12;
+        const np = y * 12;
+        return mr > 0 ? (loanAmount * mr) / (1 - Math.pow(1 + mr, -np)) : loanAmount / np;
+      };
+
+      const banks = tiers.map(t => ({
+        label: t.label,
+        rate: t.rate,
+        monthly: Math.round(calc(t.rate)),
+        color: t.color,
+      }));
+
+      const bestMonthly = banks[0].monthly;
+      const worstMonthly = banks[banks.length - 1].monthly;
+      const totalDiff = Math.round((worstMonthly - bestMonthly) * y * 12);
+
+      return {
+        loanAmount,
+        years: y,
+        banks,
+        bestRate: banks[0].rate,
+        worstRate: banks[banks.length - 1].rate,
+        bestMonthly,
+        worstMonthly,
+        totalDifference: totalDiff,
+        summary: `Porovnani sazeb: ${formatPercent(banks[0].rate)} az ${formatPercent(banks[banks.length - 1].rate)}. Rozdil az ${formatCZK(totalDiff)} za celou dobu. Zkuseny poradce se dokaze dostat i pod nejnizsi sazbu.`,
+        displayed: true,
+      };
+    },
+  },
+
+  show_timeline: {
+    description: 'Zobraz casovou osu procesu koupe/prodeje/refinancovani nemovitosti. Pouzij kdyz se klient pta na postup, kroky, jak to probiha, co ho ceka. Edukacni widget.',
+    inputSchema: z.object({
+      type: z.enum(['koupe', 'prodej', 'refinancovani']).describe('Typ procesu'),
+      currentStep: z.number().optional().describe('Aktualni krok (0-indexed). Pokud nevis, NEZADAVEJ.'),
+    }),
+    execute: async ({ type, currentStep }: { type: 'koupe' | 'prodej' | 'refinancovani'; currentStep?: number }) => {
+      return {
+        type,
+        currentStep,
+        summary: `Casova osa procesu ${type} zobrazena.`,
+        displayed: true,
+      };
+    },
+  },
+
+  show_checklist: {
+    description: 'Zobraz interaktivni checklist dokumentu potrebnych ke koupi/prodeji/refinancovani. Pouzij kdyz se klient pta na dokumenty, co potrebuje pripravit, nebo co ma mit s sebou.',
+    inputSchema: z.object({
+      type: z.enum(['koupe', 'prodej', 'refinancovani']).describe('Typ transakce'),
+    }),
+    execute: async ({ type }: { type: 'koupe' | 'prodej' | 'refinancovani' }) => {
+      return {
+        type,
+        summary: `Checklist dokumentu pro ${type} zobrazen.`,
+        displayed: true,
+      };
+    },
+  },
+
+  show_appointment: {
+    description: 'Zobraz widget pro rezervaci terminu konzultace se specialistou. Pouzij kdyz klient chce domluvit schuzku, termin, konzultaci. Alternativa k show_lead_capture kdyz klient preferuje konkretni cas.',
+    inputSchema: z.object({
+      specialistName: z.string().optional().describe('Jmeno specialisty (napr. "Misa", "Filip"). Pokud nevis, NEZADAVEJ.'),
+      context: z.string().optional().describe('Kratky kontext co klient potrebuje (napr. "Konzultace k hypotece na byt v Praze")'),
+    }),
+    execute: async ({ specialistName, context }: { specialistName?: string; context?: string }) => {
+      return {
+        specialistName,
+        context,
+        summary: 'Widget pro rezervaci terminu zobrazen.',
+        displayed: true,
+      };
+    },
+  },
+
   show_quick_replies: {
     description: 'Zobraz interaktivni tlacitka s moznostmi k vyber. Pouzij VZDY kdyz nabizis vyber z vice moznosti (napr. typ nemovitosti: byt/dum/pozemek, ucel: vlastni bydleni/investice/refinancovani). NIKDY nevypisuj moznosti textem - vzdy pouzij tato tlacitka.',
     inputSchema: z.object({

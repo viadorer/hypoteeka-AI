@@ -23,10 +23,10 @@ export function AffordabilityWidget({ monthlyIncome, equity, isYoung }: Props) {
 
   return (
     <WidgetCard label="Kolik si můžete dovolit" icon={WalletIcon}>
-      <div className="text-[28px] font-semibold text-white tracking-tight truncate">
+      <div className="text-[28px] font-semibold text-gray-900 tracking-tight truncate">
         {formatCZK(result.maxPropertyPrice)}
       </div>
-      <div className="text-[13px] text-white/35 mt-1 mb-4">maximální cena nemovitosti</div>
+      <div className="text-[13px] text-gray-400 mt-1 mb-4">maximální cena nemovitosti</div>
 
       <div className="space-y-2">
         <ResultRow label="Maximální úvěr" value={formatCZK(result.maxLoan)} />

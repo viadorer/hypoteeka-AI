@@ -30,15 +30,15 @@ export function RentVsBuyWidget({ propertyPrice, equity, monthlyRent }: Props) {
         <ResultRow
           label="Rozdíl měsíčně"
           value={`${result.difference > 0 ? '+' : ''}${formatCZK(result.difference)}`}
-          valueColor={result.difference > 0 ? 'text-red-400' : 'text-emerald-400'}
+          valueColor={result.difference > 0 ? 'text-red-600' : 'text-emerald-600'}
         />
         <ResultRow label="Celkem nájem (30 let)" value={formatCZK(result.totalRentCost)} />
         <ResultRow label="Celkem hypotéka (30 let)" value={formatCZK(result.totalMortgageCost)} />
-        <ResultRow label="Vlastní kapitál po 30 letech" value={formatCZK(result.equityAfterYears)} valueColor="text-emerald-400" />
+        <ResultRow label="Vlastní kapitál po 30 letech" value={formatCZK(result.equityAfterYears)} valueColor="text-emerald-600" />
         {result.breakEvenYears && (
           <>
             <Divider />
-            <ResultRow label="Break-even" value={`${result.breakEvenYears} let`} valueColor="text-white" />
+            <ResultRow label="Break-even" value={`${result.breakEvenYears} let`} valueColor="text-gray-900" />
           </>
         )}
       </div>

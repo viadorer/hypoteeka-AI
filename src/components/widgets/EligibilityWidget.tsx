@@ -24,8 +24,8 @@ export function EligibilityWidget({ propertyPrice, equity, monthlyIncome, isYoun
     <WidgetCard label="Bonita ČNB" icon={ShieldIcon}>
       <div className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-[13px] font-medium mb-4 ${
         result.allOk
-          ? 'bg-emerald-500/10 border border-emerald-500/20 text-emerald-400'
-          : 'bg-red-500/10 border border-red-500/20 text-red-400'
+          ? 'bg-emerald-50 border border-emerald-200 text-emerald-700'
+          : 'bg-red-50 border border-red-200 text-red-700'
       }`}>
         <StatusDot ok={result.allOk} />
         {result.allOk ? 'Splňujete limity ČNB' : 'Nesplňujete limity ČNB'}
@@ -35,22 +35,22 @@ export function EligibilityWidget({ propertyPrice, equity, monthlyIncome, isYoun
         <ResultRow
           label="LTV"
           value={`${formatPercent(result.ltvValue)} ${result.ltvOk ? 'OK' : 'X'}`}
-          valueColor={result.ltvOk ? 'text-emerald-400' : 'text-red-400'}
+          valueColor={result.ltvOk ? 'text-emerald-600' : 'text-red-600'}
         />
         <ResultRow
           label="DSTI"
           value={`${formatPercent(result.dstiValue)} ${result.dstiOk ? 'OK' : 'X'}`}
-          valueColor={result.dstiOk ? 'text-emerald-400' : 'text-red-400'}
+          valueColor={result.dstiOk ? 'text-emerald-600' : 'text-red-600'}
         />
         <ResultRow
           label="DTI"
           value={`${result.dtiValue.toFixed(1).replace('.', ',')}x ${result.dtiOk ? 'OK' : 'X'}`}
-          valueColor={result.dtiOk ? 'text-emerald-400' : 'text-red-400'}
+          valueColor={result.dtiOk ? 'text-emerald-600' : 'text-red-600'}
         />
       </div>
 
       {!result.allOk && result.reasons.length > 0 && (
-        <div className="mt-3 pt-3 border-t border-white/[0.06] text-[11px] text-white/35 space-y-1">
+        <div className="mt-3 pt-3 border-t border-gray-100 text-[11px] text-gray-500 space-y-1">
           {result.reasons.map((r, i) => (
             <p key={i}>{r}</p>
           ))}

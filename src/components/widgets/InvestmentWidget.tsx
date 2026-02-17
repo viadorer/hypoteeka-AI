@@ -20,7 +20,7 @@ const TrendIcon = (
 
 export function InvestmentWidget({ purchasePrice, equity, monthlyRentalIncome, monthlyExpenses }: Props) {
   const result = calculateInvestment(purchasePrice, equity, monthlyRentalIncome, monthlyExpenses);
-  const cfColor = result.monthlyCashFlow >= 0 ? 'text-emerald-400' : 'text-red-400';
+  const cfColor = result.monthlyCashFlow >= 0 ? 'text-emerald-600' : 'text-red-600';
 
   return (
     <WidgetCard label="Investiční analýza" icon={TrendIcon}>

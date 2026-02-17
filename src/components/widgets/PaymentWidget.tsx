@@ -67,7 +67,7 @@ export function PaymentWidget({ propertyPrice, equity, rate, rpsn, years, scenar
 
   return (
     <WidgetCard label="Splátka hypotéky" icon={HomeIcon}>
-      <div className="text-sm text-white/40 mb-3">
+      <div className="text-sm text-gray-500 mb-3">
         Úvěr {formatCZK(loanAmount)} na {yearsVal} let
       </div>
 
@@ -98,19 +98,19 @@ export function PaymentWidget({ propertyPrice, equity, rate, rpsn, years, scenar
 
       {/* Saving callout */}
       {(saving ?? 0) > 0 && (
-        <div className="mt-3 bg-emerald-500/10 border border-emerald-500/20 rounded-xl p-3">
-          <p className="text-sm font-medium text-emerald-400">
+        <div className="mt-3 bg-emerald-50 border border-emerald-200 rounded-xl p-3">
+          <p className="text-sm font-medium text-emerald-700">
             Rozdíl: {formatCZK(monthlySaving ?? 0)}/měsíc
           </p>
-          <p className="text-[11px] text-emerald-400/70 mt-0.5">
+          <p className="text-[11px] text-emerald-600 mt-0.5">
             {formatCZK(saving ?? 0)} za celou dobu splácení
           </p>
         </div>
       )}
 
       {/* CTA message */}
-      <div className="mt-3 pt-3 border-t border-white/[0.06]">
-        <p className="text-[11px] text-white/30 leading-relaxed">
+      <div className="mt-3 pt-3 border-t border-gray-100">
+        <p className="text-[11px] text-gray-400 leading-relaxed">
           V praxi se zkušený poradce dokáže dostat i pod nejnižší uvedenou sazbu.
           Záleží na osobních vazbách, zkušenostech s vyjednáváním a celkovém nastavení úvěru.
         </p>
@@ -128,28 +128,28 @@ function ScenarioCard({ label, rate, monthly, totalInterest, variant }: {
 }) {
   const styles = {
     muted: {
-      bg: 'bg-white/[0.02]',
-      border: 'border-white/[0.06]',
-      label: 'text-white/30',
-      rate: 'text-white/40',
-      monthly: 'text-white/50',
-      interest: 'text-white/25',
+      bg: 'bg-gray-50',
+      border: 'border-gray-100',
+      label: 'text-gray-400',
+      rate: 'text-gray-500',
+      monthly: 'text-gray-600',
+      interest: 'text-gray-400',
     },
     default: {
-      bg: 'bg-white/[0.04]',
-      border: 'border-white/[0.1]',
-      label: 'text-white/40',
-      rate: 'text-white/60',
-      monthly: 'text-white/80',
-      interest: 'text-white/35',
+      bg: 'bg-gray-50',
+      border: 'border-gray-200',
+      label: 'text-gray-500',
+      rate: 'text-gray-700',
+      monthly: 'text-gray-800',
+      interest: 'text-gray-400',
     },
     highlight: {
-      bg: 'bg-white/[0.06]',
-      border: 'border-white/[0.15]',
-      label: 'text-white',
-      rate: 'text-white',
-      monthly: 'text-white',
-      interest: 'text-white/40',
+      bg: 'bg-[#FFF0F5]',
+      border: 'border-[#E91E63]/20',
+      label: 'text-gray-800',
+      rate: 'text-gray-900',
+      monthly: 'text-gray-900',
+      interest: 'text-gray-500',
     },
   }[variant];
 
@@ -164,7 +164,7 @@ function ScenarioCard({ label, rate, monthly, totalInterest, variant }: {
       <p className={`text-sm md:text-lg font-semibold ${styles.monthly} mt-0.5`}>
         {formatCZK(monthly)}
       </p>
-      <p className="text-[9px] text-white/25">/ měsíc</p>
+      <p className="text-[9px] text-gray-400">/ měsíc</p>
       <p className={`text-[9px] ${styles.interest} mt-1`}>
         Úroky: {formatCZK(totalInterest)}
       </p>
