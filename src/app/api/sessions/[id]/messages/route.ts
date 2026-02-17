@@ -1,14 +1,29 @@
 import { storage } from '@/lib/storage';
 
 export async function GET(
-  _req: Request,
+  req: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { id } = await params;
+    const url = new URL(req.url);
+    const authorId = url.searchParams.get('authorId');
+    const userId = url.searchParams.get('userId');
     const session = await storage.getSession(id);
 
     if (!session) {
+      return new Response(
+        JSON.stringify({ uiMessages: [], profile: {}, phase: 'greeting' }),
+        { status: 200, headers: { 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Ownership check: session must belong to the requesting user
+    const isOwner =
+      (userId && session.userId === userId) ||
+      (authorId && session.authorId === authorId && !session.userId) ||
+      (!session.userId && !session.authorId); // legacy sessions without ownership
+    if (!isOwner) {
       return new Response(
         JSON.stringify({ uiMessages: [], profile: {}, phase: 'greeting' }),
         { status: 200, headers: { 'Content-Type': 'application/json' } }

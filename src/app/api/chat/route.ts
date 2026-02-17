@@ -105,6 +105,7 @@ export async function POST(req: Request) {
     const sessionId: string = body.sessionId ?? 'default';
     const tenantId: string = body.tenantId ?? getDefaultTenantId();
     const authorId: string = body.authorId ?? 'anonymous';
+    const userId: string | undefined = body.userId ?? undefined;
     const ctaIntensity: CtaIntensity | undefined = body.ctaIntensity;
 
     const tenantConfig = getTenantConfig(tenantId);
@@ -205,6 +206,7 @@ export async function POST(req: Request) {
       id: sessionId,
       tenantId,
       authorId,
+      userId,
       profile,
       state,
       messages: messages.map((m: { role: string; parts?: AnyPart[] }) => ({
@@ -656,6 +658,7 @@ export async function POST(req: Request) {
           id: sessionId,
           tenantId,
           authorId,
+          userId,
           profile,
           state,
           messages: [],

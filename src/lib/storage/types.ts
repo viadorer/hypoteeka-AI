@@ -20,7 +20,8 @@ import type { ConversationState } from '../agent/conversation-state';
 export interface SessionData {
   id: string;
   tenantId: string;
-  authorId: string; // Browser fingerprint or user ID for session ownership
+  authorId: string; // Browser fingerprint for anonymous session ownership
+  userId?: string;  // Supabase auth user ID (set when logged in)
   profile: ClientProfile;
   state: ConversationState;
   messages: MessageRecord[];
@@ -40,6 +41,8 @@ export interface LeadRecord {
   id: string;
   tenantId: string;
   sessionId: string;
+  userId?: string;   // Supabase auth user ID
+  authorId?: string; // Browser fingerprint for anonymous
   name: string;
   email: string;
   phone: string;
@@ -50,6 +53,24 @@ export interface LeadRecord {
   realvisorLeadId?: string;
   realvisorContactId?: string;
   createdAt: string;
+}
+
+export interface UserProfile {
+  id: string;           // auth.users UUID
+  displayName?: string;
+  preferredName?: string;
+  email?: string;
+  phone?: string;
+  avatarUrl?: string;
+  city?: string;
+  age?: number;
+  monthlyIncome?: number;
+  partnerIncome?: number;
+  purpose?: string;
+  notes?: string;
+  browserIds: string[];
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface WidgetEventRecord {
@@ -107,7 +128,7 @@ export interface StorageProvider {
   // Sessions
   getSession(sessionId: string): Promise<SessionData | null>;
   saveSession(session: SessionData): Promise<void>;
-  listSessions(tenantId?: string, authorId?: string): Promise<SessionData[]>;
+  listSessions(tenantId?: string, authorId?: string, userId?: string): Promise<SessionData[]>;
 
   // Leads
   saveLead(lead: LeadRecord): Promise<void>;
@@ -127,6 +148,13 @@ export interface StorageProvider {
 
   // News
   listNews(tenantId?: string): Promise<NewsRecord[]>;
+
+  // User profiles
+  getUserProfile(userId: string): Promise<UserProfile | null>;
+  saveUserProfile(profile: Partial<UserProfile> & { id: string }): Promise<void>;
+
+  // Claim anonymous sessions after login
+  claimAnonymousSessions(userId: string, authorId: string, tenantId?: string): Promise<number>;
 
   // Cleanup
   deleteSession(sessionId: string): Promise<void>;

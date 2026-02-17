@@ -78,7 +78,11 @@ export class JsonFileStorage implements StorageProvider {
     }
   }
 
-  async listSessions(tenantId?: string, authorId?: string): Promise<SessionData[]> {
+  async getUserProfile(_userId: string): Promise<null> { return null; }
+  async saveUserProfile(_profile: { id: string }): Promise<void> { /* noop in dev */ }
+  async claimAnonymousSessions(_userId: string, _authorId: string, _tenantId?: string): Promise<number> { return 0; }
+
+  async listSessions(tenantId?: string, authorId?: string, _userId?: string): Promise<SessionData[]> {
     ensureDirs();
     const files = fs.readdirSync(SESSIONS_DIR).filter(f => f.endsWith('.json'));
     const sessions: SessionData[] = [];

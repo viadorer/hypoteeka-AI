@@ -21,4 +21,4 @@ function createStorage(): StorageProvider {
 
 export const storage: StorageProvider = createStorage();
 
-export type { StorageProvider, SessionData, LeadRecord, MessageRecord } from './types';
+export type { StorageProvider, SessionData, LeadRecord, MessageRecord, UserProfile } from './types';

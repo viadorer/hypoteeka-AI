@@ -12,6 +12,7 @@ import { CtaIntensityDial } from './CtaIntensityDial';
 import type { CtaIntensity } from './CtaIntensityDial';
 import { useTenant } from '@/lib/tenant/use-tenant';
 import { getBrowserId } from '@/lib/browser-id';
+import { useAuth } from '@/lib/auth/auth-context';
 
 const QUICK_ACTIONS_MORTGAGE_PRIMARY = [
   { label: 'Spočítat splátku', icon: Calculator, prompt: 'Chci si spočítat splátku hypotéky.' },
@@ -69,6 +70,7 @@ interface ChatAreaProps {
 
 export function ChatArea({ initialSessionId = null }: ChatAreaProps) {
   const tenant = useTenant();
+  const { user } = useAuth();
   const isValuation = tenant.features.primaryFlow === 'valuation';
   const QUICK_ACTIONS_PRIMARY = isValuation ? QUICK_ACTIONS_VALUATION_PRIMARY : QUICK_ACTIONS_MORTGAGE_PRIMARY;
   const QUICK_ACTIONS_MORE = isValuation ? QUICK_ACTIONS_VALUATION_MORE : QUICK_ACTIONS_MORTGAGE_MORE;
@@ -84,9 +86,15 @@ export function ChatArea({ initialSessionId = null }: ChatAreaProps) {
   const transport = useMemo(() => {
     return new DefaultChatTransport({
       api: '/api/chat',
-      body: { sessionId, tenantId: process.env.NEXT_PUBLIC_TENANT_ID ?? 'hypoteeka', authorId, ctaIntensity },
+      body: {
+        sessionId,
+        tenantId: process.env.NEXT_PUBLIC_TENANT_ID ?? 'hypoteeka',
+        authorId,
+        userId: user?.id ?? undefined,
+        ctaIntensity,
+      },
     });
-  }, [sessionId, ctaIntensity, authorId]);
+  }, [sessionId, ctaIntensity, authorId, user?.id]);
   const { messages, setMessages, sendMessage, status, error, clearError } = useChat({ transport });
   const handleCtaChange = useCallback((v: CtaIntensity) => { setCtaIntensity(v); }, []);
   const [inputValue, setInputValue] = useState('');
@@ -150,7 +158,9 @@ export function ChatArea({ initialSessionId = null }: ChatAreaProps) {
   useEffect(() => {
     if (historyLoaded) return;
     setHistoryLoaded(true);
-    fetch(`/api/sessions/${sessionId}/messages`)
+    const msgParams = new URLSearchParams({ authorId });
+    if (user?.id) msgParams.set('userId', user.id);
+    fetch(`/api/sessions/${sessionId}/messages?${msgParams}`)
       .then(r => { if (r.ok) return r.json(); throw new Error('no session'); })
       .then((data: { uiMessages?: unknown[]; profile?: { name?: string; nameVocative?: string } }) => {
         if (data.uiMessages && Array.isArray(data.uiMessages) && data.uiMessages.length > 0) {
@@ -175,12 +185,14 @@ export function ChatArea({ initialSessionId = null }: ChatAreaProps) {
         sendMessage({ text: '[GREETING]' });
       }, 1000);
     }
-  }, [sessionId, historyLoaded, setMessages, sendMessage]);
+  }, [sessionId, historyLoaded, setMessages, sendMessage, authorId, user?.id]);
 
   // Load visitor name from any session (for new chats)
   useEffect(() => {
     if (visitorName) return;
-    fetch('/api/sessions')
+    const nameParams = new URLSearchParams({ authorId });
+    if (user?.id) nameParams.set('userId', user.id);
+    fetch(`/api/sessions?${nameParams}`)
       .then(r => r.json())
       .then((sessions: Array<{ profile: { name?: string; nameVocative?: string } }>) => {
         for (const s of sessions) {

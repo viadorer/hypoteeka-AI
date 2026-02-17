@@ -6,7 +6,7 @@
  */
 
 import type { SupabaseClient } from '@supabase/supabase-js';
-import type { StorageProvider, SessionData, LeadRecord, WidgetEventRecord, PropertyRecord, ProjectRecord, NewsRecord } from './types';
+import type { StorageProvider, SessionData, LeadRecord, WidgetEventRecord, PropertyRecord, ProjectRecord, NewsRecord, UserProfile } from './types';
 
 export class SupabaseStorage implements StorageProvider {
   constructor(private db: SupabaseClient) {}
@@ -31,6 +31,7 @@ export class SupabaseStorage implements StorageProvider {
       id: data.id,
       tenantId: data.tenant_id,
       authorId: data.author_id ?? 'anonymous',
+      userId: data.user_id ?? undefined,
       profile: data.client_profile ?? {},
       state: {
         phase: data.phase,
@@ -60,6 +61,7 @@ export class SupabaseStorage implements StorageProvider {
       id: session.id,
       tenant_id: session.tenantId,
       author_id: session.authorId,
+      user_id: session.userId ?? null,
       phase: session.state.phase,
       lead_score: session.state.leadScore,
       lead_qualified: session.state.leadQualified,
@@ -106,7 +108,7 @@ export class SupabaseStorage implements StorageProvider {
     }
   }
 
-  async listSessions(tenantId?: string, authorId?: string): Promise<SessionData[]> {
+  async listSessions(tenantId?: string, authorId?: string, userId?: string): Promise<SessionData[]> {
     let query = this.db
       .from('sessions')
       .select('*')
@@ -116,8 +118,19 @@ export class SupabaseStorage implements StorageProvider {
     if (tenantId) {
       query = query.eq('tenant_id', tenantId);
     }
-    if (authorId) {
-      query = query.eq('author_id', authorId);
+
+    // If userId is provided, show all sessions owned by this user
+    // (includes claimed anonymous sessions)
+    if (userId) {
+      if (authorId) {
+        // Show both: user's auth sessions + unclaimed anonymous sessions with this browserID
+        query = query.or(`user_id.eq.${userId},and(author_id.eq.${authorId},user_id.is.null)`);
+      } else {
+        query = query.eq('user_id', userId);
+      }
+    } else if (authorId) {
+      // Anonymous: only show sessions with this browserID that aren't claimed by another user
+      query = query.eq('author_id', authorId).is('user_id', null);
     }
 
     const { data, error } = await query;
@@ -128,6 +141,7 @@ export class SupabaseStorage implements StorageProvider {
       id: row.id,
       tenantId: row.tenant_id,
       authorId: row.author_id ?? 'anonymous',
+      userId: row.user_id ?? undefined,
       profile: row.client_profile ?? {},
       state: {
         phase: row.phase,
@@ -150,6 +164,8 @@ export class SupabaseStorage implements StorageProvider {
     const insertData: Record<string, unknown> = {
       tenant_id: lead.tenantId,
       session_id: lead.sessionId || null,
+      user_id: lead.userId ?? null,
+      author_id: lead.authorId ?? null,
       name: lead.name,
       email: lead.email || null,
       phone: lead.phone || null,
@@ -332,6 +348,81 @@ export class SupabaseStorage implements StorageProvider {
     if (error) {
       console.error('[SupabaseStorage] deleteProject error:', error.message);
     }
+  }
+
+  // ---- User Profiles ----
+
+  async getUserProfile(userId: string): Promise<UserProfile | null> {
+    const { data, error } = await this.db
+      .from('profiles')
+      .select('*')
+      .eq('id', userId)
+      .single();
+
+    if (error || !data) return null;
+
+    return {
+      id: data.id,
+      displayName: data.display_name ?? undefined,
+      preferredName: data.preferred_name ?? undefined,
+      email: data.email ?? undefined,
+      phone: data.phone ?? undefined,
+      avatarUrl: data.avatar_url ?? undefined,
+      city: data.city ?? undefined,
+      age: data.age ?? undefined,
+      monthlyIncome: data.monthly_income ? Number(data.monthly_income) : undefined,
+      partnerIncome: data.partner_income ? Number(data.partner_income) : undefined,
+      purpose: data.purpose ?? undefined,
+      notes: data.notes ?? undefined,
+      browserIds: data.browser_ids ?? [],
+      createdAt: data.created_at,
+      updatedAt: data.updated_at,
+    };
+  }
+
+  async saveUserProfile(profile: Partial<UserProfile> & { id: string }): Promise<void> {
+    const updateData: Record<string, unknown> = {};
+    if (profile.displayName !== undefined) updateData.display_name = profile.displayName;
+    if (profile.preferredName !== undefined) updateData.preferred_name = profile.preferredName;
+    if (profile.email !== undefined) updateData.email = profile.email;
+    if (profile.phone !== undefined) updateData.phone = profile.phone;
+    if (profile.avatarUrl !== undefined) updateData.avatar_url = profile.avatarUrl;
+    if (profile.city !== undefined) updateData.city = profile.city;
+    if (profile.age !== undefined) updateData.age = profile.age;
+    if (profile.monthlyIncome !== undefined) updateData.monthly_income = profile.monthlyIncome;
+    if (profile.partnerIncome !== undefined) updateData.partner_income = profile.partnerIncome;
+    if (profile.purpose !== undefined) updateData.purpose = profile.purpose;
+    if (profile.notes !== undefined) updateData.notes = profile.notes;
+
+    if (Object.keys(updateData).length === 0) return;
+
+    const { error } = await this.db
+      .from('profiles')
+      .update(updateData)
+      .eq('id', profile.id);
+
+    if (error) {
+      console.error('[SupabaseStorage] saveUserProfile error:', error.message);
+    }
+  }
+
+  async claimAnonymousSessions(userId: string, authorId: string, tenantId?: string): Promise<number> {
+    const { data, error } = await this.db.rpc('claim_anonymous_sessions', {
+      p_user_id: userId,
+      p_author_id: authorId,
+      p_tenant_id: tenantId ?? null,
+    });
+
+    if (error) {
+      console.error('[SupabaseStorage] claimAnonymousSessions error:', error.message);
+      return 0;
+    }
+
+    const count = typeof data === 'number' ? data : 0;
+    if (count > 0) {
+      console.log(`[SupabaseStorage] Claimed ${count} anonymous sessions for user ${userId}`);
+    }
+    return count;
   }
 
   async listNews(tenantId?: string): Promise<NewsRecord[]> {

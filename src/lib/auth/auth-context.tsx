@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useEffect, useState, useCallback, type ReactNode } from 'react';
 import { createSupabaseBrowser } from '@/lib/supabase/browser';
+import { getBrowserId } from '@/lib/browser-id';
 import type { User } from '@supabase/supabase-js';
 
 interface AuthUser {
@@ -10,10 +11,26 @@ interface AuthUser {
   name?: string;
 }
 
+export interface UserProfile {
+  id: string;
+  displayName?: string;
+  preferredName?: string;
+  email?: string;
+  phone?: string;
+  avatarUrl?: string;
+  city?: string;
+  age?: number;
+  monthlyIncome?: number;
+  partnerIncome?: number;
+  purpose?: string;
+  notes?: string;
+}
+
 type OAuthProvider = 'google' | 'facebook' | 'apple';
 
 interface AuthContextType {
   user: AuthUser | null;
+  profile: UserProfile | null;
   loading: boolean;
   login: (email: string, password: string) => Promise<{ error?: string }>;
   signup: (email: string, password: string, name?: string) => Promise<{ error?: string; needsConfirmation?: boolean }>;
@@ -21,6 +38,7 @@ interface AuthContextType {
   logout: () => Promise<void>;
   changePassword: (password: string) => Promise<{ error?: string }>;
   forgotPassword: (email: string) => Promise<{ error?: string; message?: string }>;
+  refreshProfile: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -34,22 +52,62 @@ function mapUser(user: User | null): AuthUser | null {
   };
 }
 
+// Claim anonymous sessions for a logged-in user
+async function claimSessions(tenantId?: string) {
+  try {
+    const authorId = getBrowserId();
+    await fetch('/api/sessions/claim', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ authorId, tenantId }),
+    });
+  } catch { /* non-critical */ }
+}
+
+async function fetchProfileFromApi(): Promise<UserProfile | null> {
+  try {
+    const res = await fetch('/api/profile');
+    if (!res.ok) return null;
+    const data = await res.json();
+    return data.profile ?? null;
+  } catch { return null; }
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
+  const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
+
+  const refreshProfile = useCallback(async () => {
+    const p = await fetchProfileFromApi();
+    setProfile(p);
+  }, []);
 
   useEffect(() => {
     const supabase = createSupabaseBrowser();
 
     // Get initial session
     supabase.auth.getUser().then(({ data }) => {
-      setUser(mapUser(data.user));
+      const mapped = mapUser(data.user);
+      setUser(mapped);
       setLoading(false);
+      if (mapped) {
+        // User is logged in: claim anonymous sessions + load profile
+        claimSessions();
+        fetchProfileFromApi().then(setProfile);
+      }
     });
 
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(mapUser(session?.user ?? null));
+      const mapped = mapUser(session?.user ?? null);
+      setUser(mapped);
+      if (mapped) {
+        claimSessions();
+        fetchProfileFromApi().then(setProfile);
+      } else {
+        setProfile(null);
+      }
     });
 
     return () => subscription.unsubscribe();
@@ -67,7 +125,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Refresh client-side session
     const supabase = createSupabaseBrowser();
     const { data: sessionData } = await supabase.auth.getUser();
-    setUser(mapUser(sessionData.user));
+    const mapped = mapUser(sessionData.user);
+    setUser(mapped);
+    if (mapped) {
+      await claimSessions();
+      fetchProfileFromApi().then(setProfile);
+    }
     return {};
   }, []);
 
@@ -84,7 +147,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Auto-login after signup
     const supabase = createSupabaseBrowser();
     const { data: sessionData } = await supabase.auth.getUser();
-    setUser(mapUser(sessionData.user));
+    const mapped = mapUser(sessionData.user);
+    setUser(mapped);
+    if (mapped) {
+      await claimSessions();
+      fetchProfileFromApi().then(setProfile);
+    }
     return {};
   }, []);
 
@@ -93,6 +161,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const supabase = createSupabaseBrowser();
     await supabase.auth.signOut();
     setUser(null);
+    setProfile(null);
   }, []);
 
   const changePassword = useCallback(async (password: string) => {
@@ -130,7 +199,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, signup, loginWithOAuth, logout, changePassword, forgotPassword }}>
+    <AuthContext.Provider value={{ user, profile, loading, login, signup, loginWithOAuth, logout, changePassword, forgotPassword, refreshProfile }}>
       {children}
     </AuthContext.Provider>
   );

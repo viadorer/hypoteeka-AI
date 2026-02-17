@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
-import { Menu, X, Plus, MessageSquare, BarChart3, LogIn, LogOut, KeyRound, User, Trash2 } from 'lucide-react';
+import { Menu, X, Plus, MessageSquare, BarChart3, LogIn, LogOut, KeyRound, User, Trash2, Pencil, Save, XCircle } from 'lucide-react';
 import { useAuth } from '@/lib/auth/auth-context';
 import { useTenant } from '@/lib/tenant/use-tenant';
 import { getBrowserId } from '@/lib/browser-id';
@@ -120,22 +120,25 @@ export function Sidebar({ activeSessionId, currentView, onSelectSession, onConti
   const [authError, setAuthError] = useState('');
   const [authLoading, setAuthLoading] = useState(false);
   const [authSuccess, setAuthSuccess] = useState('');
-  const { user, login, signup, loginWithOAuth, logout, changePassword } = useAuth();
+  const { user, profile, login, signup, loginWithOAuth, logout, changePassword, refreshProfile } = useAuth();
   const [oauthLoading, setOauthLoading] = useState<string | null>(null);
+  const [editingProfile, setEditingProfile] = useState(false);
+  const [profileForm, setProfileForm] = useState({ displayName: '', phone: '', city: '' });
 
-  // Load sessions for chat history (filtered by tenant + author)
+  // Load sessions for chat history (filtered by tenant + author/user)
   useEffect(() => {
-    // Skip on server-side render
     if (typeof window === 'undefined') return;
     
     const tenantId = process.env.NEXT_PUBLIC_TENANT_ID ?? 'hypoteeka';
     const authorId = getBrowserId();
+    const params = new URLSearchParams({ tenantId, authorId });
+    if (user) params.set('userId', user.id);
     
-    fetch(`/api/sessions?tenantId=${tenantId}&authorId=${authorId}`)
+    fetch(`/api/sessions?${params}`)
       .then(r => r.json())
       .then((data: SessionSummary[]) => setSessions(data))
       .catch(() => setSessions([]));
-  }, [activeSessionId]);
+  }, [activeSessionId, user]);
 
 
   const handleContinue = (id: string) => {
@@ -326,24 +329,100 @@ export function Sidebar({ activeSessionId, currentView, onSelectSession, onConti
           {user ? (
             /* Logged in */
             <div className="space-y-1.5">
-              <div className="flex items-center gap-2 px-3 py-2 text-sm text-gray-700">
-                <User className="w-4 h-4 text-[#E91E63]" />
-                <span className="truncate font-medium">{user.name ?? user.email}</span>
-              </div>
-              <button
-                onClick={() => { setAuthView('change-password'); setAuthError(''); setAuthSuccess(''); setAuthPassword(''); }}
-                className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-gray-500 hover:bg-gray-50 transition-all"
-              >
-                <KeyRound className="w-4 h-4" />
-                Změnit heslo
-              </button>
-              <button
-                onClick={() => { logout(); setAuthView('none'); }}
-                className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-gray-500 hover:bg-gray-50 transition-all"
-              >
-                <LogOut className="w-4 h-4" />
-                Odhlásit se
-              </button>
+              {editingProfile ? (
+                /* Profile edit form */
+                <div className="space-y-2 px-1">
+                  <p className="text-xs font-semibold text-gray-500 px-2">Upravit profil</p>
+                  <input
+                    type="text"
+                    placeholder="Jméno"
+                    value={profileForm.displayName}
+                    onChange={e => setProfileForm(f => ({ ...f, displayName: e.target.value }))}
+                    className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm outline-none focus:border-[#E91E63]/40"
+                  />
+                  <input
+                    type="tel"
+                    placeholder="Telefon"
+                    value={profileForm.phone}
+                    onChange={e => setProfileForm(f => ({ ...f, phone: e.target.value }))}
+                    className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm outline-none focus:border-[#E91E63]/40"
+                  />
+                  <input
+                    type="text"
+                    placeholder="Město"
+                    value={profileForm.city}
+                    onChange={e => setProfileForm(f => ({ ...f, city: e.target.value }))}
+                    className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm outline-none focus:border-[#E91E63]/40"
+                  />
+                  <div className="flex gap-2">
+                    <button
+                      onClick={async () => {
+                        const body: Record<string, string> = {};
+                        if (profileForm.displayName) body.displayName = profileForm.displayName;
+                        if (profileForm.phone) body.phone = profileForm.phone;
+                        if (profileForm.city) body.city = profileForm.city;
+                        await fetch('/api/profile', {
+                          method: 'PUT',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify(body),
+                        });
+                        await refreshProfile();
+                        setEditingProfile(false);
+                      }}
+                      className="flex-1 flex items-center justify-center gap-1 px-3 py-2 rounded-lg bg-[#E91E63] text-white text-sm font-medium hover:bg-[#C2185B] transition-all"
+                    >
+                      <Save className="w-3.5 h-3.5" /> Uložit
+                    </button>
+                    <button
+                      onClick={() => setEditingProfile(false)}
+                      className="px-3 py-2 rounded-lg text-sm text-gray-400 hover:bg-gray-50 transition-all"
+                    >
+                      <XCircle className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                /* Profile display */
+                <>
+                  <div className="flex items-center gap-2 px-3 py-2 text-sm text-gray-700">
+                    <User className="w-4 h-4 text-[#E91E63]" />
+                    <span className="truncate font-medium">{profile?.displayName ?? user.name ?? user.email}</span>
+                  </div>
+                  {(profile?.phone || profile?.city) && (
+                    <div className="px-3 text-[11px] text-gray-400 -mt-1">
+                      {[profile.phone, profile.city].filter(Boolean).join(' / ')}
+                    </div>
+                  )}
+                  <button
+                    onClick={() => {
+                      setProfileForm({
+                        displayName: profile?.displayName ?? user.name ?? '',
+                        phone: profile?.phone ?? '',
+                        city: profile?.city ?? '',
+                      });
+                      setEditingProfile(true);
+                    }}
+                    className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-gray-500 hover:bg-gray-50 transition-all"
+                  >
+                    <Pencil className="w-4 h-4" />
+                    Upravit profil
+                  </button>
+                  <button
+                    onClick={() => { setAuthView('change-password'); setAuthError(''); setAuthSuccess(''); setAuthPassword(''); }}
+                    className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-gray-500 hover:bg-gray-50 transition-all"
+                  >
+                    <KeyRound className="w-4 h-4" />
+                    Změnit heslo
+                  </button>
+                  <button
+                    onClick={() => { logout(); setAuthView('none'); }}
+                    className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-gray-500 hover:bg-gray-50 transition-all"
+                  >
+                    <LogOut className="w-4 h-4" />
+                    Odhlásit se
+                  </button>
+                </>
+              )}
             </div>
           ) : authView === 'none' ? (
             /* Not logged in - OAuth first, email as fallback */

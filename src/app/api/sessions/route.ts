@@ -7,7 +7,8 @@ export async function GET(req: Request) {
     const url = new URL(req.url);
     const tenantId = url.searchParams.get('tenantId') ?? undefined;
     const authorId = url.searchParams.get('authorId') ?? undefined;
-    const sessions = await storage.listSessions(tenantId, authorId);
+    const userId = url.searchParams.get('userId') ?? undefined;
+    const sessions = await storage.listSessions(tenantId, authorId, userId);
     const summaries = await Promise.all(sessions.map(async s => {
       const firstName = s.profile.name?.split(' ')[0];
       const nameVocative = firstName ? await getVocative(firstName, s.tenantId ?? getDefaultTenantId()) : undefined;
