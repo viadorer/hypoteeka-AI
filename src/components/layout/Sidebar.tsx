@@ -125,8 +125,12 @@ export function Sidebar({ activeSessionId, currentView, onSelectSession, onConti
 
   // Load sessions for chat history (filtered by tenant + author)
   useEffect(() => {
+    // Skip on server-side render
+    if (typeof window === 'undefined') return;
+    
     const tenantId = process.env.NEXT_PUBLIC_TENANT_ID ?? 'hypoteeka';
     const authorId = getBrowserId();
+    
     fetch(`/api/sessions?tenantId=${tenantId}&authorId=${authorId}`)
       .then(r => r.json())
       .then((data: SessionSummary[]) => setSessions(data))

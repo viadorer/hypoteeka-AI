@@ -74,14 +74,19 @@ export function ChatArea({ initialSessionId = null }: ChatAreaProps) {
   const QUICK_ACTIONS_MORE = isValuation ? QUICK_ACTIONS_VALUATION_MORE : QUICK_ACTIONS_MORTGAGE_MORE;
   const sessionId = useMemo(() => getSessionId(initialSessionId), [initialSessionId]);
   const [ctaIntensity, setCtaIntensity] = useState<CtaIntensity>('medium');
+  const [authorId, setAuthorId] = useState<string>('anonymous');
+  
+  // Get browser ID on client side only (avoid hydration mismatch)
+  useEffect(() => {
+    setAuthorId(getBrowserId());
+  }, []);
+  
   const transport = useMemo(() => {
-    // Get or generate browser ID for session ownership
-    const authorId = getBrowserId();
     return new DefaultChatTransport({
       api: '/api/chat',
       body: { sessionId, tenantId: process.env.NEXT_PUBLIC_TENANT_ID ?? 'hypoteeka', authorId, ctaIntensity },
     });
-  }, [sessionId, ctaIntensity]);
+  }, [sessionId, ctaIntensity, authorId]);
   const { messages, setMessages, sendMessage, status, error, clearError } = useChat({ transport });
   const handleCtaChange = useCallback((v: CtaIntensity) => { setCtaIntensity(v); }, []);
   const [inputValue, setInputValue] = useState('');

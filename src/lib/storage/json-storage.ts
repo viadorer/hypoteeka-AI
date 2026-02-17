@@ -86,14 +86,17 @@ export class JsonFileStorage implements StorageProvider {
       try {
         const raw = fs.readFileSync(path.join(SESSIONS_DIR, file), 'utf-8');
         const session = JSON.parse(raw) as SessionData;
-        // Filter by tenantId
-        if (tenantId && session.tenantId !== tenantId && session.tenantId) {
+        
+        // STRICT filtering: if tenantId specified, session MUST match
+        if (tenantId && session.tenantId !== tenantId) {
           continue;
         }
-        // Filter by authorId
-        if (authorId && session.authorId !== authorId && session.authorId) {
+        
+        // STRICT filtering: if authorId specified, session MUST have matching authorId
+        if (authorId && session.authorId !== authorId) {
           continue;
         }
+        
         sessions.push(session);
       } catch { /* skip corrupted files */ }
     }
