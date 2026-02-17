@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useAdmin } from './layout';
-import { Settings, MessageSquare, BookOpen, Palette, Layout } from 'lucide-react';
+import { Settings, MessageSquare, BookOpen, Palette, Layout, Download } from 'lucide-react';
 import { TenantSettings } from './components/TenantSettings';
 import { PromptEditor } from './components/PromptEditor';
 import { StyleEditor } from './components/StyleEditor';
@@ -41,6 +41,18 @@ export default function AdminPage() {
             {t.label}
           </button>
         ))}
+        {/* Export */}
+        <div className="mt-4 pt-4 border-t border-gray-100 px-1">
+          <button
+            onClick={() => {
+              window.open(`/api/admin/export?tenantId=${activeTenant}`, '_blank');
+            }}
+            className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-medium text-gray-500 hover:bg-gray-50 transition-all"
+          >
+            <Download className="w-4 h-4" />
+            Export .md
+          </button>
+        </div>
       </nav>
 
       {/* Content */}
