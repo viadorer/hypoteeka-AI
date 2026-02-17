@@ -20,10 +20,7 @@ export function QuickReplyWidget({ question, options, onSelect }: QuickReplyWidg
 
   const handleSelect = (value: string) => {
     setSelected(value);
-    // Send selection after brief delay for visual feedback
-    setTimeout(() => {
-      onSelect(value);
-    }, 150);
+    onSelect(value);
   };
 
   return (

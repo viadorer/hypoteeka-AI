@@ -113,8 +113,10 @@ export async function getBasePromptParts(tenantId: string = getDefaultTenantId()
   const templates = await getPromptTemplates(tenantId);
   const style = await getCommunicationStyle(tenantId);
 
+  const excludedCategories = ['tool_instruction', 'personalization', 'business_rules'];
+  const excludedSlugs = ['final_reminder'];
   const baseParts = templates
-    .filter(t => t.phase === null && t.category !== 'tool_instruction')
+    .filter(t => t.phase === null && !excludedCategories.includes(t.category) && !excludedSlugs.includes(t.slug))
     .map(t => t.content);
 
   // Přidej komunikační styl
@@ -144,6 +146,57 @@ export async function getToolInstruction(tenantId: string = getDefaultTenantId()
   if (toolTemplate) return toolTemplate.content;
 
   console.error('[PromptService] Tool instruction not found in DB');
+  return '';
+}
+
+/**
+ * Vrátí persona prompt podle typu persony.
+ */
+export async function getPersonaPrompt(persona: string, tenantId: string = getDefaultTenantId()): Promise<string> {
+  const templates = await getPromptTemplates(tenantId);
+  const slug = `persona_${persona}`;
+  const personaTemplate = templates.find(t => t.category === 'personalization' && t.slug === slug);
+  if (personaTemplate) return personaTemplate.content;
+  return '';
+}
+
+/**
+ * Vrátí provozní pravidla pro tenanta.
+ */
+export async function getOperationalRules(tenantId: string = getDefaultTenantId()): Promise<string> {
+  const templates = await getPromptTemplates(tenantId);
+  const t = templates.find(t => t.slug === 'operational_rules');
+  if (t) return t.content;
+  return '';
+}
+
+/**
+ * Vrátí scénář ocenění.
+ */
+export async function getValuationScenario(tenantId: string = getDefaultTenantId()): Promise<string> {
+  const templates = await getPromptTemplates(tenantId);
+  const t = templates.find(t => t.slug === 'valuation_scenario');
+  if (t) return t.content;
+  return '';
+}
+
+/**
+ * Vrátí strategii po ocenění.
+ */
+export async function getPostValuationStrategy(tenantId: string = getDefaultTenantId()): Promise<string> {
+  const templates = await getPromptTemplates(tenantId);
+  const t = templates.find(t => t.slug === 'post_valuation_strategy');
+  if (t) return t.content;
+  return '';
+}
+
+/**
+ * Vrátí závěrečné připomenutí (guardrails na konci promptu).
+ */
+export async function getFinalReminder(tenantId: string = getDefaultTenantId()): Promise<string> {
+  const templates = await getPromptTemplates(tenantId);
+  const t = templates.find(t => t.slug === 'final_reminder');
+  if (t) return t.content;
   return '';
 }
 
