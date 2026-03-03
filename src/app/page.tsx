@@ -15,6 +15,7 @@ export default function Home() {
   const [view, setView] = useState<View>('chat');
   const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
   const [sessionKey, setSessionKey] = useState(0);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const autoRestoreDone = useRef(false);
 
   // Auto-restore last session when user is identified
@@ -35,12 +36,10 @@ export default function Home() {
     fetch(`/api/sessions?${params}`)
       .then(r => r.json())
       .then((sessions: Array<{ id: string; state: { turnCount: number }; updatedAt: string }>) => {
-        // Find most recent session with actual conversation (turnCount > 0)
-        // and updated within last 24 hours
         const recent = sessions.find(s => {
           if (s.state.turnCount <= 0) return false;
           const age = Date.now() - new Date(s.updatedAt).getTime();
-          return age < 24 * 60 * 60 * 1000; // 24h
+          return age < 24 * 60 * 60 * 1000;
         });
         if (recent) {
           setActiveSessionId(recent.id);
@@ -71,6 +70,9 @@ export default function Home() {
     setView('news');
   }, []);
 
+  const handleOpenSidebar = useCallback(() => setSidebarOpen(true), []);
+  const handleCloseSidebar = useCallback(() => setSidebarOpen(false), []);
+
   return (
     <div className="flex min-h-screen">
       <Sidebar
@@ -80,11 +82,14 @@ export default function Home() {
         onContinueChat={handleContinueChat}
         onNewChat={handleNewChat}
         onShowNews={handleShowNews}
+        isOpen={sidebarOpen}
+        onClose={handleCloseSidebar}
       />
       {view === 'chat' && (
         <ChatArea
           key={sessionKey}
           initialSessionId={activeSessionId}
+          onOpenSidebar={handleOpenSidebar}
         />
       )}
       {view === 'dashboard' && activeSessionId && (

@@ -115,9 +115,9 @@ export default function RootLayout({
             />
           </>
         )}
-        <StructuredData />
       </head>
       <body className={`${inter.variable} font-sans antialiased bg-[#F5F7FA] text-gray-900`}>
+        <StructuredData />
         <AuthProvider>
           {children}
         </AuthProvider>
