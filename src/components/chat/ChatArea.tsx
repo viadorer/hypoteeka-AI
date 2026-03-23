@@ -56,24 +56,25 @@ export function ChatArea({ initialSessionId = null, onOpenSidebar }: ChatAreaPro
   const QUICK_ACTIONS = isValuation ? QUICK_ACTIONS_VALUATION : QUICK_ACTIONS_MORTGAGE;
   const sessionId = useMemo(() => getSessionId(initialSessionId), [initialSessionId]);
   const [ctaIntensity, setCtaIntensity] = useState<CtaIntensity>('medium');
-  const [authorId, setAuthorId] = useState<string>('anonymous');
-  
-  useEffect(() => {
-    setAuthorId(getBrowserId());
-  }, []);
-  
+  const authorId = useMemo(() => (typeof window !== 'undefined' ? getBrowserId() : 'anonymous'), []);
+
+  // Stable refs for dynamic body params — avoids transport recreation race conditions
+  const dynamicBodyRef = useRef({ ctaIntensity, userId: user?.id });
+  dynamicBodyRef.current = { ctaIntensity, userId: user?.id };
+
+  // Create transport ONCE per session; body is a getter so it reads latest refs
   const transport = useMemo(() => {
     return new DefaultChatTransport({
       api: '/api/chat',
-      body: {
+      body: () => ({
         sessionId,
         tenantId: process.env.NEXT_PUBLIC_TENANT_ID ?? 'hypoteeka',
         authorId,
-        userId: user?.id ?? undefined,
-        ctaIntensity,
-      },
+        userId: dynamicBodyRef.current.userId ?? undefined,
+        ctaIntensity: dynamicBodyRef.current.ctaIntensity,
+      }),
     });
-  }, [sessionId, ctaIntensity, authorId, user?.id]);
+  }, [sessionId, authorId]);
   const { messages, setMessages, sendMessage, status, error, clearError } = useChat({ transport });
   const handleCtaChange = useCallback((v: CtaIntensity) => { setCtaIntensity(v); }, []);
   const [inputValue, setInputValue] = useState('');
