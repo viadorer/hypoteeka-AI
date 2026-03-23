@@ -259,6 +259,35 @@ export function ChatArea({ initialSessionId = null, onOpenSidebar }: ChatAreaPro
     </form>
   );
 
+  // --- Hooks that must run unconditionally (before any early return) ---
+  const hasSeenWidget = useMemo(() => {
+    return messages.some(m => m.role === 'assistant' && m.parts?.some(
+      (p: { type: string }) => typeof p.type === 'string' && (p.type.startsWith('tool-show_') || (p.type === 'dynamic-tool'))
+    ));
+  }, [messages]);
+
+  const hasConverted = useMemo(() => {
+    return messages.some(m => m.role === 'assistant' && m.parts?.some(
+      (p: { type: string; toolName?: string }) => {
+        const name = p.toolName ?? (typeof p.type === 'string' ? p.type.replace(/^tool-/, '') : '');
+        return name === 'show_lead_capture';
+      }
+    ));
+  }, [messages]);
+
+  const idleSentRef = useRef(false);
+  useEffect(() => {
+    if (idleSentRef.current || !hasSeenWidget || hasConverted || isLoading) return;
+    const timer = setTimeout(() => {
+      if (!idleSentRef.current && !isLoading) {
+        idleSentRef.current = true;
+        sendMessage({ text: '[IDLE_CHECK]' });
+        trackEvent('idle_reengagement');
+      }
+    }, 90_000);
+    return () => clearTimeout(timer);
+  }, [messages.length, hasSeenWidget, hasConverted, isLoading, sendMessage]);
+
   // =============================================
   // WELCOME SCREEN (before chat starts)
   // =============================================
@@ -360,37 +389,6 @@ export function ChatArea({ initialSessionId = null, onOpenSidebar }: ChatAreaPro
       </div>
     );
   }
-
-  // Derive whether any widget has been shown (for exit-intent)
-  const hasSeenWidget = useMemo(() => {
-    return messages.some(m => m.role === 'assistant' && m.parts?.some(
-      (p: { type: string }) => typeof p.type === 'string' && (p.type.startsWith('tool-show_') || (p.type === 'dynamic-tool'))
-    ));
-  }, [messages]);
-
-  // Derive whether lead was captured (for exit-intent suppression)
-  const hasConverted = useMemo(() => {
-    return messages.some(m => m.role === 'assistant' && m.parts?.some(
-      (p: { type: string; toolName?: string }) => {
-        const name = p.toolName ?? (typeof p.type === 'string' ? p.type.replace(/^tool-/, '') : '');
-        return name === 'show_lead_capture';
-      }
-    ));
-  }, [messages]);
-
-  // Idle re-engagement: trigger Hugo to send a follow-up after 90s of inactivity
-  const idleSentRef = useRef(false);
-  useEffect(() => {
-    if (idleSentRef.current || !hasSeenWidget || hasConverted || isLoading) return;
-    const timer = setTimeout(() => {
-      if (!idleSentRef.current && !isLoading) {
-        idleSentRef.current = true;
-        sendMessage({ text: '[IDLE_CHECK]' });
-        trackEvent('idle_reengagement');
-      }
-    }, 90_000);
-    return () => clearTimeout(timer);
-  }, [messages.length, hasSeenWidget, hasConverted, isLoading, sendMessage]);
 
   // =============================================
   // CHAT VIEW (after conversation starts)
