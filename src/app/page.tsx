@@ -17,15 +17,8 @@ export default function Home() {
   const tenant = useTenant();
   const isValuation = tenant.features.primaryFlow === 'valuation';
 
-  // Check URL for ?session= param (re-engagement link)
-  const [initialSessionFromUrl] = useState<string | null>(() => {
-    if (typeof window === 'undefined') return null;
-    const params = new URLSearchParams(window.location.search);
-    return params.get('session');
-  });
-
-  const [view, setView] = useState<View>('landing');
-  const [activeSessionId, setActiveSessionId] = useState<string | null>(initialSessionFromUrl);
+  const [view, setView] = useState<View>('chat');
+  const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
   const [sessionKey, setSessionKey] = useState(0);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const autoRestoreDone = useRef(false);
@@ -35,8 +28,10 @@ export default function Home() {
     if (authLoading || autoRestoreDone.current) return;
     autoRestoreDone.current = true;
 
-    // If we have a session from URL, go straight to chat
-    if (initialSessionFromUrl) {
+    // Check URL for ?session= param (re-engagement link)
+    const urlSession = new URLSearchParams(window.location.search).get('session');
+    if (urlSession) {
+      setActiveSessionId(urlSession);
       setView('chat');
       setSessionKey(k => k + 1);
       return;
@@ -72,12 +67,15 @@ export default function Home() {
           // Returning visitor with no recent session — skip landing, go to chat
           setView('chat');
         }
-        // else: first-time visitor, stay on landing
+        // else: first-time visitor, show landing
+        else if (!hasSeenLanding) {
+          setView('landing');
+        }
       })
       .catch(() => {
-        if (hasSeenLanding) setView('chat');
+        if (!hasSeenLanding) setView('landing');
       });
-  }, [authLoading, user, initialSessionFromUrl]);
+  }, [authLoading, user]);
 
   const handleStartChat = useCallback(() => {
     localStorage.setItem('hypoteeka_landing_seen', '1');
