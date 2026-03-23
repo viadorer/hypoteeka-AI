@@ -3,7 +3,7 @@
 import { useChat } from '@ai-sdk/react';
 import { useRef, useEffect, useState, useMemo, useCallback } from 'react';
 import { v4 as uuidv4 } from 'uuid';
-import { Send, AlertCircle, RotateCcw, Calculator, ShieldCheck, TrendingUp, RefreshCw, PiggyBank, HelpCircle, Search, Phone, Menu } from 'lucide-react';
+import { Send, AlertCircle, RotateCcw, Calculator, ShieldCheck, TrendingUp, RefreshCw, PiggyBank, HelpCircle, Search, Phone, Menu, Users, Building2, Gift } from 'lucide-react';
 import Image from 'next/image';
 import { WidgetRenderer } from '../widgets/WidgetRenderer';
 import ReactMarkdown from 'react-markdown';
@@ -12,9 +12,12 @@ import type { UIMessage } from 'ai';
 import { CtaIntensityDial } from './CtaIntensityDial';
 import type { CtaIntensity } from './CtaIntensityDial';
 import { useTenant } from '@/lib/tenant/use-tenant';
+import { trackEvent } from '@/lib/analytics';
 import { getBrowserId } from '@/lib/browser-id';
 import { useAuth } from '@/lib/auth/auth-context';
 import { UserMenu } from '../layout/UserMenu';
+import { ExitIntentOverlay } from './ExitIntentOverlay';
+import { MobileCallFab } from './MobileCallFab';
 
 const QUICK_ACTIONS_MORTGAGE = [
   { label: 'Spočítat splátku', icon: Calculator, prompt: 'Chci si spočítat splátku hypotéky.' },
@@ -188,11 +191,13 @@ export function ChatArea({ initialSessionId = null, onOpenSidebar }: ChatAreaPro
     if (!inputValue.trim() || isLoading) return;
     const text = inputValue;
     setInputValue('');
+    if (!hasStarted) trackEvent('first_message', { source: 'input' });
     try { await sendMessage({ text }); } catch { /* useChat handles */ }
   };
 
   const useBadge = async (text: string) => {
     setInputValue('');
+    trackEvent('quick_action_click', { prompt: text.slice(0, 50) });
     try { await sendMessage({ text }); } catch { /* useChat handles */ }
   };
 
@@ -310,6 +315,26 @@ export function ChatArea({ initialSessionId = null, onOpenSidebar }: ChatAreaPro
             ))}
           </div>
 
+          {/* Trust signals strip */}
+          <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 max-w-[600px] w-full mb-8 text-xs text-gray-400">
+            <span className="flex items-center gap-1.5">
+              <Users className="w-3.5 h-3.5" style={{ color: tenant.branding.primaryColor }} />
+              1 000+ klientů
+            </span>
+            <span className="flex items-center gap-1.5">
+              <Building2 className="w-3.5 h-3.5" style={{ color: tenant.branding.primaryColor }} />
+              8+ bank
+            </span>
+            <span className="flex items-center gap-1.5">
+              <ShieldCheck className="w-3.5 h-3.5" style={{ color: tenant.branding.primaryColor }} />
+              Certifikovaní poradci
+            </span>
+            <span className="flex items-center gap-1.5">
+              <Gift className="w-3.5 h-3.5" style={{ color: tenant.branding.primaryColor }} />
+              Zdarma
+            </span>
+          </div>
+
           {/* CNB rates - compact single line */}
           {!isValuation && todayRates && todayRates.mortgage.avgRate > 0 && (
             <div className="text-center text-xs text-gray-400 mb-6">
@@ -335,17 +360,50 @@ export function ChatArea({ initialSessionId = null, onOpenSidebar }: ChatAreaPro
     );
   }
 
+  // Derive whether any widget has been shown (for exit-intent)
+  const hasSeenWidget = useMemo(() => {
+    return messages.some(m => m.role === 'assistant' && m.parts?.some(
+      (p: { type: string }) => typeof p.type === 'string' && (p.type.startsWith('tool-show_') || (p.type === 'dynamic-tool'))
+    ));
+  }, [messages]);
+
+  // Derive whether lead was captured (for exit-intent suppression)
+  const hasConverted = useMemo(() => {
+    return messages.some(m => m.role === 'assistant' && m.parts?.some(
+      (p: { type: string; toolName?: string }) => {
+        const name = p.toolName ?? (typeof p.type === 'string' ? p.type.replace(/^tool-/, '') : '');
+        return name === 'show_lead_capture';
+      }
+    ));
+  }, [messages]);
+
+  // Idle re-engagement: trigger Hugo to send a follow-up after 90s of inactivity
+  const idleSentRef = useRef(false);
+  useEffect(() => {
+    if (idleSentRef.current || !hasSeenWidget || hasConverted || isLoading) return;
+    const timer = setTimeout(() => {
+      if (!idleSentRef.current && !isLoading) {
+        idleSentRef.current = true;
+        sendMessage({ text: '[IDLE_CHECK]' });
+        trackEvent('idle_reengagement');
+      }
+    }, 90_000);
+    return () => clearTimeout(timer);
+  }, [messages.length, hasSeenWidget, hasConverted, isLoading, sendMessage]);
+
   // =============================================
   // CHAT VIEW (after conversation starts)
   // =============================================
   return (
     <div className="flex-1 flex flex-col min-h-screen overflow-x-hidden min-w-0">
       {headerBar}
+      <ExitIntentOverlay hasSeenWidget={hasSeenWidget} hasConverted={hasConverted} onSend={useBadge} />
+      <MobileCallFab hasSeenWidget={hasSeenWidget} hasConverted={hasConverted} />
 
       <div className="flex-1 overflow-y-auto overflow-x-hidden min-w-0 pt-14">
         <div className="max-w-[700px] mx-auto px-4 md:px-6 pt-4 md:pt-6 pb-44 md:pb-40 w-full min-w-0">
           {messages.map((message: UIMessage) => {
-            if (message.role === 'user' && getTextContent(message).trim() === '[GREETING]') return null;
+            if (message.role === 'user' && ['[GREETING]', '[IDLE_CHECK]'].includes(getTextContent(message).trim())) return null;
             return (
             <div key={message.id} className="mb-4 animate-in">
               {message.role === 'user' && (

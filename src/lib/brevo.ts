@@ -62,6 +62,89 @@ export async function sendBrevoEmail(params: EmailParams): Promise<{ success: bo
 }
 
 /**
+ * Build HTML email confirming lead capture — sent right after form submission.
+ * Gives the user a timeline of what happens next.
+ */
+export function buildLeadConfirmationEmailHtml(data: {
+  name?: string;
+  propertyPrice?: number;
+  equity?: number;
+  monthlyIncome?: number;
+  sessionUrl?: string;
+}): string {
+  const fmt = (n?: number) => n != null ? n.toLocaleString('cs-CZ') + ' Kč' : '—';
+
+  return `
+<!DOCTYPE html>
+<html lang="cs">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width"></head>
+<body style="margin:0;padding:0;background:#f5f7fa;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
+<div style="max-width:560px;margin:0 auto;padding:32px 16px;">
+  <div style="background:#fff;border-radius:16px;padding:32px;box-shadow:0 1px 3px rgba(0,0,0,0.08);">
+    <div style="width:40px;height:3px;background:#E91E63;border-radius:2px;margin-bottom:24px;"></div>
+    <h1 style="font-size:20px;color:#0A1E5C;margin:0 0 4px;">Vaše žádost byla přijata</h1>
+    <p style="font-size:13px;color:#9ca3af;margin:0 0 24px;">${data.name ? `Dobrý den, ${data.name.split(' ')[0]}` : 'Dobrý den'}</p>
+
+    <p style="font-size:14px;color:#374151;line-height:1.6;margin:0 0 24px;">
+      Děkujeme za váš zájem o bezplatnou konzultaci. Váš požadavek zpracováváme a náš specialista se vám ozve co nejdříve.
+    </p>
+
+    <div style="background:#f9fafb;border-radius:12px;padding:20px;margin-bottom:24px;">
+      <p style="font-size:12px;color:#9ca3af;text-transform:uppercase;letter-spacing:1px;margin:0 0 16px;">Co bude dál</p>
+
+      <div style="display:flex;margin-bottom:16px;">
+        <div style="width:28px;height:28px;background:#fdf2f8;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-right:12px;">
+          <span style="font-size:12px;font-weight:700;color:#E91E63;">1</span>
+        </div>
+        <div>
+          <p style="font-size:14px;font-weight:600;color:#111827;margin:0 0 2px;">Poradce zkontroluje vaši situaci</p>
+          <p style="font-size:12px;color:#9ca3af;margin:0;">Na základě vašich údajů připraví přehled možností.</p>
+        </div>
+      </div>
+
+      <div style="display:flex;margin-bottom:16px;">
+        <div style="width:28px;height:28px;background:#fdf2f8;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-right:12px;">
+          <span style="font-size:12px;font-weight:700;color:#E91E63;">2</span>
+        </div>
+        <div>
+          <p style="font-size:14px;font-weight:600;color:#111827;margin:0 0 2px;">Ozve se vám do 24 hodin</p>
+          <p style="font-size:12px;color:#9ca3af;margin:0;">Telefonicky nebo emailem, jak vám vyhovuje.</p>
+        </div>
+      </div>
+
+      <div style="display:flex;">
+        <div style="width:28px;height:28px;background:#fdf2f8;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-right:12px;">
+          <span style="font-size:12px;font-weight:700;color:#E91E63;">3</span>
+        </div>
+        <div>
+          <p style="font-size:14px;font-weight:600;color:#111827;margin:0 0 2px;">Porovnáte nabídky bank</p>
+          <p style="font-size:12px;color:#9ca3af;margin:0;">Společně vyberete nejlepší řešení pro vaši situaci.</p>
+        </div>
+      </div>
+    </div>
+
+    ${data.propertyPrice ? `
+    <div style="border-top:1px solid #f3f4f6;padding-top:20px;margin-bottom:20px;">
+      <p style="font-size:12px;color:#9ca3af;text-transform:uppercase;letter-spacing:1px;margin:0 0 12px;">Vaše údaje</p>
+      <table style="width:100%;border-collapse:collapse;font-size:14px;">
+        ${data.propertyPrice ? `<tr><td style="padding:6px 0;color:#6b7280;">Cena nemovitosti</td><td style="padding:6px 0;text-align:right;font-weight:600;color:#111827;">${fmt(data.propertyPrice)}</td></tr>` : ''}
+        ${data.equity ? `<tr><td style="padding:6px 0;color:#6b7280;">Vlastní zdroje</td><td style="padding:6px 0;text-align:right;font-weight:600;color:#111827;">${fmt(data.equity)}</td></tr>` : ''}
+        ${data.monthlyIncome ? `<tr><td style="padding:6px 0;color:#6b7280;">Měsíční příjem</td><td style="padding:6px 0;text-align:right;font-weight:600;color:#111827;">${fmt(data.monthlyIncome)}</td></tr>` : ''}
+      </table>
+    </div>` : ''}
+
+    <div style="text-align:center;padding-top:8px;">
+      ${data.sessionUrl ? `<a href="${data.sessionUrl}" style="display:inline-block;background:#E91E63;color:#fff;text-decoration:none;padding:12px 28px;border-radius:10px;font-size:14px;font-weight:600;">Pokračovat v konverzaci</a>` : ''}
+      <p style="font-size:11px;color:#9ca3af;margin:16px 0 0;">Máte otázky? Odpovězte na tento email nebo zavolejte +420 777 123 456.</p>
+    </div>
+  </div>
+  <p style="text-align:center;font-size:11px;color:#9ca3af;margin-top:16px;">Hypoteeka AI -- hypoteeka.cz</p>
+</div>
+</body>
+</html>`;
+}
+
+/**
  * Build HTML email with mortgage calculation summary
  */
 export function buildCalculationEmailHtml(data: {

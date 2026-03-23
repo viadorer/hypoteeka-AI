@@ -43,6 +43,7 @@ export class SupabaseStorage implements StorageProvider {
         leadQualified: data.lead_qualified,
         leadCaptured: data.lead_captured,
         turnCount: data.turn_count,
+        microConversionsOffered: data.conversation_state?.microConversionsOffered ?? [],
       },
       messages: (messages ?? []).map(m => ({
         role: m.role as 'user' | 'assistant',
@@ -153,6 +154,7 @@ export class SupabaseStorage implements StorageProvider {
         leadQualified: row.lead_qualified,
         leadCaptured: row.lead_captured,
         turnCount: row.turn_count,
+        microConversionsOffered: row.conversation_state?.microConversionsOffered ?? [],
       },
       messages: [],
       createdAt: row.created_at,

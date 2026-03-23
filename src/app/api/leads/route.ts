@@ -2,6 +2,7 @@ import { storage } from '@/lib/storage';
 import { v4 as uuidv4 } from 'uuid';
 import { submitLeadToRealvisor, buildRealvisorPayload } from '@/lib/realvisor';
 import { getDefaultTenantId } from '@/lib/tenant/config';
+import { sendBrevoEmail, buildLeadConfirmationEmailHtml } from '@/lib/brevo';
 
 export async function POST(req: Request) {
   try {
@@ -59,6 +60,23 @@ export async function POST(req: Request) {
     }
 
     console.log(`[Lead] Captured: ${name} (${email}, ${phone}), session: ${sessionId}, score: ${score}, realvisor: ${rvResult.success ? rvResult.leadId : 'failed'}`);
+
+    // Send confirmation email (non-blocking, don't fail the lead if email fails)
+    if (email) {
+      const sessionUrl = sessionId ? `https://hypoteeka.cz/?session=${sessionId}` : undefined;
+      sendBrevoEmail({
+        to: email,
+        toName: name,
+        subject: 'Vaše žádost o konzultaci byla přijata',
+        htmlContent: buildLeadConfirmationEmailHtml({
+          name,
+          propertyPrice: (profile as Record<string, unknown>).propertyPrice as number | undefined,
+          equity: (profile as Record<string, unknown>).equity as number | undefined,
+          monthlyIncome: (profile as Record<string, unknown>).monthlyIncome as number | undefined,
+          sessionUrl,
+        }),
+      }).catch(err => console.error('[Lead] Confirmation email failed:', err));
+    }
 
     return new Response(
       JSON.stringify({

@@ -1,6 +1,7 @@
 'use client';
 
-import { ShieldCheck, Calculator, TrendingUp, Users, Home, BarChart3, RefreshCw, ArrowRight, PiggyBank, Search, Clock, FileCheck } from 'lucide-react';
+import { ShieldCheck, Calculator, TrendingUp, Users, Home, BarChart3, RefreshCw, ArrowRight, PiggyBank, Search, Clock, FileCheck, Mail } from 'lucide-react';
+import { trackEvent } from '@/lib/analytics';
 import type { LucideIcon } from 'lucide-react';
 
 interface NextStep {
@@ -17,6 +18,7 @@ const NEXT_STEPS: Record<string, { title: string; steps: NextStep[] }> = {
       { icon: ShieldCheck, label: 'Zkontrolovat bonitu', desc: 'Ověřím, jestli splníte podmínky bank podle pravidel ČNB.', message: 'Chci zkontrolovat, jestli splním podmínky banky.' },
       { icon: Home, label: 'Porovnat s nájmem', desc: 'Srovnání měsíčních nákladů na nájem a hypotéku.', message: 'Porovnej mi splátku hypotéky s nájmem.' },
       { icon: TrendingUp, label: 'Stress test sazby', desc: 'Co se stane se splátkou, když sazba vzroste o 1--2 %.', message: 'Co se stane se splátkou, když sazba vzroste?' },
+      { icon: Mail, label: 'Odeslat na email', desc: 'Pošlete si kalkulaci na email pro pozdější použití.', message: 'Chci odeslat kalkulaci na email.' },
       { icon: Users, label: 'Konzultace se specialistou', desc: 'Bezplatné spojení s poradcem pro osobní řešení.', message: 'Chci se spojit se specialistou na bezplatnou konzultaci.' },
     ],
   },
@@ -25,6 +27,7 @@ const NEXT_STEPS: Record<string, { title: string; steps: NextStep[] }> = {
     steps: [
       { icon: PiggyBank, label: 'Kolik si mohu dovolit', desc: 'Maximální cena nemovitosti podle vašeho příjmu.', message: 'Kolik si mohu maximálně dovolit?' },
       { icon: Calculator, label: 'Spočítat splátku', desc: 'Přesný výpočet měsíční splátky s aktuální sazbou.', message: 'Spočítej mi měsíční splátku.' },
+      { icon: Mail, label: 'Odeslat na email', desc: 'Pošlete si výsledek kontroly na email.', message: 'Chci odeslat kalkulaci na email.' },
       { icon: Users, label: 'Konzultace se specialistou', desc: 'Bezplatné spojení s poradcem pro osobní řešení.', message: 'Chci se spojit se specialistou na bezplatnou konzultaci.' },
     ],
   },
@@ -33,6 +36,7 @@ const NEXT_STEPS: Record<string, { title: string; steps: NextStep[] }> = {
     steps: [
       { icon: Calculator, label: 'Spočítat splátku', desc: 'Přesný výpočet splátky pro tuto částku.', message: 'Spočítej mi měsíční splátku pro tuto částku.' },
       { icon: ShieldCheck, label: 'Zkontrolovat bonitu', desc: 'Ověřím podmínky bank podle pravidel ČNB.', message: 'Chci zkontrolovat, jestli splním podmínky banky.' },
+      { icon: Mail, label: 'Odeslat na email', desc: 'Pošlete si výpočet na email.', message: 'Chci odeslat kalkulaci na email.' },
       { icon: Users, label: 'Konzultace se specialistou', desc: 'Bezplatné spojení s poradcem pro osobní řešení.', message: 'Chci se spojit se specialistou na bezplatnou konzultaci.' },
     ],
   },
@@ -146,7 +150,7 @@ export function NextStepsBar({ toolName, onSend }: Props) {
           return (
             <button
               key={step.label}
-              onClick={() => onSend(step.message)}
+              onClick={() => { trackEvent('next_step_click', { widget: toolName, step: step.label }); onSend(step.message); }}
               className="w-full flex items-start gap-3 px-4 py-3 text-left hover:bg-gray-50/80 transition-colors cursor-pointer group"
             >
               <div className="w-8 h-8 rounded-lg bg-gray-50 group-hover:bg-white flex items-center justify-center flex-shrink-0 mt-0.5 transition-colors">

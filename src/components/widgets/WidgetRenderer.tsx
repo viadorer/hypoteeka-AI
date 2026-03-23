@@ -20,6 +20,8 @@ import { TimelineWidget } from './TimelineWidget';
 import { ChecklistWidget } from './ChecklistWidget';
 import { AppointmentWidget } from './AppointmentWidget';
 import { NextStepsBar } from './NextStepsBar';
+import { useEffect, useRef } from 'react';
+import { trackEvent } from '@/lib/analytics';
 
 interface ToolInvocation {
   toolName: string;
@@ -71,6 +73,13 @@ function WidgetSkeleton({ toolName }: { toolName: string }) {
 
 export function WidgetRenderer({ toolInvocation, sessionId, onSend }: { toolInvocation: ToolInvocation; sessionId?: string; onSend?: (text: string) => void }) {
   const { toolName, args, state } = toolInvocation;
+  const trackedRef = useRef(false);
+  useEffect(() => {
+    if (state !== 'input-streaming' && !trackedRef.current) {
+      trackedRef.current = true;
+      trackEvent('widget_view', { widget_type: toolName });
+    }
+  }, [state, toolName]);
 
   // Show skeleton only while input is still streaming
   if (state === 'input-streaming') {

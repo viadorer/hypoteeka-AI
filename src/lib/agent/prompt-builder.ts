@@ -13,7 +13,7 @@ import { profileSummary } from './client-profile';
 import type { ConversationState } from './conversation-state';
 import { getRecommendedWidgets, getNextQuestion } from './conversation-state';
 import type { LeadScore } from './lead-scoring';
-import { shouldOfferLeadCapture } from './lead-scoring';
+import { shouldOfferLeadCapture, shouldOfferMicroConversion } from './lead-scoring';
 import { getRatesContext } from '../data/rates';
 import { getCnbLimits } from '../data/cnb-limits';
 import { getBasePromptParts, getPhaseInstruction, getToolInstruction, getRelevantKnowledge, getPersonaPrompt, getOperationalRules, getValuationScenario, getPostValuationStrategy, getFinalReminder } from './prompt-service';
@@ -209,6 +209,14 @@ ${avgDist !== undefined ? `- Vzdálenost srovnatelných: ${avgDist > 1000 ? (avg
       parts.push('- Formuluj jako nabídku, ne jako tlak: "Kdybyste chtěl probrat konkrétní nabídky bank, náš specialista to rád vezme."');
       parts.push('- NIKDY neříkej "doporučuji kontaktovat" opakovaně.');
     }
+  }
+
+  // Micro-konverze (měkké CTA dříve v trychtýři)
+  const microConversion = shouldOfferMicroConversion(leadScore, state);
+  if (microConversion === 'email_capture' && !hasContact) {
+    parts.push('\nMICRO-CTA: Klient je aktivní ale ještě ne připravený na konzultaci. Nabídni mu ODESLÁNÍ KALKULACE NA EMAIL -- formuluj jako: "Chcete, abych vám poslal výsledky na email? Budete je mít po ruce."');
+  } else if (microConversion === 'specialist_mention' && !hasContact && ctaIntensity !== 'low') {
+    parts.push('\nMICRO-CTA: Krátce zmíň, že máme k dispozici specialisty pro bezplatnou konzultaci. Jen jedna věta, jako mimochodem, ne jako hlavní téma.');
   }
 
   // Lead capture

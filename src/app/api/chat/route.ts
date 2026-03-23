@@ -4,7 +4,7 @@ import { toolDefinitions } from '@/lib/ai-tools';
 import type { ClientProfile } from '@/lib/agent/client-profile';
 import { createInitialState, determinePhase, detectPersona } from '@/lib/agent/conversation-state';
 import type { ConversationState } from '@/lib/agent/conversation-state';
-import { calculateLeadScore } from '@/lib/agent/lead-scoring';
+import { calculateLeadScore, shouldOfferMicroConversion } from '@/lib/agent/lead-scoring';
 import { buildAgentPrompt } from '@/lib/agent/prompt-builder';
 import type { CtaIntensity } from '@/lib/agent/prompt-builder';
 import { storage } from '@/lib/storage';
@@ -166,6 +166,8 @@ export async function POST(req: Request) {
     state.dataCollected = collectedFields;
     state.widgetsShown = getShownWidgets(messages);
     state.turnCount = profile.messageCount ?? 0;
+    // Backward compatibility: ensure microConversionsOffered exists
+    if (!state.microConversionsOffered) state.microConversionsOffered = [];
     state.phase = determinePhase(state, collectedFields);
     state.persona = detectPersona(profile);
 
@@ -173,6 +175,12 @@ export async function POST(req: Request) {
     const leadScore = calculateLeadScore(profile, state);
     state.leadScore = leadScore.score;
     state.leadQualified = leadScore.qualified;
+
+    // Track micro-conversions offered in prompt
+    const microConversion = shouldOfferMicroConversion(leadScore, state);
+    if (microConversion && !state.microConversionsOffered.includes(microConversion)) {
+      state.microConversionsOffered.push(microConversion);
+    }
 
     // Extract last user message for knowledge base matching
     const msgArray = Array.isArray(messages) ? messages : [];
@@ -191,6 +199,10 @@ export async function POST(req: Request) {
       : '';
     if (lastMsgText.trim() === '[GREETING]') {
       systemPrompt += '\n\nUŽIVATEL PRÁVĚ OTEVŘEL CHAT. Zpráva [GREETING] je automatický systémový trigger — NEODPOVÍDEJ na ni jako na text. Místo toho se PŘIVÍTEJ podle aktuální fáze (nový vs. vracející se uživatel). Viz instrukce v phase_greeting.';
+    }
+
+    if (lastMsgText.trim() === '[IDLE_CHECK]') {
+      systemPrompt += '\n\nUŽIVATEL JE NEAKTIVNÍ 90 SEKUND. Zpráva [IDLE_CHECK] je automatický systémový trigger — NEODPOVÍDEJ na ni jako na text. Pošli KRÁTKOU, přátelskou zprávu (max 1-2 věty) typu: "Máte ještě nějaké otázky? Rád pomohu." nebo "Chcete, abych vám poslal výsledky na email?" Buď stručný a nenápadný.';
     }
 
     // Inject full ADDRESS_DATA into system prompt (informational)

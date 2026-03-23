@@ -30,6 +30,7 @@ export interface ConversationState {
   leadQualified: boolean;
   leadCaptured: boolean;
   turnCount: number;
+  microConversionsOffered: string[];
 }
 
 export function createInitialState(): ConversationState {
@@ -43,6 +44,7 @@ export function createInitialState(): ConversationState {
     leadQualified: false,
     leadCaptured: false,
     turnCount: 0,
+    microConversionsOffered: [],
   };
 }
 

@@ -3,6 +3,8 @@ import { Inter } from "next/font/google";
 import { AuthProvider } from "@/lib/auth/auth-context";
 import { StructuredData } from "./structured-data";
 import { getTenantConfig, getDefaultTenantId } from "@/lib/tenant/config";
+import { CookieConsent } from "@/components/layout/CookieConsent";
+import { ConsentAwareAnalytics } from "@/components/layout/ConsentAwareAnalytics";
 import "./globals.css";
 
 const inter = Inter({
@@ -99,28 +101,14 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="cs">
-      <head>
-        {tenant.gaId && (
-          <>
-            <script async src={`https://www.googletagmanager.com/gtag/js?id=${tenant.gaId}`} />
-            <script
-              dangerouslySetInnerHTML={{
-                __html: `
-                  window.dataLayer = window.dataLayer || [];
-                  function gtag(){dataLayer.push(arguments);}
-                  gtag('js', new Date());
-                  gtag('config', '${tenant.gaId}');
-                `,
-              }}
-            />
-          </>
-        )}
-      </head>
+      <head />
       <body className={`${inter.variable} font-sans antialiased bg-[#F5F7FA] text-gray-900`}>
         <StructuredData />
+        {tenant.gaId && <ConsentAwareAnalytics gaId={tenant.gaId} />}
         <AuthProvider>
           {children}
         </AuthProvider>
+        <CookieConsent />
       </body>
     </html>
   );

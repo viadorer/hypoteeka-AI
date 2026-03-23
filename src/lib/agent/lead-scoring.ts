@@ -119,3 +119,38 @@ export function shouldOfferLeadCapture(score: LeadScore, state: ConversationStat
 
   return false;
 }
+
+export type MicroConversionType = 'specialist_mention' | 'email_capture';
+
+/**
+ * Rozhodne, zda nabídnout "měkkou" konverzi dříve v trychtýři.
+ * Micro-konverze zachytí uživatele, kteří ještě nejsou připravení na plný formulář.
+ */
+export function shouldOfferMicroConversion(
+  score: LeadScore,
+  state: ConversationState
+): MicroConversionType | null {
+  // Pokud už máme lead, nic nenabízíme
+  if (state.leadCaptured) return null;
+
+  // Email capture: score >= 40, alespoň 3 turny, viděl widget, ještě nenabídnuto
+  if (
+    score.score >= 40 &&
+    state.turnCount >= 3 &&
+    state.widgetsShown.length >= 1 &&
+    !state.microConversionsOffered?.includes('email_capture')
+  ) {
+    return 'email_capture';
+  }
+
+  // Zmínka specialisty: score >= 20, alespoň 2 turny, ještě nezmíněno
+  if (
+    score.score >= 20 &&
+    state.turnCount >= 2 &&
+    !state.microConversionsOffered?.includes('specialist_mention')
+  ) {
+    return 'specialist_mention';
+  }
+
+  return null;
+}
