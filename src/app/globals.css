@@ -11,10 +11,17 @@ html, body {
   height: 100%;
   max-width: 100vw;
   overflow-x: hidden;
-  background: #F5F7FA;
-  color: #1A1A2E;
+  background: #f9f9ff;
+  color: #001a41;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+/* Stitch Design System */
+.glass-panel {
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
 }
 
 *, *::before, *::after {
@@ -92,10 +99,10 @@ html, body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #d1d5db;
+  background: #d8e2ff;
   border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #9ca3af;
+  background: #bacfff;
 }

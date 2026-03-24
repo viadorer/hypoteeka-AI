@@ -17,7 +17,7 @@ interface Props {
 
 export function LandingPage({ onStartChat, primaryColor, logoUrl, title, isValuation }: Props) {
   return (
-    <div className="min-h-screen bg-[#F5F7FA] overflow-y-auto">
+    <div className="min-h-screen bg-[#f9f9ff] overflow-y-auto">
       <HeroSection
         onStartChat={onStartChat}
         primaryColor={primaryColor}
@@ -34,10 +34,10 @@ export function LandingPage({ onStartChat, primaryColor, logoUrl, title, isValua
 
       {/* Bottom CTA */}
       <section className="px-4 py-16 md:py-20 text-center">
-        <h2 className="text-2xl md:text-3xl font-bold text-[#0A1E5C] mb-4">
+        <h2 className="text-2xl md:text-3xl font-bold text-[#001a41] mb-4">
           {isValuation ? 'Připraveni zjistit cenu?' : 'Připraveni na vlastní bydlení?'}
         </h2>
-        <p className="text-gray-500 mb-8 max-w-md mx-auto">
+        <p className="text-[#001a41]/60 mb-8 max-w-md mx-auto">
           {isValuation
             ? 'Začněte konverzaci s naším AI asistentem a získejte odhad ceny zdarma.'
             : 'Začněte konverzaci s Hugem a zjistěte, na co dosáhnete. Je to zdarma a nezávazné.'}
@@ -53,8 +53,8 @@ export function LandingPage({ onStartChat, primaryColor, logoUrl, title, isValua
       </section>
 
       {/* Footer */}
-      <footer className="px-4 py-8 text-center border-t border-gray-100">
-        <p className="text-xs text-gray-400">
+      <footer className="px-4 py-8 text-center border-t border-[#e4bdc2]/10">
+        <p className="text-xs text-[#001a41]/40">
           {title} &middot; AI průvodce &middot; Data z ČNB ARAD &middot; {new Date().getFullYear()}
         </p>
       </footer>

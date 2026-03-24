@@ -211,22 +211,22 @@ export function ChatArea({ initialSessionId = null, onOpenSidebar }: ChatAreaPro
     }
   };
 
-  const glass = 'bg-white/60 backdrop-blur-xl border border-white/40 shadow-lg shadow-black/[0.03]';
-  const glassHover = 'hover:bg-white/80 hover:shadow-xl hover:shadow-black/[0.05] hover:border-white/60';
+  const glass = 'bg-[#ffffff]/80 backdrop-blur-xl border border-[#e4bdc2]/10 shadow-[0_20px_50px_rgba(0,26,65,0.08)]';
+  const glassHover = 'hover:bg-[#ffffff]/90 hover:shadow-[0_20px_60px_rgba(0,26,65,0.12)]';
 
   // --- HEADER BAR (shared between welcome and chat) ---
   const headerBar = (
-    <div className="fixed top-0 left-0 right-0 z-30 bg-white/60 backdrop-blur-xl border-b border-gray-100/60" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
+    <div className="fixed top-0 left-0 right-0 z-30 glass-panel border-b border-[#e4bdc2]/10" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
       <div className="flex items-center justify-between px-4 h-14 max-w-[900px] mx-auto">
         <div className="flex items-center gap-3">
-          <button onClick={onOpenSidebar} className="p-2 -ml-2 rounded-xl hover:bg-gray-100 transition-colors">
-            <Menu className="w-5 h-5 text-gray-500" />
+          <button onClick={onOpenSidebar} className="p-2 -ml-2 rounded-xl hover:bg-[#e9edff] transition-colors">
+            <Menu className="w-5 h-5 text-[#001a41]/60" />
           </button>
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-full bg-white shadow-sm border border-gray-100 flex items-center justify-center flex-shrink-0">
+            <div className="w-8 h-8 rounded-full bg-[#ffffff] shadow-[0_4px_20px_rgba(0,26,65,0.06)] border border-[#e4bdc2]/10 flex items-center justify-center flex-shrink-0">
               <Image src={tenant.branding.logoUrl ?? '/logo.png'} alt={tenant.branding.title} width={20} height={20} className="object-contain" />
             </div>
-            <span className="text-sm font-bold text-[#0A1E5C] hidden sm:block">{tenant.branding.title}</span>
+            <span className="text-sm font-bold text-[#001a41] hidden sm:block">{tenant.branding.title}</span>
           </div>
         </div>
         <UserMenu />
@@ -244,15 +244,14 @@ export function ChatArea({ initialSessionId = null, onOpenSidebar }: ChatAreaPro
         onChange={(e) => setInputValue(e.target.value)}
         onKeyDown={(e) => { if (e.key === 'Escape') setInputValue(''); }}
         placeholder={isValuation ? 'Zeptejte se na cenu nemovitosti...' : 'Zeptejte se na cokoliv ohledně hypotéky...'}
-        className="flex-1 bg-transparent border-none outline-none text-base md:text-[15px] text-gray-900 placeholder:text-gray-400 py-3 md:py-2.5"
+        className="flex-1 bg-transparent border-none outline-none text-base md:text-[15px] text-[#001a41] placeholder:text-[#001a41]/30 py-3 md:py-2.5"
         autoComplete="off"
         disabled={isLoading}
       />
       <button
         type="submit"
         disabled={isLoading || !inputValue.trim()}
-        className="w-11 h-11 md:w-10 md:h-10 rounded-xl disabled:bg-gray-200 flex items-center justify-center transition-all flex-shrink-0 ml-2"
-        style={{ backgroundColor: inputValue.trim() ? tenant.branding.primaryColor : undefined }}
+        className={`w-11 h-11 md:w-10 md:h-10 rounded-xl flex items-center justify-center transition-all flex-shrink-0 ml-2 ${inputValue.trim() ? 'bg-gradient-to-r from-[#b80049] to-[#e2165f] shadow-[0_4px_20px_rgba(184,0,73,0.3)]' : 'bg-[#e9edff]'}`}
       >
         <Send className="w-[18px] h-[18px] md:w-4 md:h-4 text-white" />
       </button>
@@ -299,7 +298,7 @@ export function ChatArea({ initialSessionId = null, onOpenSidebar }: ChatAreaPro
         <div className="flex-1 flex flex-col items-center justify-center px-4 pt-20 pb-8 w-full min-w-0">
           {/* Greeting - short, Claude-style */}
           <div className="text-center mb-8 max-w-lg">
-            <h1 className="text-2xl md:text-[32px] font-bold text-[#0A1E5C] tracking-tight leading-tight">
+            <h1 className="text-2xl md:text-[32px] font-extrabold text-[#001a41] tracking-tight leading-tight">
               {visitorName
                 ? `S čím vám pomůžu, ${visitorNameVocative ?? visitorName}?`
                 : isValuation
@@ -311,14 +310,14 @@ export function ChatArea({ initialSessionId = null, onOpenSidebar }: ChatAreaPro
           {/* Hugo's dynamic greeting - compact */}
           {(greetingMessage || (isLoading && greetingSentRef.current && !greetingMessage)) && (
             <div className="w-full max-w-[600px] mb-6 min-w-0 animate-in fade-in slide-in-from-bottom-2 duration-500">
-              <div className="text-gray-500 text-center text-sm leading-relaxed">
+              <div className="text-[#001a41]/60 text-center text-sm leading-relaxed">
                 {greetingMessage ? (
                   <ReactMarkdown>{getTextContent(greetingMessage)}</ReactMarkdown>
                 ) : (
                   <span className="inline-flex gap-1 items-center">
-                    <span className="w-1.5 h-1.5 bg-gray-300 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-                    <span className="w-1.5 h-1.5 bg-gray-300 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-                    <span className="w-1.5 h-1.5 bg-gray-300 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                    <span className="w-1.5 h-1.5 bg-[#bacfff] rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                    <span className="w-1.5 h-1.5 bg-[#bacfff] rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                    <span className="w-1.5 h-1.5 bg-[#bacfff] rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
                   </span>
                 )}
               </div>
@@ -346,7 +345,7 @@ export function ChatArea({ initialSessionId = null, onOpenSidebar }: ChatAreaPro
           </div>
 
           {/* Trust signals strip */}
-          <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 max-w-[600px] w-full mb-8 text-xs text-gray-400">
+          <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 max-w-[600px] w-full mb-8 text-xs text-[#001a41]/40">
             <span className="flex items-center gap-1.5">
               <Users className="w-3.5 h-3.5" style={{ color: tenant.branding.primaryColor }} />
               1 000+ klientů
@@ -367,20 +366,20 @@ export function ChatArea({ initialSessionId = null, onOpenSidebar }: ChatAreaPro
 
           {/* CNB rates - compact single line */}
           {!isValuation && todayRates && todayRates.mortgage.avgRate > 0 && (
-            <div className="text-center text-xs text-gray-400 mb-6">
+            <div className="text-center text-xs text-[#001a41]/40 mb-6">
               <span>REPO {todayRates.cnb.repo}%</span>
-              <span className="mx-2 text-gray-300">·</span>
+              <span className="mx-2 text-[#001a41]/20">·</span>
               <span>FIX 1-5Y {todayRates.mortgage.rateFix5y}%</span>
-              <span className="mx-2 text-gray-300">·</span>
+              <span className="mx-2 text-[#001a41]/20">·</span>
               <span>FIX 5-10Y {todayRates.mortgage.rateFix10y}%</span>
-              <span className="mx-2 text-gray-300">·</span>
+              <span className="mx-2 text-[#001a41]/20">·</span>
               <span>RPSN {todayRates.mortgage.rpsn}%</span>
-              <p className="text-[10px] text-gray-300 mt-1">ČNB ARAD · {todayRates.date}</p>
+              <p className="text-[10px] text-[#001a41]/20 mt-1">ČNB ARAD · {todayRates.date}</p>
             </div>
           )}
 
           {/* Footer disclaimer */}
-          <p className="text-[11px] text-gray-400 text-center max-w-md leading-relaxed">
+          <p className="text-[11px] text-[#001a41]/40 text-center max-w-md leading-relaxed">
             {isValuation
               ? `${tenant.agentName} je AI asistent. Odhady jsou orientační. Může se mýlit.`
               : `${tenant.agentName} je AI průvodce hypotékami. Výpočty jsou orientační, data z ČNB ARAD.`}
@@ -427,17 +426,17 @@ export function ChatArea({ initialSessionId = null, onOpenSidebar }: ChatAreaPro
                     if (part.type === 'text' && part.text) {
                       return (
                         <div key={index} className="flex justify-start mb-2">
-                          <div className={`text-gray-900 px-4 py-3 md:py-2.5 rounded-2xl rounded-bl-md max-w-[85%] text-base md:text-[15px] leading-relaxed break-words overflow-hidden ${glass}
-                            prose prose-sm prose-gray max-w-none
+                          <div className={`text-[#001a41] px-4 py-3 md:py-2.5 rounded-2xl rounded-bl-md max-w-[85%] text-base md:text-[15px] leading-relaxed break-words overflow-hidden ${glass}
+                            prose prose-sm max-w-none
                             [&_p]:my-1 [&_p]:leading-relaxed
-                            [&_strong]:text-gray-900 [&_strong]:font-semibold
+                            [&_strong]:text-[#001a41] [&_strong]:font-semibold
                             [&_ul]:my-1 [&_ul]:pl-4 [&_ol]:my-1 [&_ol]:pl-4
                             [&_li]:my-0.5
-                            [&_h2]:text-sm [&_h2]:font-bold [&_h2]:text-[#0A1E5C] [&_h2]:mt-2 [&_h2]:mb-1
-                            [&_h3]:text-sm [&_h3]:font-semibold [&_h3]:text-gray-800 [&_h3]:mt-2 [&_h3]:mb-1
-                            [&_table]:text-xs [&_th]:px-2 [&_th]:py-1 [&_td]:px-2 [&_td]:py-1 [&_th]:bg-gray-50/50 [&_table]:border-collapse [&_td]:border [&_td]:border-gray-200 [&_th]:border [&_th]:border-gray-200
-                            [&_blockquote]:border-l-2 [&_blockquote]:pl-3 [&_blockquote]:text-gray-500 [&_blockquote]:my-1
-                            [&_code]:bg-gray-100 [&_code]:px-1 [&_code]:rounded [&_code]:text-xs
+                            [&_h2]:text-sm [&_h2]:font-bold [&_h2]:text-[#001a41] [&_h2]:mt-2 [&_h2]:mb-1
+                            [&_h3]:text-sm [&_h3]:font-semibold [&_h3]:text-[#001a41]/80 [&_h3]:mt-2 [&_h3]:mb-1
+                            [&_table]:text-xs [&_th]:px-2 [&_th]:py-1 [&_td]:px-2 [&_td]:py-1 [&_th]:bg-[#f1f3ff] [&_table]:border-collapse [&_td]:border [&_td]:border-[#e9edff] [&_th]:border [&_th]:border-[#e9edff]
+                            [&_blockquote]:border-l-2 [&_blockquote]:border-[#b80049]/20 [&_blockquote]:pl-3 [&_blockquote]:text-[#001a41]/60 [&_blockquote]:my-1
+                            [&_code]:bg-[#f1f3ff] [&_code]:px-1 [&_code]:rounded [&_code]:text-xs
                           `}>
                             <ReactMarkdown>{part.text}</ReactMarkdown>
                           </div>
@@ -468,11 +467,11 @@ export function ChatArea({ initialSessionId = null, onOpenSidebar }: ChatAreaPro
 
           {isLoading && (
             <div className="flex justify-start mb-2 animate-in">
-              <div className={`text-gray-400 px-4 py-3 rounded-2xl rounded-bl-md text-sm ${glass}`}>
+              <div className={`text-[#001a41]/40 px-4 py-3 rounded-2xl rounded-bl-md text-sm ${glass}`}>
                 <span className="inline-flex gap-1 items-center">
-                  <span className="w-1.5 h-1.5 bg-gray-300 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-                  <span className="w-1.5 h-1.5 bg-gray-300 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-                  <span className="w-1.5 h-1.5 bg-gray-300 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                  <span className="w-1.5 h-1.5 bg-[#bacfff] rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                  <span className="w-1.5 h-1.5 bg-[#bacfff] rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                  <span className="w-1.5 h-1.5 bg-[#bacfff] rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
                 </span>
               </div>
             </div>
@@ -506,19 +505,19 @@ export function ChatArea({ initialSessionId = null, onOpenSidebar }: ChatAreaPro
 
       {/* Bottom input bar */}
       <div className="fixed bottom-0 left-0 right-0 z-30">
-        <div className="bg-gradient-to-t from-[#F5F7FA] via-[#F5F7FA]/95 to-transparent backdrop-blur-md">
+        <div className="bg-gradient-to-t from-[#f9f9ff] via-[#f9f9ff]/95 to-transparent backdrop-blur-md">
           <div className="max-w-[700px] mx-auto px-4 md:px-6 pt-4 pb-4" style={{ paddingBottom: 'max(1rem, env(safe-area-inset-bottom))' }}>
             {inputBar}
             <div className="flex items-center justify-between mt-2 gap-2">
               <CtaIntensityDial onChange={handleCtaChange} />
               <button
                 onClick={() => useBadge('Chci se spojit se specialistou na bezplatnou konzultaci.')}
-                className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] text-gray-400 hover:bg-gray-50 transition-all flex-shrink-0"
+                className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] text-[#001a41]/40 hover:bg-[#f1f3ff] transition-all flex-shrink-0"
               >
                 <Phone className="w-3 h-3" />
                 <span className="hidden sm:inline">Expert</span>
               </button>
-              <p className="text-[10px] md:text-[11px] text-gray-400 truncate">
+              <p className="text-[10px] md:text-[11px] text-[#001a41]/40 truncate">
                 {isValuation ? 'AI odhad -- data z trhu' : 'AI průvodce -- data z ČNB ARAD'}
               </p>
             </div>

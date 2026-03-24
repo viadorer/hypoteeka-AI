@@ -49,10 +49,10 @@ export function HowItWorks({ primaryColor, isValuation }: Props) {
   return (
     <section className="px-4 py-16 md:py-20">
       <div className="max-w-3xl mx-auto">
-        <p className="text-[11px] font-semibold uppercase tracking-wider text-gray-400 text-center mb-2">
+        <p className="text-[11px] font-semibold uppercase tracking-wider text-[#001a41]/40 text-center mb-2">
           Jak to funguje
         </p>
-        <h2 className="text-2xl md:text-3xl font-bold text-[#0A1E5C] text-center mb-12">
+        <h2 className="text-2xl md:text-3xl font-bold text-[#001a41] text-center mb-12">
           3 jednoduché kroky
         </h2>
 
@@ -67,11 +67,11 @@ export function HowItWorks({ primaryColor, isValuation }: Props) {
                 >
                   <Icon className="w-6 h-6" style={{ color: primaryColor }} />
                 </div>
-                <div className="text-xs font-bold text-gray-300 mb-2">
+                <div className="text-xs font-bold text-[#001a41]/30 mb-2">
                   {i + 1}.
                 </div>
-                <h3 className="text-base font-semibold text-gray-900 mb-2">{step.title}</h3>
-                <p className="text-sm text-gray-500 leading-relaxed">{step.desc}</p>
+                <h3 className="text-base font-semibold text-[#001a41] mb-2">{step.title}</h3>
+                <p className="text-sm text-[#001a41]/60 leading-relaxed">{step.desc}</p>
               </div>
             );
           })}

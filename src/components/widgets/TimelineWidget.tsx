@@ -72,9 +72,9 @@ export function TimelineWidget({ type, currentStep }: Props) {
     <WidgetCard label={`Proces ${TYPE_LABELS[type] ?? type}`} icon={ClockIcon}>
       <div className="relative pl-6 mt-2">
         {/* Vertical line */}
-        <div className="absolute left-[7px] top-2 bottom-2 w-[2px] bg-gray-100">
+        <div className="absolute left-[7px] top-2 bottom-2 w-[2px] bg-[#e9edff]">
           <div
-            className="w-full bg-[#E91E63] rounded-sm transition-all duration-400"
+            className="w-full bg-[#b80049] rounded-sm transition-all duration-400"
             style={{ height: `${progressPct}%` }}
           />
         </div>
@@ -91,8 +91,8 @@ export function TimelineWidget({ type, currentStep }: Props) {
                 step.status === 'done'
                   ? 'bg-emerald-500 border-emerald-500'
                   : step.status === 'active'
-                  ? 'bg-white border-[#E91E63] shadow-[0_0_8px_rgba(233,30,99,0.3)]'
-                  : 'bg-gray-50 border-gray-200'
+                  ? 'bg-white border-[#b80049] shadow-[0_0_8px_rgba(184,0,73,0.3)]'
+                  : 'bg-[#f1f3ff] border-[#e9edff]'
               }`}
             >
               {step.status === 'done' && (
@@ -106,16 +106,16 @@ export function TimelineWidget({ type, currentStep }: Props) {
               <div className="flex justify-between items-center">
                 <span className={`text-[13px] ${
                   step.status === 'done' || step.status === 'active'
-                    ? 'text-gray-800'
-                    : 'text-gray-400'
+                    ? 'text-[#001a41]'
+                    : 'text-[#001a41]/40'
                 } ${step.status === 'active' ? 'font-medium' : ''}`}>
                   {step.title}
                 </span>
-                <span className="text-[10px] text-gray-400 bg-gray-50 px-2 py-0.5 rounded-full">
+                <span className="text-[10px] text-[#001a41]/40 bg-[#f1f3ff] px-2 py-0.5 rounded-full">
                   {step.duration}
                 </span>
               </div>
-              <div className="text-[11px] text-gray-400 mt-0.5">{step.desc}</div>
+              <div className="text-[11px] text-[#001a41]/40 mt-0.5">{step.desc}</div>
             </div>
           </div>
         ))}

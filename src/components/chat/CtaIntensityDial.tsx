@@ -45,7 +45,7 @@ export function CtaIntensityDial({ onChange }: Props) {
           const next = LEVELS[(currentIndex + 1) % LEVELS.length];
           handleChange(next.value);
         }}
-        className="flex items-center gap-1.5 px-2 py-1 rounded-lg text-[11px] text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-all cursor-pointer"
+        className="flex items-center gap-1.5 px-2 py-1 rounded-lg text-[11px] text-[#001a41]/40 hover:text-[#001a41]/70 hover:bg-[#e9edff] transition-all cursor-pointer"
         title={`Intenzita nabídky: ${current.label} - ${current.desc}`}
       >
         <Icon className="w-3.5 h-3.5" />

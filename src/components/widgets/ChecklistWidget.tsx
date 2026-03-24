@@ -73,15 +73,15 @@ export function ChecklistWidget({ type }: Props) {
       {/* Progress bar */}
       <div className="mb-3">
         <div className="flex justify-between mb-1.5">
-          <span className="text-[11px] text-gray-400">Připravenost</span>
-          <span className="text-xs text-gray-800 font-medium">{done}/{total}</span>
+          <span className="text-[11px] text-[#001a41]/40">Připravenost</span>
+          <span className="text-xs text-[#001a41] font-medium">{done}/{total}</span>
         </div>
-        <div className="h-1 rounded-full bg-gray-100">
+        <div className="h-1 rounded-full bg-[#e9edff]">
           <div
             className="h-full rounded-full transition-all duration-300"
             style={{
               width: `${pct}%`,
-              backgroundColor: pct === 100 ? '#22c55e' : '#E91E63',
+              backgroundColor: pct === 100 ? '#22c55e' : '#b80049',
             }}
           />
         </div>
@@ -97,7 +97,7 @@ export function ChecklistWidget({ type }: Props) {
               className={`flex items-center gap-3 p-2.5 rounded-lg text-left transition-all animate-in slide-in-from-bottom-1 fade-in ${
                 isChecked
                   ? 'bg-emerald-50 border border-emerald-200'
-                  : 'bg-gray-50 border border-gray-100 hover:bg-gray-100'
+                  : 'bg-[#f1f3ff] hover:bg-[#e9edff]'
               }`}
               style={{ animationDelay: `${i * 30}ms`, animationFillMode: 'both' }}
             >
@@ -105,7 +105,7 @@ export function ChecklistWidget({ type }: Props) {
                 className={`w-5 h-5 rounded-md flex-shrink-0 flex items-center justify-center border transition-all ${
                   isChecked
                     ? 'bg-emerald-500 border-emerald-500'
-                    : 'bg-white border-gray-200'
+                    : 'bg-white border-[#e9edff]'
                 }`}
               >
                 {isChecked && (
@@ -116,11 +116,11 @@ export function ChecklistWidget({ type }: Props) {
               </div>
               <div className="min-w-0">
                 <div className={`text-xs transition-all ${
-                  isChecked ? 'text-gray-400 line-through' : 'text-gray-800'
+                  isChecked ? 'text-[#001a41]/40 line-through' : 'text-[#001a41]'
                 }`}>
                   {doc.name}
                 </div>
-                <div className="text-[10px] text-gray-400 mt-0.5">{doc.desc}</div>
+                <div className="text-[10px] text-[#001a41]/40 mt-0.5">{doc.desc}</div>
               </div>
             </button>
           );

@@ -32,12 +32,12 @@ export function MobileCallFab({ hasSeenWidget, hasConverted }: Props) {
         onClick={() => setDismissed(true)}
         className="w-6 h-6 rounded-full bg-white shadow-md flex items-center justify-center"
       >
-        <X className="w-3 h-3 text-gray-400" />
+        <X className="w-3 h-3 text-[#001a41]/40" />
       </button>
       <a
         href="tel:+420777123456"
         onClick={() => trackEvent('mobile_call_fab_click')}
-        className="flex items-center gap-2 px-4 py-3 rounded-full bg-[#E91E63] text-white shadow-lg shadow-[#E91E63]/30 hover:bg-[#C2185B] transition-colors"
+        className="flex items-center gap-2 px-4 py-3 rounded-full bg-gradient-to-r from-[#b80049] to-[#e2165f] text-white shadow-[0_4px_20px_rgba(184,0,73,0.3)] transition-colors"
       >
         <Phone className="w-4 h-4" />
         <span className="text-sm font-medium">Zavolat</span>

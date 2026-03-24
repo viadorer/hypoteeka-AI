@@ -28,8 +28,8 @@ export function TrustSection({ primaryColor }: Props) {
                 >
                   <Icon className="w-5 h-5" style={{ color: primaryColor }} />
                 </div>
-                <p className="text-2xl font-bold text-[#0A1E5C]">{stat.value}</p>
-                <p className="text-xs text-gray-400 mt-1">{stat.label}</p>
+                <p className="text-2xl font-bold text-[#001a41]">{stat.value}</p>
+                <p className="text-xs text-[#001a41]/40 mt-1">{stat.label}</p>
               </div>
             );
           })}

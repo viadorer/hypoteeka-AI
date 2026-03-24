@@ -157,33 +157,32 @@ export function Sidebar({ activeSessionId, currentView, onSelectSession, onConti
 
       {/* Sidebar panel */}
       <aside className={`
-        fixed left-0 top-0 h-screen w-[min(300px,85vw)] bg-white/80 backdrop-blur-2xl border-r border-gray-200/60 flex flex-col z-50
-        transition-transform duration-300 ease-out shadow-2xl shadow-black/10
+        fixed left-0 top-0 h-screen w-[min(300px,85vw)] bg-[#f9f9ff] border-r border-[#e4bdc2]/10 flex flex-col z-50
+        transition-transform duration-300 ease-out shadow-[0_20px_60px_rgba(0,26,65,0.12)]
         ${isOpen ? 'translate-x-0' : '-translate-x-full'}
       `}>
         {/* Header */}
         <div className="flex items-center justify-between px-4 py-4">
           <button
             onClick={() => { onNewChat(); onClose(); }}
-            className="flex items-center gap-2 px-3.5 py-2 rounded-xl text-sm font-semibold text-white transition-all hover:opacity-90 shadow-sm"
-            style={{ backgroundColor: tenant.branding.primaryColor }}
+            className="flex items-center gap-2 px-3.5 py-2 rounded-full text-sm font-bold text-white transition-all hover:opacity-95 bg-gradient-to-r from-[#b80049] to-[#e2165f] shadow-[0_4px_20px_rgba(184,0,73,0.3)]"
           >
             <Plus className="w-4 h-4" />
             {isValuation ? 'Nový odhad' : 'Nová konzultace'}
           </button>
-          <button onClick={onClose} className="p-2 rounded-xl hover:bg-gray-100 transition-colors">
-            <X className="w-5 h-5 text-gray-400" />
+          <button onClick={onClose} className="p-2 rounded-xl hover:bg-[#e9edff] transition-colors">
+            <X className="w-5 h-5 text-[#001a41]/40" />
           </button>
         </div>
 
         {/* Previous chats */}
         <div className="flex-1 overflow-y-auto px-3 py-1">
-          <p className="text-[11px] font-semibold uppercase tracking-wider text-gray-400 mb-2 px-2">
+          <p className="text-[10px] font-bold uppercase tracking-widest text-[#b80049] mb-3 px-2">
             {isValuation ? 'Předchozí odhady' : 'Předchozí konzultace'}
           </p>
 
           {chatSessions.length === 0 && (
-            <p className="text-sm text-gray-300 px-2 py-3">Zatím žádné konverzace.</p>
+            <p className="text-sm text-[#001a41]/30 px-2 py-3">Zatím žádné konverzace.</p>
           )}
 
           <div className="space-y-0.5">
@@ -198,7 +197,7 @@ export function Sidebar({ activeSessionId, currentView, onSelectSession, onConti
                 <div
                   key={s.id}
                   className={`group rounded-xl transition-all ${
-                    isActive ? 'bg-gray-100' : 'hover:bg-gray-50'
+                    isActive ? 'bg-[#ffffff] shadow-[0_4px_20px_rgba(0,26,65,0.06)]' : 'hover:bg-[#e9edff]'
                   }`}
                 >
                   <button
@@ -206,27 +205,27 @@ export function Sidebar({ activeSessionId, currentView, onSelectSession, onConti
                     className="w-full text-left px-3 py-2.5 cursor-pointer"
                   >
                     <div className="flex items-center justify-between gap-2">
-                      <span className={`text-sm font-medium truncate ${isActive ? 'text-gray-900' : 'text-gray-700'}`}>
+                      <span className={`text-sm font-medium truncate ${isActive ? 'text-[#001a41]' : 'text-[#001a41]/70'}`}>
                         {hasName ? s.profile.name : title}
                       </span>
-                      <span className="text-[10px] text-gray-400 flex-shrink-0">
+                      <span className="text-[10px] text-[#001a41]/40 flex-shrink-0">
                         {timeAgo(s.updatedAt)}
                       </span>
                     </div>
                     {(hasName && s.profile.propertyPrice) && (
-                      <p className="text-xs text-gray-500 truncate mt-0.5">
+                      <p className="text-xs text-[#001a41]/60 truncate mt-0.5">
                         {fmt(s.profile.propertyPrice)} Kč
                       </p>
                     )}
                     {subtitle && (
-                      <p className="text-[11px] text-gray-400 truncate mt-0.5">{subtitle}</p>
+                      <p className="text-[11px] text-[#001a41]/40 truncate mt-0.5">{subtitle}</p>
                     )}
                     <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
                       <span className={`text-[10px] px-1.5 py-0.5 rounded-md ${
                         s.state.phase === 'followup' ? 'bg-green-50 text-green-600' :
                         s.state.phase === 'conversion' ? 'bg-blue-50 text-blue-600' :
                         s.state.phase === 'qualification' ? 'bg-purple-50 text-purple-600' :
-                        'bg-gray-50 text-gray-400'
+                        'bg-[#f1f3ff] text-[#001a41]/40'
                       }`}>
                         {phaseLabel(s.state.phase)}
                       </span>
@@ -241,7 +240,7 @@ export function Sidebar({ activeSessionId, currentView, onSelectSession, onConti
                         </span>
                       )}
                       {s.state.widgetsShown.length > 0 && (
-                        <span className="text-[10px] text-gray-300">
+                        <span className="text-[10px] text-[#001a41]/30">
                           {s.state.widgetsShown.length} výpočtů
                         </span>
                       )}
@@ -250,14 +249,14 @@ export function Sidebar({ activeSessionId, currentView, onSelectSession, onConti
                   <div className="hidden group-hover:flex items-center gap-2 px-3 pb-2 -mt-0.5">
                     <button
                       onClick={() => handleAnalyse(s.id)}
-                      className="flex items-center gap-1 text-[11px] text-gray-400 hover:text-gray-600 transition-colors"
+                      className="flex items-center gap-1 text-[11px] text-[#001a41]/40 hover:text-[#001a41]/70 transition-colors"
                     >
                       <BarChart3 className="w-3.5 h-3.5" />
                       Analýza
                     </button>
                     <button
                       onClick={(e) => { e.stopPropagation(); hideSession(s.id); }}
-                      className="flex items-center gap-1 text-[11px] text-gray-400 hover:text-red-500 transition-colors ml-auto"
+                      className="flex items-center gap-1 text-[11px] text-[#001a41]/40 hover:text-red-500 transition-colors ml-auto"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
                     </button>
@@ -269,8 +268,8 @@ export function Sidebar({ activeSessionId, currentView, onSelectSession, onConti
         </div>
 
         {/* Footer */}
-        <div className="px-4 py-3 border-t border-gray-100">
-          <p className="text-[10px] text-gray-300 text-center">{tenant.branding.title} v0.6</p>
+        <div className="px-4 py-3 border-t border-[#e9edff]">
+          <p className="text-[10px] text-[#001a41]/20 text-center">{tenant.branding.title} v0.6</p>
         </div>
       </aside>
     </>

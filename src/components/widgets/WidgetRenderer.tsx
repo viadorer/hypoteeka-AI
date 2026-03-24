@@ -57,15 +57,15 @@ const TOOL_LABELS: Record<string, string> = {
 function WidgetSkeleton({ toolName }: { toolName: string }) {
   const label = TOOL_LABELS[toolName] ?? 'Načítám...';
   return (
-    <div className="bg-white rounded-2xl p-4 md:p-6 shadow-sm border border-gray-100 animate-pulse overflow-hidden w-full min-w-0">
-      <div className="w-8 h-[3px] rounded-full bg-gray-200 mb-4" />
-      <p className="text-[11px] font-semibold uppercase tracking-wider text-gray-300 mb-3">
+    <div className="bg-[#ffffff] rounded-2xl p-4 md:p-6 shadow-[0_20px_50px_rgba(0,26,65,0.08)] border border-[#e4bdc2]/10 animate-pulse overflow-hidden w-full min-w-0">
+      <div className="w-8 h-[3px] rounded-full bg-[#e9edff] mb-4" />
+      <p className="text-[11px] font-semibold uppercase tracking-wider text-[#001a41]/30 mb-3">
         {label}
       </p>
       <div className="space-y-2">
-        <div className="h-8 bg-gray-100 rounded-lg w-2/3" />
-        <div className="h-4 bg-gray-100 rounded w-1/2" />
-        <div className="h-4 bg-gray-100 rounded w-3/4" />
+        <div className="h-8 bg-[#e9edff] rounded-lg w-2/3" />
+        <div className="h-4 bg-[#e9edff] rounded w-1/2" />
+        <div className="h-4 bg-[#e9edff] rounded w-3/4" />
       </div>
     </div>
   );
@@ -321,12 +321,12 @@ export function WidgetRenderer({ toolInvocation, sessionId, onSend }: { toolInvo
       if (!out) return <WidgetSkeleton toolName={toolName} />;
       const sent = out.sent as boolean | undefined;
       return (
-        <div className="bg-white rounded-2xl p-4 md:p-6 shadow-sm border border-gray-100 animate-in slide-in-from-bottom-4 duration-500 overflow-hidden w-full min-w-0">
+        <div className="bg-[#ffffff] rounded-2xl p-4 md:p-6 shadow-[0_20px_50px_rgba(0,26,65,0.08)] border border-[#e4bdc2]/10 animate-in slide-in-from-bottom-4 duration-500 overflow-hidden w-full min-w-0">
           <div className={`w-8 h-[3px] rounded-full ${sent ? 'bg-emerald-500' : 'bg-red-400'} mb-4`} />
-          <p className="text-[11px] font-semibold uppercase tracking-wider text-gray-400 mb-2">
+          <p className="text-[11px] font-semibold uppercase tracking-wider text-[#001a41]/40 mb-2">
             {sent ? 'Email odeslán' : 'Chyba odesílání'}
           </p>
-          <p className="text-sm text-gray-600">
+          <p className="text-sm text-[#001a41]/70">
             {sent
               ? `Shrnutí kalkulace bylo odesláno na ${args.email as string}.`
               : `Nepodařilo se odeslat email. ${(out.error as string) ?? ''}`}
@@ -339,9 +339,9 @@ export function WidgetRenderer({ toolInvocation, sessionId, onSend }: { toolInvo
       if (!out) return <WidgetSkeleton toolName={toolName} />;
       const url = out.whatsappUrl as string | undefined;
       return (
-        <div className="bg-white rounded-2xl p-4 md:p-6 shadow-sm border border-gray-100 animate-in slide-in-from-bottom-4 duration-500 overflow-hidden w-full min-w-0">
+        <div className="bg-[#ffffff] rounded-2xl p-4 md:p-6 shadow-[0_20px_50px_rgba(0,26,65,0.08)] border border-[#e4bdc2]/10 animate-in slide-in-from-bottom-4 duration-500 overflow-hidden w-full min-w-0">
           <div className="w-8 h-[3px] rounded-full bg-green-500 mb-4" />
-          <p className="text-[11px] font-semibold uppercase tracking-wider text-gray-400 mb-2">
+          <p className="text-[11px] font-semibold uppercase tracking-wider text-[#001a41]/40 mb-2">
             WhatsApp
           </p>
           {url ? (
@@ -354,7 +354,7 @@ export function WidgetRenderer({ toolInvocation, sessionId, onSend }: { toolInvo
               Otevřít WhatsApp
             </a>
           ) : (
-            <p className="text-sm text-gray-500">Odkaz se připravuje...</p>
+            <p className="text-sm text-[#001a41]/60">Odkaz se připravuje...</p>
           )}
         </div>
       );

@@ -138,33 +138,33 @@ export function NextStepsBar({ toolName, onSend }: Props) {
   if (!config) return null;
 
   return (
-    <div className="mt-3 bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+    <div className="mt-3 bg-[#ffffff] rounded-2xl border border-[#e4bdc2]/10 shadow-[0_20px_50px_rgba(0,26,65,0.08)] overflow-hidden">
       <div className="px-4 pt-3 pb-2">
-        <p className="text-[11px] font-semibold uppercase tracking-wider text-gray-400">
+        <p className="text-[11px] font-semibold uppercase tracking-wider text-[#001a41]/40">
           {config.title}
         </p>
       </div>
-      <div className="divide-y divide-gray-50">
+      <div className="divide-y divide-[#e9edff]">
         {config.steps.map((step) => {
           const Icon = step.icon;
           return (
             <button
               key={step.label}
               onClick={() => { trackEvent('next_step_click', { widget: toolName, step: step.label }); onSend(step.message); }}
-              className="w-full flex items-start gap-3 px-4 py-3 text-left hover:bg-gray-50/80 transition-colors cursor-pointer group"
+              className="w-full flex items-start gap-3 px-4 py-3 text-left hover:bg-[#f1f3ff]/80 transition-colors cursor-pointer group"
             >
-              <div className="w-8 h-8 rounded-lg bg-gray-50 group-hover:bg-white flex items-center justify-center flex-shrink-0 mt-0.5 transition-colors">
-                <Icon className="w-4 h-4 text-gray-400 group-hover:text-[#E91E63] transition-colors" />
+              <div className="w-8 h-8 rounded-lg bg-[#f1f3ff] group-hover:bg-white flex items-center justify-center flex-shrink-0 mt-0.5 transition-colors">
+                <Icon className="w-4 h-4 text-[#001a41]/40 group-hover:text-[#b80049] transition-colors" />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-gray-800 group-hover:text-gray-900">
+                <p className="text-sm font-medium text-[#001a41] group-hover:text-[#001a41]">
                   {step.label}
                 </p>
-                <p className="text-xs text-gray-400 mt-0.5 leading-relaxed">
+                <p className="text-xs text-[#001a41]/40 mt-0.5 leading-relaxed">
                   {step.desc}
                 </p>
               </div>
-              <ArrowRight className="w-4 h-4 text-gray-300 group-hover:text-[#E91E63] flex-shrink-0 mt-1.5 transition-colors" />
+              <ArrowRight className="w-4 h-4 text-[#001a41]/30 group-hover:text-[#b80049] flex-shrink-0 mt-1.5 transition-colors" />
             </button>
           );
         })}

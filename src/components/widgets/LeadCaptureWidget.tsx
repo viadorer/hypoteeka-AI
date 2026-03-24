@@ -58,7 +58,7 @@ export function LeadCaptureWidget({ context, prefilledName, prefilledEmail, pref
 
   if (submitted) {
     return (
-      <div className="bg-white rounded-2xl p-4 md:p-6 shadow-sm border border-gray-100 animate-in slide-in-from-bottom-4 duration-500 overflow-hidden w-full min-w-0">
+      <div className="bg-[#ffffff] rounded-2xl p-4 md:p-6 shadow-[0_20px_50px_rgba(0,26,65,0.08)] border border-[#e4bdc2]/10 animate-in slide-in-from-bottom-4 duration-500 overflow-hidden w-full min-w-0">
         <div className="w-8 h-[3px] rounded-full bg-emerald-500 mb-4" />
 
         <div className="flex items-center gap-3 mb-4">
@@ -66,41 +66,41 @@ export function LeadCaptureWidget({ context, prefilledName, prefilledEmail, pref
             <CheckCircle2 className="w-5 h-5 text-emerald-500" />
           </div>
           <div>
-            <p className="text-lg font-semibold text-gray-900">Děkujeme za váš zájem</p>
-            <p className="text-sm text-gray-500">Vaše žádost byla úspěšně odeslána.</p>
+            <p className="text-lg font-semibold text-[#001a41]">Děkujeme za váš zájem</p>
+            <p className="text-sm text-[#001a41]/60">Vaše žádost byla úspěšně odeslána.</p>
           </div>
         </div>
 
-        <div className="bg-gray-50 rounded-xl p-4 mb-4">
-          <p className="text-[11px] font-semibold uppercase tracking-wider text-gray-400 mb-3">
+        <div className="bg-[#f1f3ff] rounded-xl p-4 mb-4">
+          <p className="text-[11px] font-semibold uppercase tracking-wider text-[#001a41]/40 mb-3">
             Co bude dál
           </p>
           <div className="space-y-3">
             <div className="flex items-start gap-3">
-              <div className="w-6 h-6 rounded-full bg-[#E91E63]/10 flex items-center justify-center flex-shrink-0 mt-0.5">
-                <Search className="w-3 h-3 text-[#E91E63]" />
+              <div className="w-6 h-6 rounded-full bg-[#b80049]/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+                <Search className="w-3 h-3 text-[#b80049]" />
               </div>
               <div>
-                <p className="text-sm font-medium text-gray-700">Poradce zkontroluje vaši situaci</p>
-                <p className="text-xs text-gray-400">Na základě vašich dat připraví přehled možností.</p>
+                <p className="text-sm font-medium text-[#001a41]/80">Poradce zkontroluje vaši situaci</p>
+                <p className="text-xs text-[#001a41]/40">Na základě vašich dat připraví přehled možností.</p>
               </div>
             </div>
             <div className="flex items-start gap-3">
-              <div className="w-6 h-6 rounded-full bg-[#E91E63]/10 flex items-center justify-center flex-shrink-0 mt-0.5">
-                <Phone className="w-3 h-3 text-[#E91E63]" />
+              <div className="w-6 h-6 rounded-full bg-[#b80049]/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+                <Phone className="w-3 h-3 text-[#b80049]" />
               </div>
               <div>
-                <p className="text-sm font-medium text-gray-700">Ozve se vám do 24 hodin</p>
-                <p className="text-xs text-gray-400">Telefonicky nebo emailem, jak vám vyhovuje.</p>
+                <p className="text-sm font-medium text-[#001a41]/80">Ozve se vám do 24 hodin</p>
+                <p className="text-xs text-[#001a41]/40">Telefonicky nebo emailem, jak vám vyhovuje.</p>
               </div>
             </div>
             <div className="flex items-start gap-3">
-              <div className="w-6 h-6 rounded-full bg-[#E91E63]/10 flex items-center justify-center flex-shrink-0 mt-0.5">
-                <BarChart3 className="w-3 h-3 text-[#E91E63]" />
+              <div className="w-6 h-6 rounded-full bg-[#b80049]/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+                <BarChart3 className="w-3 h-3 text-[#b80049]" />
               </div>
               <div>
-                <p className="text-sm font-medium text-gray-700">Porovnáte nabídky bank</p>
-                <p className="text-xs text-gray-400">Společně vyberete nejlepší řešení pro vaši situaci.</p>
+                <p className="text-sm font-medium text-[#001a41]/80">Porovnáte nabídky bank</p>
+                <p className="text-xs text-[#001a41]/40">Společně vyberete nejlepší řešení pro vaši situaci.</p>
               </div>
             </div>
           </div>
@@ -110,21 +110,21 @@ export function LeadCaptureWidget({ context, prefilledName, prefilledEmail, pref
   }
 
   return (
-    <div className="bg-white rounded-2xl p-4 md:p-6 shadow-sm border border-gray-100 animate-in slide-in-from-bottom-4 duration-500 overflow-hidden w-full min-w-0">
-      <div className="w-8 h-[3px] rounded-full bg-[#E91E63] mb-4" />
-      <p className="text-[11px] font-semibold uppercase tracking-wider text-gray-400 mb-1">
+    <div className="bg-[#ffffff] rounded-2xl p-4 md:p-6 shadow-[0_20px_50px_rgba(0,26,65,0.08)] border border-[#e4bdc2]/10 animate-in slide-in-from-bottom-4 duration-500 overflow-hidden w-full min-w-0">
+      <div className="w-8 h-[3px] rounded-full bg-[#b80049] mb-4" />
+      <p className="text-[11px] font-semibold uppercase tracking-wider text-[#001a41]/40 mb-1">
         Bezplatná konzultace
       </p>
-      <p className="text-sm font-medium text-gray-800 mb-1">
+      <p className="text-sm font-medium text-[#001a41] mb-1">
         Spojte se s hypotečním specialistou
       </p>
-      <p className="text-sm text-gray-500 mb-3">
+      <p className="text-sm text-[#001a41]/60 mb-3">
         Porovnáme nabídky 8+ bank a vyjednáme podmínky, které běžně nedostanete. Služba je zcela zdarma.
       </p>
 
       <div className="flex items-center gap-1.5 mb-4">
-        <Clock className="w-3.5 h-3.5 text-[#E91E63]" />
-        <span className="text-xs text-gray-500">Odpověď do 24 hodin</span>
+        <Clock className="w-3.5 h-3.5 text-[#b80049]" />
+        <span className="text-xs text-[#001a41]/60">Odpověď do 24 hodin</span>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-3">
@@ -133,21 +133,21 @@ export function LeadCaptureWidget({ context, prefilledName, prefilledEmail, pref
           placeholder="Jméno a příjmení *"
           value={name}
           onChange={e => setName(e.target.value)}
-          className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-white/80 text-sm text-gray-900 placeholder:text-gray-400 outline-none focus:border-[#E91E63]/40 focus:ring-1 focus:ring-[#E91E63]/20 transition-all"
+          className="w-full px-4 py-3 rounded-xl border border-[#e9edff] bg-white/80 text-sm text-[#001a41] placeholder:text-[#001a41]/40 outline-none focus:border-[#b80049]/40 focus:ring-1 focus:ring-[#b80049]/20 transition-all"
         />
         <input
           type="email"
           placeholder="E-mail"
           value={email}
           onChange={e => setEmail(e.target.value)}
-          className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-white/80 text-sm text-gray-900 placeholder:text-gray-400 outline-none focus:border-[#E91E63]/40 focus:ring-1 focus:ring-[#E91E63]/20 transition-all"
+          className="w-full px-4 py-3 rounded-xl border border-[#e9edff] bg-white/80 text-sm text-[#001a41] placeholder:text-[#001a41]/40 outline-none focus:border-[#b80049]/40 focus:ring-1 focus:ring-[#b80049]/20 transition-all"
         />
         <input
           type="tel"
           placeholder="Telefon"
           value={phone}
           onChange={e => setPhone(e.target.value)}
-          className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-white/80 text-sm text-gray-900 placeholder:text-gray-400 outline-none focus:border-[#E91E63]/40 focus:ring-1 focus:ring-[#E91E63]/20 transition-all"
+          className="w-full px-4 py-3 rounded-xl border border-[#e9edff] bg-white/80 text-sm text-[#001a41] placeholder:text-[#001a41]/40 outline-none focus:border-[#b80049]/40 focus:ring-1 focus:ring-[#b80049]/20 transition-all"
         />
 
         {error && (
@@ -159,9 +159,9 @@ export function LeadCaptureWidget({ context, prefilledName, prefilledEmail, pref
             type="checkbox"
             checked={gdprConsent}
             onChange={e => setGdprConsent(e.target.checked)}
-            className="mt-0.5 w-4 h-4 rounded border-gray-300 text-[#E91E63] focus:ring-[#E91E63]/20 accent-[#E91E63]"
+            className="mt-0.5 w-4 h-4 rounded border-[#001a41]/30 text-[#b80049] focus:ring-[#b80049]/20 accent-[#b80049]"
           />
-          <span className="text-[11px] text-gray-500 leading-relaxed">
+          <span className="text-[11px] text-[#001a41]/60 leading-relaxed">
             Souhlasím se zpracováním osobních údajů za účelem nezávazné konzultace.
             Údaje budou použity pouze pro kontaktování naším poradcem.
           </span>
@@ -170,7 +170,7 @@ export function LeadCaptureWidget({ context, prefilledName, prefilledEmail, pref
         <button
           type="submit"
           disabled={!canSubmit || submitting}
-          className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-[#E91E63] hover:bg-[#C2185B] disabled:bg-gray-200 disabled:text-gray-400 text-white text-sm font-medium transition-all"
+          className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-[#b80049] hover:bg-[#9a003d] disabled:bg-[#e9edff] disabled:text-[#001a41]/40 text-white text-sm font-medium transition-all"
         >
           <Send className="w-4 h-4" />
           {submitting ? 'Odesílám...' : 'Chci bezplatnou konzultaci'}
