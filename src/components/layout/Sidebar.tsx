@@ -268,7 +268,15 @@ export function Sidebar({ activeSessionId, currentView, onSelectSession, onConti
         </div>
 
         {/* Footer */}
-        <div className="px-4 py-3 border-t border-[#e9edff]">
+        <div className="px-4 py-3 border-t border-[#e9edff] space-y-1.5">
+          <a
+            href="/podminky"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="block text-[10px] text-[#001a41]/40 hover:text-[#b80049] text-center transition-colors"
+          >
+            Podmínky · GDPR · Regulační info
+          </a>
           <p className="text-[10px] text-[#001a41]/20 text-center">{tenant.branding.title} v0.6</p>
         </div>
       </aside>

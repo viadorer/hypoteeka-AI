@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { User, LogIn, LogOut, KeyRound, Pencil, Save, XCircle } from 'lucide-react';
+import { User, LogIn, LogOut, KeyRound, Pencil, Save, XCircle, ShieldOff, FileText } from 'lucide-react';
 import { useAuth } from '@/lib/auth/auth-context';
 
 type AuthView = 'none' | 'login' | 'signup' | 'change-password' | 'edit-profile';
@@ -18,7 +18,32 @@ export function UserMenu() {
   const [authSuccess, setAuthSuccess] = useState('');
   const [oauthLoading, setOauthLoading] = useState<string | null>(null);
   const [profileForm, setProfileForm] = useState({ displayName: '', phone: '', city: '' });
+  const [withdrawing, setWithdrawing] = useState(false);
+  const [withdrawMessage, setWithdrawMessage] = useState('');
   const menuRef = useRef<HTMLDivElement>(null);
+
+  const withdrawConsent = async () => {
+    if (withdrawing) return;
+    if (!confirm('Opravdu chcete odvolat souhlas se zpracováním a předáním osobních údajů? Probíhající zpracování bude zastaveno. Odvolání nemá zpětný účinek.')) {
+      return;
+    }
+    setWithdrawing(true);
+    setWithdrawMessage('');
+    try {
+      const res = await fetch('/api/consent/withdraw', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ scope: 'handoff_partner' }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error ?? 'Chyba při odvolání');
+      setWithdrawMessage(`Odvoláno ${data.withdrawn ?? 0} souhlasů.`);
+    } catch (err) {
+      setWithdrawMessage(err instanceof Error ? err.message : 'Chyba při odvolání');
+    } finally {
+      setWithdrawing(false);
+    }
+  };
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {
@@ -187,6 +212,27 @@ export function UserMenu() {
                     <KeyRound className="w-4 h-4" />
                     Změnit heslo
                   </button>
+                  <div className="border-t border-[#e4bdc2]/10 my-1" />
+                  <a
+                    href="/podminky"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-[#001a41]/70 hover:bg-[#f1f3ff] transition-all"
+                  >
+                    <FileText className="w-4 h-4" />
+                    Podmínky a GDPR
+                  </a>
+                  <button
+                    onClick={withdrawConsent}
+                    disabled={withdrawing}
+                    className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-[#001a41]/70 hover:bg-[#f1f3ff] transition-all disabled:opacity-50"
+                  >
+                    <ShieldOff className="w-4 h-4" />
+                    {withdrawing ? 'Odvolávám…' : 'Odvolat souhlas'}
+                  </button>
+                  {withdrawMessage && (
+                    <p className="px-4 pb-2 text-[11px] text-[#001a41]/60">{withdrawMessage}</p>
+                  )}
                   <div className="border-t border-[#e4bdc2]/10 my-1" />
                   <button
                     onClick={() => { logout(); setOpen(false); }}

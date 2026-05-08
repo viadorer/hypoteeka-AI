@@ -289,7 +289,7 @@ export const toolDefinitions = {
       propertyPrice: z.number().optional().describe('Cena nemovitosti v CZK'),
       propertyType: z.string().optional().describe('byt, dum, pozemek, rekonstrukce'),
       location: z.string().optional().describe('Mesto nebo oblast'),
-      purpose: z.string().optional().describe('vlastni_bydleni, investice, refinancovani'),
+      purpose: z.string().optional().describe('Ucel: vlastni_bydleni, investice, refinancovani (zmena banky), refixace (zmena sazby u stavajici banky)'),
       equity: z.number().optional().describe('Vlastni zdroje v CZK'),
       monthlyIncome: z.number().optional().describe('Cisty mesicni prijem v CZK'),
       partnerIncome: z.number().optional().describe('Cisty mesicni prijem partnera v CZK'),
@@ -313,6 +313,8 @@ export const toolDefinitions = {
       propertyElevator: z.boolean().optional().describe('Vytah v budove'),
       propertyOwnership: z.string().optional().describe('Vlastnictvi: private, cooperative, council'),
       preferredRate: z.number().optional().describe('Sazba kterou klient zminil (napr. 0.0375 pro 3.75%)'),
+      targetLoanAmount: z.number().optional().describe('Pozadovana vyse uveru v CZK (pro refinancovani = zustatek hypoteky)'),
+      horizonMonths: z.number().optional().describe('Casovy horizont v mesicich: 0=hned, 3=do 3 mesicu, 12=do roka, 24=pozdeji'),
     }),
     execute: async (data: Record<string, unknown>) => {
       // Data se zpracovávají v API route přes onStepFinish

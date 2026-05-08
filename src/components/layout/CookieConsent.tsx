@@ -66,7 +66,10 @@ export function CookieConsent() {
         </div>
 
         <p className="text-xs text-[#001a41]/60 leading-relaxed mb-4">
-          Používáme cookies pro fungování webu a analýzu návštěvnosti. Marketingové cookies používáme pouze s vaším souhlasem.
+          Používáme cookies pro fungování webu a analýzu návštěvnosti. Marketingové cookies používáme pouze s vaším souhlasem.{' '}
+          <a href="/podminky#cookies" className="underline hover:text-[#b80049]">
+            Více v podmínkách.
+          </a>
         </p>
 
         {showDetails && (

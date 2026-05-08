@@ -7,12 +7,14 @@
 
 import fs from 'fs';
 import path from 'path';
-import type { StorageProvider, SessionData, LeadRecord, WidgetEventRecord, PropertyRecord, ProjectRecord, NewsRecord } from './types';
+import type { StorageProvider, SessionData, LeadRecord, WidgetEventRecord, PropertyRecord, ProjectRecord, NewsRecord, ConsentRecord } from './types';
+import { randomUUID } from 'crypto';
 
 const DATA_DIR = path.join(process.cwd(), 'data');
 const SESSIONS_DIR = path.join(DATA_DIR, 'sessions');
 const PROJECTS_DIR = path.join(DATA_DIR, 'projects');
 const LEADS_FILE = path.join(DATA_DIR, 'leads.json');
+const CONSENT_LOG_FILE = path.join(DATA_DIR, 'consent_log.json');
 
 function ensureDirs() {
   if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
@@ -106,6 +108,72 @@ export class JsonFileStorage implements StorageProvider {
     }
     sessions.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
     return sessions;
+  }
+
+  async saveConsent(consent: ConsentRecord): Promise<string | null> {
+    ensureDirs();
+    const id = consent.id ?? randomUUID();
+    const record: ConsentRecord = { ...consent, id };
+    let existing: ConsentRecord[] = [];
+    if (fs.existsSync(CONSENT_LOG_FILE)) {
+      try {
+        existing = JSON.parse(fs.readFileSync(CONSENT_LOG_FILE, 'utf-8')) as ConsentRecord[];
+      } catch { /* corrupt -> start fresh */ }
+    }
+    existing.push(record);
+    fs.writeFileSync(CONSENT_LOG_FILE, JSON.stringify(existing, null, 2), 'utf-8');
+    return id;
+  }
+
+  async withdrawConsentsForUser(userId: string, scope?: string): Promise<number> {
+    if (!fs.existsSync(CONSENT_LOG_FILE)) return 0;
+    let log: ConsentRecord[] = [];
+    try { log = JSON.parse(fs.readFileSync(CONSENT_LOG_FILE, 'utf-8')) as ConsentRecord[]; }
+    catch { return 0; }
+    const now = new Date().toISOString();
+    let count = 0;
+    const updated = log.map(c => {
+      const matchUser = c.userId === userId;
+      const matchScope = !scope || c.scope === scope;
+      if (matchUser && matchScope && !c.withdrawnAt) {
+        count += 1;
+        return { ...c, withdrawnAt: now };
+      }
+      return c;
+    });
+    fs.writeFileSync(CONSENT_LOG_FILE, JSON.stringify(updated, null, 2), 'utf-8');
+    return count;
+  }
+
+  async withdrawConsentsByEmail(email: string, scope?: string): Promise<number> {
+    if (!fs.existsSync(CONSENT_LOG_FILE)) return 0;
+    const normalized = email.toLowerCase().trim();
+    const leads = await this.getLeads();
+    const matchingLeadIds = new Set(
+      leads.filter(l => (l.email ?? '').toLowerCase().trim() === normalized).map(l => l.id)
+    );
+    const matchingSessionIds = new Set(
+      leads.filter(l => (l.email ?? '').toLowerCase().trim() === normalized).map(l => l.sessionId)
+    );
+
+    let log: ConsentRecord[] = [];
+    try { log = JSON.parse(fs.readFileSync(CONSENT_LOG_FILE, 'utf-8')) as ConsentRecord[]; }
+    catch { return 0; }
+
+    const now = new Date().toISOString();
+    let count = 0;
+    const updated = log.map(c => {
+      const matchLead = c.leadId && matchingLeadIds.has(c.leadId);
+      const matchSession = c.sessionId && matchingSessionIds.has(c.sessionId);
+      const matchScope = !scope || c.scope === scope;
+      if ((matchLead || matchSession) && matchScope && !c.withdrawnAt) {
+        count += 1;
+        return { ...c, withdrawnAt: now };
+      }
+      return c;
+    });
+    fs.writeFileSync(CONSENT_LOG_FILE, JSON.stringify(updated, null, 2), 'utf-8');
+    return count;
   }
 
   async saveWidgetEvent(event: WidgetEventRecord): Promise<void> {

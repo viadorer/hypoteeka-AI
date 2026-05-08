@@ -6,7 +6,7 @@
  */
 
 import type { SupabaseClient } from '@supabase/supabase-js';
-import type { StorageProvider, SessionData, LeadRecord, WidgetEventRecord, PropertyRecord, ProjectRecord, NewsRecord, UserProfile } from './types';
+import type { StorageProvider, SessionData, LeadRecord, WidgetEventRecord, PropertyRecord, ProjectRecord, NewsRecord, UserProfile, ConsentRecord } from './types';
 
 export class SupabaseStorage implements StorageProvider {
   constructor(private db: SupabaseClient) {}
@@ -176,8 +176,11 @@ export class SupabaseStorage implements StorageProvider {
       lead_score: lead.leadScore ?? 0,
       lead_temperature: lead.leadTemperature || 'cold',
     };
+    if (lead.id) insertData.id = lead.id;
     if (lead.realvisorLeadId) insertData.realvisor_lead_id = lead.realvisorLeadId;
     if (lead.realvisorContactId) insertData.realvisor_contact_id = lead.realvisorContactId;
+    const consentId = (lead.profile as Record<string, unknown> | undefined)?.consentHandoffId;
+    if (typeof consentId === 'string') insertData.consent_id = consentId;
 
     const { error } = await this.db
       .from('leads')
@@ -220,6 +223,107 @@ export class SupabaseStorage implements StorageProvider {
       realvisorContactId: row.realvisor_contact_id ?? undefined,
       createdAt: row.created_at,
     }));
+  }
+
+  async saveConsent(consent: ConsentRecord): Promise<string | null> {
+    const insertData: Record<string, unknown> = {
+      tenant_id: consent.tenantId,
+      session_id: consent.sessionId ?? null,
+      lead_id: consent.leadId ?? null,
+      user_id: consent.userId ?? null,
+      scope: consent.scope,
+      consent_text: consent.consentText,
+      consent_text_version: consent.consentTextVersion,
+      consent_text_hash: consent.consentTextHash,
+      partner_id: consent.partnerId ?? null,
+      ip_address: consent.ipAddress ?? null,
+      user_agent: consent.userAgent ?? null,
+      consented_at: consent.consentedAt,
+    };
+
+    const { data, error } = await this.db
+      .from('consent_log')
+      .insert(insertData)
+      .select('id')
+      .single();
+
+    if (error || !data) {
+      console.error('[SupabaseStorage] saveConsent error:', error?.message ?? 'no data');
+      return null;
+    }
+    return data.id as string;
+  }
+
+  async withdrawConsentsForUser(userId: string, scope?: string): Promise<number> {
+    // Withdraw all active consents linked either directly to user_id, or to a session
+    // owned by user_id (anonymous flows where consent was captured before login).
+    const now = new Date().toISOString();
+
+    const { data: ownedSessions } = await this.db
+      .from('sessions')
+      .select('id')
+      .eq('user_id', userId);
+
+    const sessionIds = (ownedSessions ?? []).map((r: { id: string }) => r.id);
+
+    let q = this.db
+      .from('consent_log')
+      .update({ withdrawn_at: now })
+      .is('withdrawn_at', null);
+
+    if (sessionIds.length > 0) {
+      q = q.or(`user_id.eq.${userId},session_id.in.(${sessionIds.join(',')})`);
+    } else {
+      q = q.eq('user_id', userId);
+    }
+
+    if (scope) q = q.eq('scope', scope);
+
+    const { error, data } = await q.select('id');
+    if (error) {
+      console.error('[SupabaseStorage] withdrawConsentsForUser error:', error.message);
+      return 0;
+    }
+    return data?.length ?? 0;
+  }
+
+  async withdrawConsentsByEmail(email: string, scope?: string): Promise<number> {
+    const normalized = email.toLowerCase().trim();
+
+    // Find all leads with this email and collect linked consent ids.
+    const { data: leads } = await this.db
+      .from('leads')
+      .select('id, consent_id, session_id')
+      .eq('email', normalized);
+
+    const consentIds = (leads ?? [])
+      .map((r: { consent_id: string | null }) => r.consent_id)
+      .filter((id): id is string => typeof id === 'string');
+
+    const sessionIds = (leads ?? [])
+      .map((r: { session_id: string | null }) => r.session_id)
+      .filter((id): id is string => typeof id === 'string');
+
+    if (consentIds.length === 0 && sessionIds.length === 0) return 0;
+
+    const now = new Date().toISOString();
+    let q = this.db
+      .from('consent_log')
+      .update({ withdrawn_at: now })
+      .is('withdrawn_at', null);
+
+    const filters: string[] = [];
+    if (consentIds.length > 0) filters.push(`id.in.(${consentIds.join(',')})`);
+    if (sessionIds.length > 0) filters.push(`session_id.in.(${sessionIds.join(',')})`);
+    q = q.or(filters.join(','));
+    if (scope) q = q.eq('scope', scope);
+
+    const { error, data } = await q.select('id');
+    if (error) {
+      console.error('[SupabaseStorage] withdrawConsentsByEmail error:', error.message);
+      return 0;
+    }
+    return data?.length ?? 0;
   }
 
   async saveWidgetEvent(event: WidgetEventRecord): Promise<void> {

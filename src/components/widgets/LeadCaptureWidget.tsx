@@ -12,6 +12,15 @@ interface Props {
   sessionId?: string;
 }
 
+const CONSENT_VERSION = 'handoff-2026-05-v2';
+const CONSENT_TEXT =
+  'Souhlasím, aby společnost QUADRUM s.r.o. (provozovatel) zpracovala mé poskytnuté ' +
+  'osobní údaje (jméno, e-mail, telefon, údaje o nemovitosti a finanční situaci) ' +
+  'a předala je svému poradci v roli vázaného zástupce samostatného zprostředkovatele ' +
+  'SAB servis s.r.o. (IČO 24704008), za účelem nezávazné konzultace a přípravy nabídky ' +
+  'spotřebitelského úvěru dle zákona č. 257/2016 Sb. Souhlas mohu kdykoli odvolat ' +
+  'na info@quadrum.cz.';
+
 export function LeadCaptureWidget({ context, prefilledName, prefilledEmail, prefilledPhone, sessionId }: Props) {
   const [name, setName] = useState(prefilledName ?? '');
   const [email, setEmail] = useState(prefilledEmail ?? '');
@@ -39,6 +48,11 @@ export function LeadCaptureWidget({ context, prefilledName, prefilledEmail, pref
           phone: phone.trim() || undefined,
           context,
           sessionId,
+          consent: {
+            text: CONSENT_TEXT,
+            version: CONSENT_VERSION,
+            scope: 'handoff_partner',
+          },
         }),
       });
 
@@ -162,8 +176,7 @@ export function LeadCaptureWidget({ context, prefilledName, prefilledEmail, pref
             className="mt-0.5 w-4 h-4 rounded border-[#001a41]/30 text-[#b80049] focus:ring-[#b80049]/20 accent-[#b80049]"
           />
           <span className="text-[11px] text-[#001a41]/60 leading-relaxed">
-            Souhlasím se zpracováním osobních údajů za účelem nezávazné konzultace.
-            Údaje budou použity pouze pro kontaktování naším poradcem.
+            {CONSENT_TEXT}
           </span>
         </label>
 

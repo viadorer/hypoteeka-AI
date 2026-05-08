@@ -111,6 +111,30 @@ export interface ProjectRecord {
   updatedAt: string;
 }
 
+export type ConsentScope =
+  | 'handoff_partner'
+  | 'marketing'
+  | 'analytics'
+  | 'rate_alerts'
+  | 'transactional_email';
+
+export interface ConsentRecord {
+  id?: string;
+  tenantId: string;
+  sessionId?: string;
+  leadId?: string;
+  userId?: string;
+  scope: ConsentScope;
+  consentText: string;
+  consentTextVersion: string;
+  consentTextHash: string; // sha256 of consentText, hex
+  partnerId?: string;
+  ipAddress?: string;
+  userAgent?: string;
+  consentedAt: string;
+  withdrawnAt?: string;
+}
+
 export interface NewsRecord {
   id: string;
   tenantId: string;
@@ -133,6 +157,11 @@ export interface StorageProvider {
   // Leads
   saveLead(lead: LeadRecord): Promise<void>;
   getLeads(tenantId?: string): Promise<LeadRecord[]>;
+
+  // GDPR consent log
+  saveConsent(consent: ConsentRecord): Promise<string | null>; // returns consent id, null on failure
+  withdrawConsentsForUser(userId: string, scope?: ConsentScope): Promise<number>; // returns count
+  withdrawConsentsByEmail(email: string, scope?: ConsentScope): Promise<number>; // returns count
 
   // Widget events
   saveWidgetEvent(event: WidgetEventRecord): Promise<void>;

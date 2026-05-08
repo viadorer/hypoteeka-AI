@@ -1,5 +1,6 @@
 import { storage } from '@/lib/storage';
 import { getTenantConfig, getDefaultTenantId } from '@/lib/tenant/config';
+import { LegalFooter } from '@/components/layout/LegalFooter';
 import Link from 'next/link';
 import type { Metadata } from 'next';
 
@@ -59,6 +60,8 @@ export default async function ArticlesPage() {
           </div>
         )}
       </div>
+
+      <LegalFooter />
     </div>
   );
 }

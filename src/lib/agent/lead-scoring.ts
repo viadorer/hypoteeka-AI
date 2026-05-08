@@ -10,6 +10,7 @@
 
 import type { ClientProfile } from './client-profile';
 import type { ConversationState } from './conversation-state';
+import { checkEligibility } from '../calculations';
 
 export type LeadTemperature = 'cold' | 'warm' | 'hot' | 'qualified';
 
@@ -118,6 +119,84 @@ export function shouldOfferLeadCapture(score: LeadScore, state: ConversationStat
   if (score.temperature === 'hot' && state.turnCount >= 6) return true;
 
   return false;
+}
+
+/**
+ * Handoff qualification gate — 5 kritérií, která MUSÍ všechna platit,
+ * aby se lead předal partnerskému makléři.
+ *
+ * Why: lead score je interní signál engagement; handoff je smluvní deliverable
+ * vůči partnerovi. Definice qualified je v kontraktu, ne v scoring rules.
+ */
+export interface HandoffQualification {
+  qualified: boolean;
+  missing: string[]; // strojově čitelné kódy chybějících kritérií
+  reasons: string[]; // lidsky čitelné popisy
+}
+
+export function isQualifiedForHandoff(profile: ClientProfile): HandoffQualification {
+  const missing: string[] = [];
+  const reasons: string[] = [];
+
+  // 1. Identita
+  if (!profile.name) {
+    missing.push('identity.name');
+    reasons.push('Chybí jméno');
+  }
+  if (!profile.email && !profile.phone) {
+    missing.push('identity.contact');
+    reasons.push('Chybí email i telefon');
+  }
+
+  // 2. Záměr a horizont
+  if (!profile.purpose) {
+    missing.push('intent.purpose');
+    reasons.push('Není jasný záměr (koupě / refi / refix / investice)');
+  }
+  if (profile.horizonMonths === undefined || profile.horizonMonths === null) {
+    missing.push('intent.horizon');
+    reasons.push('Není znám časový horizont');
+  }
+
+  // 3. Finanční pozice
+  const income = profile.monthlyIncome ?? profile.totalMonthlyIncome;
+  if (!income) {
+    missing.push('financials.income');
+    reasons.push('Chybí měsíční čistý příjem');
+  }
+  if (profile.equity === undefined || profile.equity === null) {
+    missing.push('financials.equity');
+    reasons.push('Chybí vlastní zdroje (hotovost)');
+  }
+  if (!profile.targetLoanAmount && !profile.propertyPrice && !profile.existingMortgageBalance) {
+    missing.push('financials.target');
+    reasons.push('Chybí požadovaná výše úvěru / cena nemovitosti');
+  }
+
+  // 4. Eligibility podle ČNB pravidel — pure function
+  if (income && profile.equity !== undefined && profile.equity !== null && profile.propertyPrice) {
+    const elig = checkEligibility(profile.propertyPrice, profile.equity, income, profile.isYoung ?? false);
+    if (!elig.allOk) {
+      missing.push('eligibility');
+      reasons.push(...elig.reasons);
+    }
+  } else if (!missing.some((m) => m.startsWith('financials'))) {
+    // financials jsou v pořádku ale nemáme propertyPrice -> pro refi je to OK
+    // pro purchase to už je hlášeno výš
+  }
+
+  // 5. GDPR consent — kontroluje se až při samotném handoffu, ne tady.
+  // Tato funkce ověřuje, že profil JE způsobilý; consent je samostatný gate.
+  if (!profile.consentHandoffId) {
+    missing.push('consent');
+    reasons.push('Chybí GDPR souhlas s předáním partnerovi');
+  }
+
+  return {
+    qualified: missing.length === 0,
+    missing,
+    reasons,
+  };
 }
 
 export type MicroConversionType = 'specialist_mention' | 'email_capture';

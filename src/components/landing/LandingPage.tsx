@@ -4,6 +4,7 @@ import { HeroSection } from './HeroSection';
 import { HowItWorks } from './HowItWorks';
 import { TrustSection } from './TrustSection';
 import { TestimonialSection } from './TestimonialSection';
+import { LegalFooter } from '@/components/layout/LegalFooter';
 import { ArrowRight } from 'lucide-react';
 import { trackEvent } from '@/lib/analytics';
 
@@ -52,12 +53,7 @@ export function LandingPage({ onStartChat, primaryColor, logoUrl, title, isValua
         </button>
       </section>
 
-      {/* Footer */}
-      <footer className="px-4 py-8 text-center border-t border-[#e4bdc2]/10">
-        <p className="text-xs text-[#001a41]/40">
-          {title} &middot; AI průvodce &middot; Data z ČNB ARAD &middot; {new Date().getFullYear()}
-        </p>
-      </footer>
+      <LegalFooter />
     </div>
   );
 }

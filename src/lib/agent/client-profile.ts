@@ -22,7 +22,12 @@ export interface ClientProfile {
   propertyType?: 'byt' | 'dum' | 'pozemek' | 'rekonstrukce';
   propertySize?: string; // dispozice: 1+kk, 2+kk, 3+1, atd.
   location?: string;
-  purpose?: 'vlastni_bydleni' | 'investice' | 'refinancovani';
+  purpose?: 'vlastni_bydleni' | 'investice' | 'refinancovani' | 'refixace';
+
+  // Záměr / handoff signály
+  targetLoanAmount?: number; // požadovaná výše úvěru (pro refi = remainingBalance)
+  horizonMonths?: number; // 0 = hned, 3 = do 3 měsíců, 12 = do roka, 24 = později
+  consentHandoffId?: string; // ID GDPR souhlasu s předáním partnerovi (consent_log)
 
   // Ocenění - detaily nemovitosti
   floorArea?: number; // užitná plocha m²
@@ -147,6 +152,8 @@ export function profileSummary(profile: ClientProfile): string {
   if (profile.isYoung !== undefined) parts.push(`Mladý (do 36): ${profile.isYoung ? 'ano' : 'ne'}`);
   if (profile.currentRent) parts.push(`Současný nájem: ${fmt(profile.currentRent)} Kč`);
   if (profile.existingLoans) parts.push(`Stávající závazky: ${fmt(profile.existingLoans)} Kč`);
+  if (profile.targetLoanAmount) parts.push(`Požadovaná výše úvěru: ${fmt(profile.targetLoanAmount)} Kč`);
+  if (profile.horizonMonths !== undefined) parts.push(`Časový horizont: ${profile.horizonMonths === 0 ? 'hned' : `do ${profile.horizonMonths} měsíců`}`);
   if (profile.expectedRentalIncome) parts.push(`Očekávaný nájem: ${fmt(profile.expectedRentalIncome)} Kč`);
   if (profile.name) parts.push(`Jméno: ${profile.name}`);
   if (profile.email) parts.push(`Email: ${profile.email}`);

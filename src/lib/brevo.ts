@@ -145,6 +145,112 @@ export function buildLeadConfirmationEmailHtml(data: {
 }
 
 /**
+ * Magic-link email asking the user to confirm anonymous consent withdrawal.
+ * The link is single-purpose and short-lived (HMAC-signed token, 24h TTL).
+ */
+export function buildConsentWithdrawRequestEmailHtml(data: {
+  confirmUrl: string;
+  email: string;
+}): string {
+  return `
+<!DOCTYPE html>
+<html lang="cs">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width"></head>
+<body style="margin:0;padding:0;background:#f5f7fa;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
+<div style="max-width:560px;margin:0 auto;padding:32px 16px;">
+  <div style="background:#fff;border-radius:16px;padding:32px;box-shadow:0 1px 3px rgba(0,0,0,0.08);">
+    <div style="width:40px;height:3px;background:#0A1E5C;border-radius:2px;margin-bottom:24px;"></div>
+    <h1 style="font-size:20px;color:#0A1E5C;margin:0 0 8px;">Potvrzení odvolání souhlasu</h1>
+    <p style="font-size:13px;color:#9ca3af;margin:0 0 24px;">${data.email}</p>
+
+    <p style="font-size:14px;color:#374151;line-height:1.6;margin:0 0 20px;">
+      Obdrželi jsme žádost o odvolání souhlasu se zpracováním osobních údajů
+      pro tento e-mail. Pro dokončení klikněte na tlačítko níže. Odkaz je
+      platný 24 hodin a slouží výhradně k tomuto účelu.
+    </p>
+
+    <div style="text-align:center;margin:24px 0;">
+      <a href="${data.confirmUrl}" style="display:inline-block;background:#b80049;color:#fff;text-decoration:none;font-size:14px;font-weight:600;padding:12px 24px;border-radius:12px;">
+        Potvrdit odvolání souhlasu
+      </a>
+    </div>
+
+    <p style="font-size:12px;color:#9ca3af;line-height:1.6;margin:0 0 12px;">
+      Pokud jste o odvolání nežádal/a, prosím tento e-mail ignorujte. Žádná akce
+      se nestane bez vašeho kliknutí.
+    </p>
+
+    <p style="font-size:11px;color:#cbd5e0;line-height:1.5;margin:16px 0 0;word-break:break-all;">
+      Pokud tlačítko nefunguje, zkopírujte do prohlížeče tento odkaz:<br>${data.confirmUrl}
+    </p>
+  </div>
+  <p style="text-align:center;font-size:11px;color:#9ca3af;margin-top:16px;">QUADRUM s.r.o. — provozovatel hypoteeka.cz</p>
+</div>
+</body>
+</html>`;
+}
+
+/**
+ * Build HTML email confirming GDPR consent withdrawal.
+ * Sent to user after they revoke consent — closes the audit trail.
+ */
+export function buildConsentWithdrawalEmailHtml(data: {
+  name?: string;
+  scope?: string;
+  withdrawnCount?: number;
+  withdrawnAt?: string;
+}): string {
+  const scopeLabel = ({
+    handoff_partner: 'předání hypotečnímu poradci',
+    marketing: 'marketingovou komunikaci',
+    analytics: 'analytické cookies',
+    rate_alerts: 'oznámení o sazbách',
+    transactional_email: 'transakční e-maily',
+  } as Record<string, string>)[data.scope ?? ''] ?? 'všechny rozsahy';
+
+  const dateFmt = data.withdrawnAt
+    ? new Date(data.withdrawnAt).toLocaleString('cs-CZ', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+    : new Date().toLocaleString('cs-CZ');
+
+  return `
+<!DOCTYPE html>
+<html lang="cs">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width"></head>
+<body style="margin:0;padding:0;background:#f5f7fa;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
+<div style="max-width:560px;margin:0 auto;padding:32px 16px;">
+  <div style="background:#fff;border-radius:16px;padding:32px;box-shadow:0 1px 3px rgba(0,0,0,0.08);">
+    <div style="width:40px;height:3px;background:#0A1E5C;border-radius:2px;margin-bottom:24px;"></div>
+    <h1 style="font-size:20px;color:#0A1E5C;margin:0 0 4px;">Souhlas byl odvolán</h1>
+    <p style="font-size:13px;color:#9ca3af;margin:0 0 24px;">${data.name ? `Dobrý den, ${data.name.split(' ')[0]}` : 'Dobrý den'}</p>
+
+    <p style="font-size:14px;color:#374151;line-height:1.6;margin:0 0 16px;">
+      Potvrzujeme, že jste odvolal/a souhlas se zpracováním osobních údajů pro účel: <strong>${scopeLabel}</strong>.
+    </p>
+
+    <div style="background:#F5F7FA;border-radius:12px;padding:16px;margin:0 0 20px;font-size:13px;color:#374151;">
+      <p style="margin:0 0 4px;"><strong>Datum a čas:</strong> ${dateFmt}</p>
+      <p style="margin:0;"><strong>Počet odvolaných záznamů:</strong> ${data.withdrawnCount ?? 0}</p>
+    </div>
+
+    <p style="font-size:13px;color:#6b7280;line-height:1.6;margin:0 0 16px;">
+      Odvolání souhlasu nemá zpětný účinek na zpracování provedené před tímto okamžikem.
+      Údaje, které jsme již předali partnerovi (samostatnému zprostředkovateli SAB servis s.r.o.),
+      se řídí jeho vlastní informační povinností; pro vymazání u něj kontaktujte přímo SAB servis
+      podle informací na <a href="https://sabservis.cz/informace" style="color:#b80049;">sabservis.cz/informace</a>.
+    </p>
+
+    <p style="font-size:13px;color:#6b7280;line-height:1.6;margin:0;">
+      Pokud jste odvolání nevyvolal/a vy, prosím kontaktujte nás obratem na
+      <a href="mailto:info@quadrum.cz" style="color:#b80049;">info@quadrum.cz</a>.
+    </p>
+  </div>
+  <p style="text-align:center;font-size:11px;color:#9ca3af;margin-top:16px;">QUADRUM s.r.o. — provozovatel hypoteeka.cz</p>
+</div>
+</body>
+</html>`;
+}
+
+/**
  * Build HTML email with mortgage calculation summary
  */
 export function buildCalculationEmailHtml(data: {
