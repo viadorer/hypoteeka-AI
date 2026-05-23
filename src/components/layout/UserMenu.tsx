@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { User, LogIn, LogOut, KeyRound, Pencil, Save, XCircle, ShieldOff, FileText, Shield } from 'lucide-react';
+import { User, LogIn, LogOut, KeyRound, Pencil, Save, XCircle, ShieldOff, FileText, Shield, LayoutDashboard } from 'lucide-react';
 import { useAuth } from '@/lib/auth/auth-context';
 
 type AuthView = 'none' | 'login' | 'signup' | 'change-password' | 'edit-profile';
@@ -206,6 +206,13 @@ export function UserMenu() {
                 </form>
               ) : (
                 <div className="py-1">
+                  <a
+                    href="/dashboard"
+                    className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-[#001a41]/70 hover:bg-[#f1f3ff] transition-all"
+                  >
+                    <LayoutDashboard className="w-4 h-4" />
+                    Moje hypotéka
+                  </a>
                   <button
                     onClick={() => {
                       setProfileForm({
