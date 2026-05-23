@@ -62,16 +62,16 @@ export function AppointmentWidget({ specialistName, context }: Props) {
               <polyline points="20 6 9 17 4 12" />
             </svg>
           </div>
-          <p className="text-sm font-medium text-[#001a41] mb-1">Termín zarezervován</p>
-          <p className="text-[13px] text-[#001a41]/60">
+          <p className="text-sm font-medium text-on-surface mb-1">Termín zarezervován</p>
+          <p className="text-[13px] text-on-surface/60">
             {day?.dayName} {day?.label} v {selectedTime}
           </p>
           {specialistName && (
-            <p className="text-[12px] text-[#001a41]/40 mt-1">
+            <p className="text-[12px] text-on-surface/40 mt-1">
               Specialista: {specialistName}
             </p>
           )}
-          <p className="text-[11px] text-[#001a41]/40 mt-3">
+          <p className="text-[11px] text-on-surface/40 mt-3">
             Potvrzení vám přijde na email. Specialista se vám ozve v domluvený čas.
           </p>
         </div>
@@ -82,11 +82,11 @@ export function AppointmentWidget({ specialistName, context }: Props) {
   return (
     <WidgetCard label="Rezervace termínu" icon={CalendarIcon}>
       {context && (
-        <p className="text-[12px] text-[#001a41]/60 mb-3">{context}</p>
+        <p className="text-[12px] text-on-surface/60 mb-3">{context}</p>
       )}
 
       {/* Date selection */}
-      <p className="text-[11px] font-medium uppercase tracking-wider text-[#001a41]/40 mb-2">
+      <p className="text-[11px] font-medium uppercase tracking-wider text-on-surface/40 mb-2">
         Vyberte den
       </p>
       <div className="flex gap-1.5 mb-4">
@@ -96,8 +96,8 @@ export function AppointmentWidget({ specialistName, context }: Props) {
             onClick={() => setSelectedDate(day.date)}
             className={`flex-1 py-2 px-1 rounded-lg text-center transition-all animate-in slide-in-from-bottom-1 fade-in ${
               selectedDate === day.date
-                ? 'bg-[#b80049] text-white'
-                : 'bg-[#f1f3ff] text-[#001a41]/80 hover:bg-[#e9edff]'
+                ? 'bg-primary text-white'
+                : 'bg-surface-container-low text-on-surface/80 hover:bg-surface-container-high'
             }`}
             style={{ animationDelay: `${i * 40}ms`, animationFillMode: 'both' }}
           >
@@ -110,7 +110,7 @@ export function AppointmentWidget({ specialistName, context }: Props) {
       {/* Time selection */}
       {selectedDate && (
         <>
-          <p className="text-[11px] font-medium uppercase tracking-wider text-[#001a41]/40 mb-2">
+          <p className="text-[11px] font-medium uppercase tracking-wider text-on-surface/40 mb-2">
             Vyberte čas
           </p>
           <div className="flex flex-wrap gap-1.5 mb-4">
@@ -120,8 +120,8 @@ export function AppointmentWidget({ specialistName, context }: Props) {
                 onClick={() => setSelectedTime(time)}
                 className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all animate-in slide-in-from-bottom-1 fade-in ${
                   selectedTime === time
-                    ? 'bg-[#b80049] text-white'
-                    : 'bg-[#f1f3ff] text-[#001a41]/80 hover:bg-[#e9edff]'
+                    ? 'bg-primary text-white'
+                    : 'bg-surface-container-low text-on-surface/80 hover:bg-surface-container-high'
                 }`}
                 style={{ animationDelay: `${i * 30}ms`, animationFillMode: 'both' }}
               >
@@ -139,8 +139,8 @@ export function AppointmentWidget({ specialistName, context }: Props) {
         </CtaButton>
       )}
 
-      <div className="mt-3 pt-3 border-t border-[#e9edff]">
-        <p className="text-[11px] text-[#001a41]/40 leading-relaxed">
+      <div className="mt-3 pt-3 border-t border-outline-variant/30">
+        <p className="text-[11px] text-on-surface/40 leading-relaxed">
           Konzultace je zdarma a nezávazná. Specialista vám zavolá v domluvený čas.
         </p>
       </div>

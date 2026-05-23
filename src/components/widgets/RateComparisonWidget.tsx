@@ -37,7 +37,7 @@ export function RateComparisonWidget({
 
   return (
     <WidgetCard label="Porovnání úrokových sazeb" icon={ChartIcon}>
-      <div className="text-[13px] text-[#001a41]/60 mb-3">
+      <div className="text-[13px] text-on-surface/60 mb-3">
         Úvěr {formatCZK(loanAmount)} na {years} let
       </div>
 
@@ -50,8 +50,8 @@ export function RateComparisonWidget({
               key={bank.label}
               className={`p-3 rounded-xl border transition-all animate-in slide-in-from-bottom-1 fade-in ${
                 i === 0
-                  ? 'bg-[#FFF0F5] border-[#b80049]/15'
-                  : 'bg-[#f1f3ff] border-[#e4bdc2]/10'
+                  ? 'bg-[#FFF0F5] border-primary/15'
+                  : 'bg-surface-container-low border-outline-variant/15'
               }`}
               style={{ animationDelay: `${i * 50}ms`, animationFillMode: 'both' }}
             >
@@ -61,7 +61,7 @@ export function RateComparisonWidget({
                     className="w-2 h-2 rounded-full"
                     style={{ backgroundColor: bank.color }}
                   />
-                  <span className={`text-xs ${i === 0 ? 'text-[#001a41] font-medium' : 'text-[#001a41]/70'}`}>
+                  <span className={`text-xs ${i === 0 ? 'text-on-surface font-medium' : 'text-on-surface/70'}`}>
                     {bank.label}
                   </span>
                   {i === 0 && (
@@ -70,12 +70,12 @@ export function RateComparisonWidget({
                     </span>
                   )}
                 </div>
-                <span className="text-sm font-semibold text-[#001a41] tabular-nums">
+                <span className="text-sm font-semibold text-on-surface tabular-nums">
                   {formatPercent(bank.rate)}
                 </span>
               </div>
 
-              <div className="h-[3px] rounded-full bg-[#e9edff] mb-1.5">
+              <div className="h-[3px] rounded-full bg-surface-container-high mb-1.5">
                 <div
                   className="h-full rounded-full transition-all duration-400"
                   style={{
@@ -87,11 +87,11 @@ export function RateComparisonWidget({
               </div>
 
               <div className="flex justify-between">
-                <span className="text-[11px] text-[#001a41]/60">
+                <span className="text-[11px] text-on-surface/60">
                   Splátka: {formatCZK(bank.monthly)}/měs
                 </span>
                 {diff > 0 && (
-                  <span className="text-[11px] text-[#001a41]/40">
+                  <span className="text-[11px] text-on-surface/40">
                     +{formatCZK(Math.round(diff))}/měs
                   </span>
                 )}
@@ -101,14 +101,14 @@ export function RateComparisonWidget({
         })}
       </div>
 
-      <div className="mt-3 p-3 bg-[#f1f3ff] rounded-xl border border-[#e4bdc2]/10 text-center">
-        <span className="text-[11px] text-[#001a41]/60">Rozdíl nejlepší vs nejhorší: </span>
-        <span className="text-[13px] text-[#001a41] font-semibold">{formatCZK(totalDifference)}</span>
-        <span className="text-[11px] text-[#001a41]/60"> za celou dobu</span>
+      <div className="mt-3 p-3 bg-surface-container-low rounded-xl border border-outline-variant/15 text-center">
+        <span className="text-[11px] text-on-surface/60">Rozdíl nejlepší vs nejhorší: </span>
+        <span className="text-[13px] text-on-surface font-semibold">{formatCZK(totalDifference)}</span>
+        <span className="text-[11px] text-on-surface/60"> za celou dobu</span>
       </div>
 
-      <div className="mt-3 pt-3 border-t border-[#e9edff]">
-        <p className="text-[11px] text-[#001a41]/40 leading-relaxed">
+      <div className="mt-3 pt-3 border-t border-outline-variant/30">
+        <p className="text-[11px] text-on-surface/40 leading-relaxed">
           Sazby vycházejí z aktuálních průměrů ČNB. Konkrétní nabídka závisí na vašem profilu.
           Zkušený poradce se dokáže dostat i pod nejnižší uvedenou sazbu.
         </p>

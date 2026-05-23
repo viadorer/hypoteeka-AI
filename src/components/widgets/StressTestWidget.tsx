@@ -36,24 +36,24 @@ export function StressTestWidget({ loanAmount, rate, years }: Props) {
         onChange={(v) => setAdjRate(v / 100)}
         suffix=" %"
       />
-      <div className="text-[13px] text-[#001a41]/60 mb-3">
+      <div className="text-[13px] text-on-surface/60 mb-3">
         Co když sazba vzroste po refixaci?
       </div>
 
-      <div className="rounded-xl border border-[#e9edff] overflow-hidden">
+      <div className="rounded-xl border border-outline-variant/30 overflow-hidden">
         {/* Header */}
-        <div className="grid grid-cols-3 gap-0 bg-[#f1f3ff] px-3 py-2 text-[10px] font-medium text-[#001a41]/40 uppercase tracking-wider">
+        <div className="grid grid-cols-3 gap-0 bg-surface-container-low px-3 py-2 text-[10px] font-medium text-on-surface/40 uppercase tracking-wider">
           <span>Sazba</span>
           <span className="text-right">Splátka</span>
           <span className="text-right">Rozdíl</span>
         </div>
 
         {/* Base row */}
-        <div className="grid grid-cols-3 gap-0 px-3 py-2.5 border-t border-[#e9edff] bg-emerald-50">
-          <span className="text-xs font-medium text-[#001a41]">
+        <div className="grid grid-cols-3 gap-0 px-3 py-2.5 border-t border-outline-variant/30 bg-emerald-50">
+          <span className="text-xs font-medium text-on-surface">
             {formatPercent(result.baseRate)}
           </span>
-          <span className="text-xs font-medium text-[#001a41] text-right">
+          <span className="text-xs font-medium text-on-surface text-right">
             {formatCZK(result.basePayment)}
           </span>
           <span className="text-xs text-emerald-600 text-right font-medium">
@@ -66,12 +66,12 @@ export function StressTestWidget({ loanAmount, rate, years }: Props) {
           const severity = s.rateChange <= 0.01 ? 'text-amber-600' : s.rateChange <= 0.02 ? 'text-orange-600' : 'text-red-600';
           const bg = s.rateChange <= 0.01 ? 'bg-amber-50' : s.rateChange <= 0.02 ? 'bg-orange-50' : 'bg-red-50';
           return (
-            <div key={s.rateChange} className={`grid grid-cols-3 gap-0 px-3 py-2.5 border-t border-[#e9edff] ${bg}`}>
-              <span className="text-xs text-[#001a41]/80">
+            <div key={s.rateChange} className={`grid grid-cols-3 gap-0 px-3 py-2.5 border-t border-outline-variant/30 ${bg}`}>
+              <span className="text-xs text-on-surface/80">
                 {formatPercent(s.newRate)}
-                <span className="text-[9px] text-[#001a41]/40 ml-1">+{(s.rateChange * 100).toFixed(0)}pp</span>
+                <span className="text-[9px] text-on-surface/40 ml-1">+{(s.rateChange * 100).toFixed(0)}pp</span>
               </span>
-              <span className="text-xs text-[#001a41]/80 text-right">
+              <span className="text-xs text-on-surface/80 text-right">
                 {formatCZK(s.monthlyPayment)}
               </span>
               <span className={`text-xs text-right font-medium ${severity}`}>

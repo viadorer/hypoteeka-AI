@@ -41,12 +41,12 @@ export function AmortizationWidget({ loanAmount, rate, years }: Props) {
     <WidgetCard label="Průběh splácení" icon={ChartIcon}>
       <div className="flex gap-4 mb-3 text-[11px]">
         <div className="flex items-center gap-1.5">
-          <span className="w-2.5 h-2.5 rounded-sm bg-[#b80049]" />
-          <span className="text-[#001a41]/60">Splacená jistina</span>
+          <span className="w-2.5 h-2.5 rounded-sm bg-primary" />
+          <span className="text-on-surface/60">Splacená jistina</span>
         </div>
         <div className="flex items-center gap-1.5">
-          <span className="w-2.5 h-2.5 rounded-sm bg-[#e9edff]" />
-          <span className="text-[#001a41]/60">Zbývající dluh</span>
+          <span className="w-2.5 h-2.5 rounded-sm bg-surface-container-high" />
+          <span className="text-on-surface/60">Zbývající dluh</span>
         </div>
       </div>
 
@@ -57,14 +57,14 @@ export function AmortizationWidget({ loanAmount, rate, years }: Props) {
           return (
             <div key={d.year} className="flex-1 flex flex-col justify-end h-full group relative">
               <div
-                className="bg-[#e9edff] rounded-t-sm transition-all"
+                className="bg-surface-container-high rounded-t-sm transition-all"
                 style={{ height: `${balanceH}%` }}
               />
               <div
-                className="bg-[#b80049] rounded-b-sm transition-all"
+                className="bg-primary rounded-b-sm transition-all"
                 style={{ height: `${principalH}%` }}
               />
-              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 hidden group-hover:block bg-[#001a41] text-white text-[10px] px-2 py-1 rounded whitespace-nowrap z-10 shadow-lg">
+              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 hidden group-hover:block bg-on-surface text-white text-[10px] px-2 py-1 rounded whitespace-nowrap z-10 shadow-lg">
                 Rok {d.year}: {formatCZK(d.balance)}
               </div>
             </div>
@@ -72,7 +72,7 @@ export function AmortizationWidget({ loanAmount, rate, years }: Props) {
         })}
       </div>
 
-      <div className="flex justify-between text-[10px] text-[#001a41]/40 mt-1">
+      <div className="flex justify-between text-[10px] text-on-surface/40 mt-1">
         <span>1</span>
         <span>{Math.floor(yearsVal / 2)}</span>
         <span>{yearsVal} let</span>
@@ -89,15 +89,15 @@ export function AmortizationWidget({ loanAmount, rate, years }: Props) {
       {milestones.length > 0 && (
         <>
           <Divider />
-          <p className="text-[10px] font-medium uppercase tracking-wider text-[#001a41]/40 mb-2">
+          <p className="text-[10px] font-medium uppercase tracking-wider text-on-surface/40 mb-2">
             Milníky
           </p>
           <div className="space-y-2">
             {milestones.map((m) => (
               <div key={m.label} className="flex items-center gap-3 text-sm">
-                <span className="w-1.5 h-1.5 rounded-full bg-[#b80049] flex-shrink-0" />
-                <span className="text-[#001a41]/60 flex-1">{m.label}</span>
-                <span className="font-medium text-[#001a41] tabular-nums">
+                <span className="w-1.5 h-1.5 rounded-full bg-primary flex-shrink-0" />
+                <span className="text-on-surface/60 flex-1">{m.label}</span>
+                <span className="font-medium text-on-surface tabular-nums">
                   za {m.year} let
                 </span>
               </div>

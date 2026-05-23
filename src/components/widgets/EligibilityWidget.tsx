@@ -50,7 +50,7 @@ export function EligibilityWidget({ propertyPrice, equity, monthlyIncome, isYoun
       </div>
 
       {!result.allOk && result.reasons.length > 0 && (
-        <div className="mt-3 pt-3 border-t border-[#e9edff] text-[11px] text-[#001a41]/60 space-y-1">
+        <div className="mt-3 pt-3 border-t border-outline-variant/30 text-[11px] text-on-surface/60 space-y-1">
           {result.reasons.map((r, i) => (
             <p key={i}>{r}</p>
           ))}

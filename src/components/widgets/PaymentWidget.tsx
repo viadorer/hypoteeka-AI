@@ -92,7 +92,7 @@ export function PaymentWidget({ propertyPrice, equity, rate, rpsn, years, scenar
         suffix=" let"
       />
 
-      <div className="text-sm text-[#001a41]/60 mb-3">
+      <div className="text-sm text-on-surface/60 mb-3">
         Úvěr {formatCZK(loanAmount)} na {adjYears} let
       </div>
 
@@ -130,8 +130,8 @@ export function PaymentWidget({ propertyPrice, equity, rate, rpsn, years, scenar
       )}
 
       {/* CTA message */}
-      <div className="mt-3 pt-3 border-t border-[#e9edff]">
-        <p className="text-[11px] text-[#001a41]/40 leading-relaxed">
+      <div className="mt-3 pt-3 border-t border-outline-variant/30">
+        <p className="text-[11px] text-on-surface/40 leading-relaxed">
           V praxi se zkušený poradce dokáže dostat i pod nejnižší uvedenou sazbu.
           Záleží na osobních vazbách, zkušenostech s vyjednáváním a celkovém nastavení úvěru.
         </p>
@@ -149,28 +149,28 @@ function ScenarioCard({ label, rate, monthly, totalInterest, variant }: {
 }) {
   const styles = {
     muted: {
-      bg: 'bg-[#f1f3ff]',
-      border: 'border-[#e9edff]',
-      label: 'text-[#001a41]/40',
-      rate: 'text-[#001a41]/60',
-      monthly: 'text-[#001a41]/70',
-      interest: 'text-[#001a41]/40',
+      bg: 'bg-surface-container-low',
+      border: 'border-outline-variant/30',
+      label: 'text-on-surface/40',
+      rate: 'text-on-surface/60',
+      monthly: 'text-on-surface/70',
+      interest: 'text-on-surface/40',
     },
     default: {
-      bg: 'bg-[#f1f3ff]',
-      border: 'border-[#e9edff]',
-      label: 'text-[#001a41]/60',
-      rate: 'text-[#001a41]/80',
-      monthly: 'text-[#001a41]',
-      interest: 'text-[#001a41]/40',
+      bg: 'bg-surface-container-low',
+      border: 'border-outline-variant/30',
+      label: 'text-on-surface/60',
+      rate: 'text-on-surface/80',
+      monthly: 'text-on-surface',
+      interest: 'text-on-surface/40',
     },
     highlight: {
       bg: 'bg-[#FFF0F5]',
-      border: 'border-[#b80049]/20',
-      label: 'text-[#001a41]',
-      rate: 'text-[#001a41]',
-      monthly: 'text-[#001a41]',
-      interest: 'text-[#001a41]/60',
+      border: 'border-primary/20',
+      label: 'text-on-surface',
+      rate: 'text-on-surface',
+      monthly: 'text-on-surface',
+      interest: 'text-on-surface/60',
     },
   }[variant];
 
@@ -185,7 +185,7 @@ function ScenarioCard({ label, rate, monthly, totalInterest, variant }: {
       <p className={`text-sm md:text-lg font-semibold ${styles.monthly} mt-0.5`}>
         {formatCZK(monthly)}
       </p>
-      <p className="text-[9px] text-[#001a41]/40">/ měsíc</p>
+      <p className="text-[9px] text-on-surface/40">/ měsíc</p>
       <p className={`text-[9px] ${styles.interest} mt-1`}>
         Úroky: {formatCZK(totalInterest)}
       </p>

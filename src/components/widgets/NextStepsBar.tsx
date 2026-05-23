@@ -138,9 +138,9 @@ export function NextStepsBar({ toolName, onSend }: Props) {
   if (!config) return null;
 
   return (
-    <div className="mt-3 bg-[#ffffff] rounded-2xl border border-[#e4bdc2]/10 shadow-[0_20px_50px_rgba(0,26,65,0.08)] overflow-hidden">
+    <div className="mt-3 bg-[#ffffff] rounded-2xl border border-outline-variant/15 shadow-[0_20px_50px_rgba(0,26,65,0.08)] overflow-hidden">
       <div className="px-4 pt-3 pb-2">
-        <p className="text-[11px] font-semibold uppercase tracking-wider text-[#001a41]/40">
+        <p className="text-[11px] font-semibold uppercase tracking-wider text-on-surface/40">
           {config.title}
         </p>
       </div>
@@ -151,20 +151,20 @@ export function NextStepsBar({ toolName, onSend }: Props) {
             <button
               key={step.label}
               onClick={() => { trackEvent('next_step_click', { widget: toolName, step: step.label }); onSend(step.message); }}
-              className="w-full flex items-start gap-3 px-4 py-3 text-left hover:bg-[#f1f3ff]/80 transition-colors cursor-pointer group"
+              className="w-full flex items-start gap-3 px-4 py-3 text-left hover:bg-surface-container-low/80 transition-colors cursor-pointer group"
             >
-              <div className="w-8 h-8 rounded-lg bg-[#f1f3ff] group-hover:bg-white flex items-center justify-center flex-shrink-0 mt-0.5 transition-colors">
-                <Icon className="w-4 h-4 text-[#001a41]/40 group-hover:text-[#b80049] transition-colors" />
+              <div className="w-8 h-8 rounded-lg bg-surface-container-low group-hover:bg-white flex items-center justify-center flex-shrink-0 mt-0.5 transition-colors">
+                <Icon className="w-4 h-4 text-on-surface/40 group-hover:text-primary transition-colors" />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-[#001a41] group-hover:text-[#001a41]">
+                <p className="text-sm font-medium text-on-surface group-hover:text-on-surface">
                   {step.label}
                 </p>
-                <p className="text-xs text-[#001a41]/40 mt-0.5 leading-relaxed">
+                <p className="text-xs text-on-surface/40 mt-0.5 leading-relaxed">
                   {step.desc}
                 </p>
               </div>
-              <ArrowRight className="w-4 h-4 text-[#001a41]/30 group-hover:text-[#b80049] flex-shrink-0 mt-1.5 transition-colors" />
+              <ArrowRight className="w-4 h-4 text-on-surface/30 group-hover:text-primary flex-shrink-0 mt-1.5 transition-colors" />
             </button>
           );
         })}

@@ -36,16 +36,16 @@ export function ValuationResultWidget({
   const rangePercent = avgPrice > 0 ? Math.round(((maxPrice - minPrice) / avgPrice) * 100) : 0;
 
   return (
-    <div className="bg-[#ffffff] rounded-2xl p-4 md:p-6 shadow-[0_20px_50px_rgba(0,26,65,0.08)] border border-[#e4bdc2]/10 animate-in slide-in-from-bottom-4 duration-500 w-full min-w-0">
+    <div className="bg-[#ffffff] rounded-2xl p-4 md:p-6 shadow-[0_20px_50px_rgba(0,26,65,0.08)] border border-outline-variant/15 animate-in slide-in-from-bottom-4 duration-500 w-full min-w-0">
       {/* Header accent */}
       <div className="w-8 h-[3px] rounded-full bg-emerald-500 mb-4" />
-      <p className="text-[11px] font-semibold uppercase tracking-wider text-[#001a41]/40 mb-1">
+      <p className="text-[11px] font-semibold uppercase tracking-wider text-on-surface/40 mb-1">
         Orientační ocenění
       </p>
 
       {/* Property info */}
       {address && (
-        <div className="flex items-center gap-1.5 text-xs text-[#001a41]/60 mb-4">
+        <div className="flex items-center gap-1.5 text-xs text-on-surface/60 mb-4">
           <MapPin className="w-3 h-3 flex-shrink-0" />
           <span className="truncate">{label} -- {address}</span>
         </div>
@@ -53,27 +53,27 @@ export function ValuationResultWidget({
 
       {/* Main price */}
       <div className="mb-4">
-        <p className="text-3xl md:text-4xl font-bold text-[#001a41] tracking-tight">
+        <p className="text-3xl md:text-4xl font-bold text-on-surface tracking-tight">
           {fmt(avgPrice)} Kč
         </p>
-        <p className="text-xs text-[#001a41]/40 mt-1">odhadní tržní cena</p>
+        <p className="text-xs text-on-surface/40 mt-1">odhadní tržní cena</p>
       </div>
 
       {/* Price range bar */}
       <div className="mb-5">
-        <div className="flex justify-between text-[10px] text-[#001a41]/40 mb-1.5">
+        <div className="flex justify-between text-[10px] text-on-surface/40 mb-1.5">
           <span>{fmt(minPrice)} Kč</span>
           <span>{fmt(maxPrice)} Kč</span>
         </div>
-        <div className="relative h-2 bg-[#e9edff] rounded-full overflow-hidden">
+        <div className="relative h-2 bg-surface-container-high rounded-full overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-r from-emerald-200 via-emerald-400 to-emerald-200 rounded-full" />
           {/* Marker for avg price */}
           <div
-            className="absolute top-0 h-full w-0.5 bg-[#001a41]"
+            className="absolute top-0 h-full w-0.5 bg-on-surface"
             style={{ left: avgPrice > 0 ? `${((avgPrice - minPrice) / (maxPrice - minPrice)) * 100}%` : '50%' }}
           />
         </div>
-        <p className="text-[10px] text-[#001a41]/40 mt-1 text-center">
+        <p className="text-[10px] text-on-surface/40 mt-1 text-center">
           rozptyl {rangePercent}%
         </p>
       </div>
@@ -134,24 +134,24 @@ export function ValuationResultWidget({
 
       {/* Cadastre info */}
       {cadastralArea && (
-        <div className="text-[10px] text-[#001a41]/40 mb-4">
+        <div className="text-[10px] text-on-surface/40 mb-4">
           k.ú. {cadastralArea}{parcelNumber ? `, parcela ${parcelNumber}` : ''}
         </div>
       )}
 
       {/* CTA footer */}
-      <div className="bg-[#f1f3ff] -mx-4 md:-mx-6 -mb-4 md:-mb-6 px-4 md:px-6 py-3 md:py-4 rounded-b-2xl border-t border-[#e9edff]">
+      <div className="bg-surface-container-low -mx-4 md:-mx-6 -mb-4 md:-mb-6 px-4 md:px-6 py-3 md:py-4 rounded-b-2xl border-t border-outline-variant/30">
         <div className="flex items-start gap-2">
-          <Phone className="w-4 h-4 text-[#001a41]/40 mt-0.5 flex-shrink-0" />
+          <Phone className="w-4 h-4 text-on-surface/40 mt-0.5 flex-shrink-0" />
           <div>
-            <p className="text-xs font-medium text-[#001a41]/80">
+            <p className="text-xs font-medium text-on-surface/80">
               Specialista vás bude kontaktovat
             </p>
-            <p className="text-[11px] text-[#001a41]/40 mt-0.5">
+            <p className="text-[11px] text-on-surface/40 mt-0.5">
               Pro zpřesnění odhadu a nezávaznou konzultaci zdarma
             </p>
           </div>
-          <ArrowRight className="w-4 h-4 text-[#001a41]/30 ml-auto mt-0.5 flex-shrink-0" />
+          <ArrowRight className="w-4 h-4 text-on-surface/30 ml-auto mt-0.5 flex-shrink-0" />
         </div>
       </div>
     </div>
@@ -160,12 +160,12 @@ export function ValuationResultWidget({
 
 function StatCard({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
   return (
-    <div className="bg-[#f1f3ff] rounded-xl px-3 py-2.5">
-      <div className="flex items-center gap-1.5 text-[#001a41]/40 mb-1">
+    <div className="bg-surface-container-low rounded-xl px-3 py-2.5">
+      <div className="flex items-center gap-1.5 text-on-surface/40 mb-1">
         {icon}
         <span className="text-[10px] font-medium uppercase tracking-wider">{label}</span>
       </div>
-      <p className="text-sm font-bold text-[#001a41]">{value}</p>
+      <p className="text-sm font-bold text-on-surface">{value}</p>
     </div>
   );
 }

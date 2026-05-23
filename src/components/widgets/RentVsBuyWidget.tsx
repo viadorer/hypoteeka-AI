@@ -54,7 +54,7 @@ export function RentVsBuyWidget({ propertyPrice, equity, monthlyRent }: Props) {
         {result.breakEvenYears && (
           <>
             <Divider />
-            <ResultRow label="Break-even" value={`${result.breakEvenYears} let`} valueColor="text-[#001a41]" />
+            <ResultRow label="Break-even" value={`${result.breakEvenYears} let`} valueColor="text-on-surface" />
           </>
         )}
       </div>

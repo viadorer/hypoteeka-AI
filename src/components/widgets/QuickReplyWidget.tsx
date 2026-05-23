@@ -25,7 +25,7 @@ export function QuickReplyWidget({ question, options, onSelect }: QuickReplyWidg
 
   return (
     <div className="max-w-md">
-      <p className="text-sm text-[#001a41]/70 mb-2.5 font-normal">{question}</p>
+      <p className="text-sm text-on-surface/70 mb-2.5 font-normal">{question}</p>
       <div className="flex flex-wrap gap-2">
         {options.map((option, i) => (
           <button
@@ -39,8 +39,8 @@ export function QuickReplyWidget({ question, options, onSelect }: QuickReplyWidg
               ${selected === option.value
                 ? 'text-white border-transparent scale-[0.97]'
                 : selected
-                ? 'bg-[#f1f3ff] text-[#001a41]/30 border-[#e9edff] cursor-not-allowed'
-                : 'bg-white/80 text-[#001a41]/80 border-[#e9edff] hover:bg-[#f1f3ff] hover:border-[#001a41]/30 hover:text-[#001a41] hover:-translate-y-px active:scale-[0.97] cursor-pointer'
+                ? 'bg-surface-container-low text-on-surface/30 border-outline-variant/30 cursor-not-allowed'
+                : 'bg-white/80 text-on-surface/80 border-outline-variant/30 hover:bg-surface-container-low hover:border-on-surface-variant/40 hover:text-on-surface hover:-translate-y-px active:scale-[0.97] cursor-pointer'
               }
             `}
             style={{
