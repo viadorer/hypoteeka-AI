@@ -43,8 +43,11 @@ export function LandingPage({ onStartChat, logoUrl, title, isValuation }: Props)
             <span className="text-headline-md font-bold text-on-surface">{title}</span>
           </Link>
           <div className="hidden md:flex gap-8 items-center">
-            <Link className="text-body-md text-primary font-bold border-b-2 border-primary pb-1" href="/">
-              Kalkulačka hypotéky
+            <Link className="text-body-md text-on-surface-variant hover:text-primary transition-colors" href="/kalkulacka">
+              Kalkulačka
+            </Link>
+            <Link className="text-body-md text-on-surface-variant hover:text-primary transition-colors" href="/nabidky">
+              Nabídky bank
             </Link>
             <Link className="text-body-md text-on-surface-variant hover:text-primary transition-colors" href="/clanky">
               Články
@@ -52,9 +55,6 @@ export function LandingPage({ onStartChat, logoUrl, title, isValuation }: Props)
             <a className="text-body-md text-on-surface-variant hover:text-primary transition-colors" href="#jak-to-funguje">
               Jak to funguje
             </a>
-            <Link className="text-body-md text-on-surface-variant hover:text-primary transition-colors" href="/podminky">
-              O nás
-            </Link>
             <button
               onClick={() => handleCTA('header')}
               className="bg-primary-container text-on-primary-container px-6 py-3 rounded-full font-bold hover:scale-95 transition-all duration-100 shadow-soft"
