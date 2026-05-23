@@ -237,7 +237,24 @@ ${avgDist !== undefined ? `- Vzdálenost srovnatelných: ${avgDist > 1000 ? (avg
     widgetsShown: state.widgetsShown,
   });
   if (kbEntries.length > 0) {
-    parts.push('\n---\nZNALOSTNÍ BÁZE (použij tyto informace ve své odpovědi, pokud jsou relevantní):');
+    parts.push(`\n---
+ZNALOSTNÍ BÁZE (INTERNÍ KONTEXT — JEN PRO TVOJI ORIENTACI):
+
+⚠️ PRAVIDLA POUŽITÍ:
+- Tato data jsou orientační RÁMCE a TRŽNÍ PÁSMA, NIKDY je necituj klientovi
+  jako přesné číslo. Pokud KB řekne "Plzeň 55-90 tis. Kč/m²", NEPOUŽÍVEJ
+  ve své odpovědi formulaci "průměrná cena je 60 000 Kč/m²" — to je halucinace.
+- Pokud klient chce konkrétní cenu/sazbu/výnos pro svou nemovitost, použij
+  request_valuation tool (RealVisor API) místo citování KB.
+- KB ti pomáhá ROZUMĚT trhu, ale konkrétní data o klientově nemovitosti
+  musíš získat z reálných zdrojů (API, klientův údaj, oficiální odhad).
+- Pokud KB obsahuje tržní pásmo, můžeš ho zmínit jako "v této lokalitě
+  se ceny POHYBUJÍ v širokém pásmu 55-90 tis. Kč/m² podle konkrétní
+  části města" — vždy zachovej PÁSMO, ne fake přesné číslo.
+- Pro nájmy a výnosy — pokud data nemáš, zeptej se klienta. NEUVÁDĚJ
+  "typický nájem je X Kč/měsíc" bez zdroje.
+
+Záznamy:`);
     for (const entry of kbEntries) {
       parts.push(`[${entry.category}] ${entry.title}: ${entry.content}`);
     }
