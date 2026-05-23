@@ -22,11 +22,27 @@ type Fixation = '1y' | '5y' | '10y';
 
 interface BankTier {
   label: string;
+  logo: string;
   rate: number; // 0.045
   badge: 'Top sazba' | 'Rychlé schválení' | 'Nízké poplatky' | 'Široká nabídka';
   accent: 'primary' | 'secondary' | 'tertiary';
   match?: boolean; // Hugo's pick
 }
+
+// Reálné české banky — partneři Quadrumu / SAB servis.
+// Sazby jsou orientační z ČNB ARAD range, konkrétní nabídku připraví David.
+const BANK_POOL: Array<{ label: string; logo: string }> = [
+  { label: 'Air Bank', logo: '/images/banks/air-bank.svg' },
+  { label: 'Česká spořitelna', logo: '/images/banks/ceska-sporitelna.svg' },
+  { label: 'ČSOB', logo: '/images/banks/csob.svg' },
+  { label: 'Fio banka', logo: '/images/banks/fio.svg' },
+  { label: 'Hypoteční banka', logo: '/images/banks/hypotecni-banka.svg' },
+  { label: 'Komerční banka', logo: '/images/banks/kb.svg' },
+  { label: 'mBank', logo: '/images/banks/mbank.svg' },
+  { label: 'Moneta Money Bank', logo: '/images/banks/moneta.svg' },
+  { label: 'Raiffeisenbank', logo: '/images/banks/raiffeisen.svg' },
+  { label: 'UniCredit Bank', logo: '/images/banks/unicredit.svg' },
+];
 
 export function OffersClient({
   tenantTitle,
@@ -46,8 +62,9 @@ export function OffersClient({
     return rateFix5y / 100;
   }, [fixation, rateFix1y, rateFix5y, rateFix10y]);
 
-  // Generate 5 anonymous bank tiers around the ČNB market rate
-  // (Banka A — best, Banka E — worst). Match badge na nejlepší.
+  // Generate 5 bank tiers s reálnými logy + sazbami z ČNB market range.
+  // Banky se vybírají deterministicky z poolu (5 z 10) podle fixace,
+  // aby uživatel viděl konzistentní obrázek napříč fixacemi.
   const tiers: BankTier[] = useMemo(() => {
     const spread = 0.008; // 0.8 pp range
     const rates = [
@@ -57,7 +74,11 @@ export function OffersClient({
       baseRate + spread * 0.25,
       baseRate + spread * 0.5,
     ].sort((a, b) => a - b);
-    const labels = ['Banka A', 'Banka B', 'Banka C', 'Banka D', 'Banka E'];
+
+    // Vyber 5 bank z poolu, fixace ovlivní pořadí (různá fixace = jiné pořadí)
+    const offset = fixation === '1y' ? 0 : fixation === '5y' ? 3 : 6;
+    const selected = [...BANK_POOL.slice(offset), ...BANK_POOL.slice(0, offset)].slice(0, 5);
+
     const badges: BankTier['badge'][] = [
       'Top sazba',
       'Rychlé schválení',
@@ -66,13 +87,14 @@ export function OffersClient({
       'Rychlé schválení',
     ];
     return rates.map((r, i) => ({
-      label: labels[i],
+      label: selected[i].label,
+      logo: selected[i].logo,
       rate: r,
       badge: badges[i],
       accent: i === 0 ? 'primary' : i === 1 ? 'secondary' : 'tertiary',
       match: i === 0,
     }));
-  }, [baseRate]);
+  }, [baseRate, fixation]);
 
   const handleInterest = (bank: BankTier) => {
     trackEvent('offer_card_interest', { bank: bank.label, rate: bank.rate, fixation });
@@ -83,7 +105,12 @@ export function OffersClient({
   };
 
   return (
-    <div className="min-h-screen bg-surface pb-12">
+    <div className="min-h-screen bg-surface pb-12 relative overflow-hidden">
+      {/* Subtle apartment background */}
+      <div className="fixed inset-0 z-0 opacity-[0.06] pointer-events-none">
+        <Image src="/images/redesign/apartment-hero.png" alt="" fill className="object-cover" />
+      </div>
+      <div className="relative z-10">
       {/* Header */}
       <header className="sticky top-0 z-30 bg-surface/80 backdrop-blur-md border-b border-outline-variant/20">
         <div className="max-w-[900px] mx-auto px-4 h-16 flex items-center justify-between">
@@ -165,11 +192,17 @@ export function OffersClient({
                 {/* Bank info + rate */}
                 <div className="flex justify-between items-start mb-6 gap-4 pt-2">
                   <div className="flex items-center gap-3 min-w-0">
-                    <div className="w-12 h-12 rounded-2xl bg-surface-container flex items-center justify-center shrink-0">
-                      <span className="material-symbols-outlined text-primary" style={{ fontSize: 24 }}>account_balance</span>
+                    <div className="w-14 h-14 rounded-2xl bg-white flex items-center justify-center shrink-0 p-2 shadow-sm border border-outline-variant/15">
+                      <Image
+                        src={bank.logo}
+                        alt={bank.label}
+                        width={48}
+                        height={48}
+                        className="w-full h-full object-contain"
+                      />
                     </div>
                     <div className="min-w-0">
-                      <p className="text-label-md text-on-surface font-semibold">{bank.label}</p>
+                      <p className="text-label-md text-on-surface font-semibold truncate">{bank.label}</p>
                       <span className="inline-block bg-primary-fixed text-on-primary-fixed-variant px-2 py-0.5 rounded text-label-sm font-bold uppercase tracking-wider mt-1">
                         {bank.badge}
                       </span>
@@ -214,6 +247,7 @@ export function OffersClient({
           dle § 257/2016 Sb.
         </p>
       </main>
+      </div>
     </div>
   );
 }

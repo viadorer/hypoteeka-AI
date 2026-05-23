@@ -81,7 +81,12 @@ export function CalculatorClient({ tenantTitle, logoUrl, initialRate, rpsn, rate
   };
 
   return (
-    <div className="min-h-screen bg-surface pb-12">
+    <div className="min-h-screen bg-surface pb-12 relative overflow-hidden">
+      {/* Subtle apartment background */}
+      <div className="fixed inset-0 z-0 opacity-[0.06] pointer-events-none">
+        <Image src="/images/redesign/apartment-hero.png" alt="" fill className="object-cover" />
+      </div>
+      <div className="relative z-10">
       {/* Header */}
       <header className="sticky top-0 z-30 bg-surface/80 backdrop-blur-md border-b border-outline-variant/20">
         <div className="max-w-[900px] mx-auto px-4 h-16 flex items-center justify-between">
@@ -265,6 +270,7 @@ export function CalculatorClient({ tenantTitle, logoUrl, initialRate, rpsn, rate
           Výpočet je orientační. Skutečnou nabídku připraví David Choc — specialista Quadrum a vázaný zástupce SAB servis pro spotřebitelské úvěry dle § 257/2016 Sb.
         </p>
       </main>
+      </div>
     </div>
   );
 }
