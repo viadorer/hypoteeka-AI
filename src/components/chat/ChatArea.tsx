@@ -133,18 +133,40 @@ export function ChatArea({ initialSessionId = null, onOpenSidebar }: ChatAreaPro
     }
   }, [status, messages, sessionId]);
 
+  // Best-practice startup flow (ChatGPT/Claude.ai pattern):
+  // 1. Inject STATICKÉ Hugo greeting okamžitě (žádný LLM call, žádný setTimeout)
+  // 2. Paralelně fetch /api/sessions/.../messages (history restore)
+  // 3. Pokud history existuje → přepiš statické greeting historií
+  // 4. LLM se volá až na první REÁLNOU user zprávu (ne na [GREETING] sentinel)
+  //
+  // Výsledek: Hugo bubble viditelný < 100ms místo 3-5s.
   useEffect(() => {
     if (historyLoaded) return;
     setHistoryLoaded(true);
+
+    // 1. INJECT STATIC GREETING IMMEDIATELY (no LLM, no wait)
+    const staticGreeting = isValuation
+      ? `Dobrý den, jsem ${tenant.agentName} — pomohu vám zjistit orientační cenu vaší nemovitosti za 2 minuty. S čím vám mohu pomoci?`
+      : `Dobrý den, jsem ${tenant.agentName} — váš nezávislý průvodce hypotékami. Pomohu vám spočítat splátku, ověřit bonitu, podívat se na investiční výnos, nebo srovnat refinanc. Co teď řešíte?`;
+
+    setMessages([
+      {
+        id: 'static-greeting',
+        role: 'assistant',
+        parts: [{ type: 'text', text: staticGreeting }],
+      },
+    ] as Parameters<typeof setMessages>[0]);
+    greetingSentRef.current = true;
+
+    // 2. Fetch history in parallel (no delay)
     const msgParams = new URLSearchParams({ authorId });
     if (user?.id) msgParams.set('userId', user.id);
     fetch(`/api/sessions/${sessionId}/messages?${msgParams}`)
-      .then(r => { if (r.ok) return r.json(); throw new Error('no session'); })
+      .then((r) => (r.ok ? r.json() : Promise.reject(new Error('no session'))))
       .then((data: { uiMessages?: unknown[]; profile?: { name?: string; nameVocative?: string } }) => {
+        // 3. If history exists, overwrite static greeting with real history
         if (data.uiMessages && Array.isArray(data.uiMessages) && data.uiMessages.length > 0) {
           setMessages(data.uiMessages as Parameters<typeof setMessages>[0]);
-        } else {
-          triggerGreeting();
         }
         if (data.profile?.name) {
           setVisitorName(data.profile.name.split(' ')[0]);
@@ -152,17 +174,9 @@ export function ChatArea({ initialSessionId = null, onOpenSidebar }: ChatAreaPro
         }
       })
       .catch(() => {
-        triggerGreeting();
+        // No history available — static greeting stays visible, fine.
       });
-
-    function triggerGreeting() {
-      if (greetingSentRef.current) return;
-      greetingSentRef.current = true;
-      setTimeout(() => {
-        sendMessage({ text: '[GREETING]' });
-      }, 1000);
-    }
-  }, [sessionId, historyLoaded, setMessages, sendMessage, authorId, user?.id]);
+  }, [sessionId, historyLoaded, setMessages, authorId, user?.id, isValuation, tenant.agentName]);
 
   useEffect(() => {
     if (visitorName) return;
