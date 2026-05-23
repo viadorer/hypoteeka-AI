@@ -296,14 +296,22 @@ export function WidgetRenderer({ toolInvocation, sessionId, onSend }: { toolInvo
           {onSend && <NextStepsBar toolName={toolName} onSend={onSend} />}
         </>
       );
-    case 'show_quick_replies':
+    case 'show_quick_replies': {
+      const qrOptions = args.options as { label: string; value: string }[];
       return (
         <QuickReplyWidget
           question={args.question as string}
-          options={args.options as { label: string; value: string }[]}
-          onSelect={(value) => onSend?.(value)}
+          options={qrOptions}
+          onSelect={(value) => {
+            // Pošli label (přirozený český text) místo raw value (vlastni_bydleni).
+            // Label je to, co uživatel klikl — má smysl ho vidět jako svou "zprávu".
+            // LLM s tím umí pracovat lépe než s machine code.
+            const opt = qrOptions.find((o) => o.value === value);
+            onSend?.(opt?.label ?? value);
+          }}
         />
       );
+    }
     case 'show_lead_capture':
       return (
         <LeadCaptureWidget
