@@ -47,13 +47,14 @@ async function probePromptsTable(): Promise<CheckResult> {
   }
   const start = Date.now();
   try {
-    const { data, error } = await supabase
+    const { count, error } = await supabase
       .from('prompt_templates')
-      .select('id', { count: 'exact', head: true })
+      .select('*', { count: 'exact', head: true })
       .eq('is_active', true);
     const ms = Date.now() - start;
     if (error) return { ok: false, ms, detail: error.message };
-    return { ok: true, ms, detail: `${data ? 'ok' : 'empty'}` };
+    if (!count || count === 0) return { ok: false, ms, detail: 'empty — run seed_full.sql' };
+    return { ok: true, ms, detail: `${count} active prompts` };
   } catch (e) {
     return {
       ok: false,
@@ -66,11 +67,14 @@ async function probePromptsTable(): Promise<CheckResult> {
 async function probeAradRates(): Promise<CheckResult> {
   const start = Date.now();
   try {
-    const res = await fetch('https://www.cnb.cz/cnb/STAT.ARADY_PKG.PARAMETRY_SESTAVY?p_sestuid=12450&p_strid=AAABAA', {
+    // ARAD API root — kód v src/lib/data/rates.ts používá tuto base
+    const res = await fetch('https://www.cnb.cz/aradb/api/v1', {
       signal: AbortSignal.timeout(5000),
     });
     const ms = Date.now() - start;
-    return { ok: res.ok, ms, detail: `HTTP ${res.status}` };
+    // ARAD root vrací HTML s odkazy — 200/404 obojí znamená že server žije
+    const reachable = res.status < 500;
+    return { ok: reachable, ms, detail: `HTTP ${res.status}` };
   } catch (e) {
     return {
       ok: false,
