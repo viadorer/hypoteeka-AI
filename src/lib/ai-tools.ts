@@ -498,7 +498,7 @@ export const toolDefinitions = {
   show_appointment: {
     description: 'Zobraz widget pro rezervaci terminu konzultace se specialistou. Pouzij kdyz klient chce domluvit schuzku, termin, konzultaci. Alternativa k show_lead_capture kdyz klient preferuje konkretni cas.',
     inputSchema: z.object({
-      specialistName: z.string().optional().describe('Jmeno specialisty (napr. "Misa", "Filip"). Pokud nevis, NEZADAVEJ.'),
+      specialistName: z.string().optional().describe('Jmeno specialisty (aktualne "David"). Pokud nevis, NEZADAVEJ.'),
       context: z.string().optional().describe('Kratky kontext co klient potrebuje (napr. "Konzultace k hypotece na byt v Praze")'),
     }),
     execute: async ({ specialistName, context }: { specialistName?: string; context?: string }) => {
