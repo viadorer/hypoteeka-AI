@@ -85,17 +85,24 @@ html, body {
 }
 
 /* Prevent text selection on UI chrome (buttons, navigation, headers) for app feel */
-button, nav, header, .glass-panel {
+button, nav, header {
   -webkit-user-select: none;
   user-select: none;
 }
 
-/* When chat view is active, lock body scroll completely (app-like) */
+/* Inputs and textareas MUST be selectable — even if parent has user-select: none.
+   Bez tohohle iOS Safari nedovolí fokus do form inputs. */
+input, textarea, select, [contenteditable="true"] {
+  -webkit-user-select: text !important;
+  user-select: text !important;
+}
+
+/* When chat view is active, lock body scroll (app-like).
+   Pozor: NEPOUŽÍVAT position: fixed na body — rozbíjí input focus
+   uvnitř lead capture formuláře na iOS Safari. Stačí overflow: hidden. */
 body.chat-locked {
-  position: fixed;
-  width: 100%;
-  height: 100dvh;
   overflow: hidden;
+  height: 100dvh;
 }
 
 /* Material Symbols Outlined defaults */
