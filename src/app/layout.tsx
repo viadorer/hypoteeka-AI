@@ -102,7 +102,7 @@ export default function RootLayout({
   return (
     <html lang="cs">
       <head />
-      <body className={`${inter.variable} font-sans antialiased bg-[#F5F7FA] text-gray-900`}>
+      <body className={`${inter.variable} font-sans antialiased bg-surface text-on-surface`}>
         <StructuredData />
         {tenant.gaId && <ConsentAwareAnalytics gaId={tenant.gaId} />}
         <AuthProvider>
