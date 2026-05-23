@@ -3,7 +3,7 @@
 import { useChat } from '@ai-sdk/react';
 import { useRef, useEffect, useState, useMemo, useCallback } from 'react';
 import { v4 as uuidv4 } from 'uuid';
-import { Send, AlertCircle, RotateCcw, Calculator, ShieldCheck, TrendingUp, RefreshCw, PiggyBank, HelpCircle, Search, Phone, Menu, Users, Building2, Gift } from 'lucide-react';
+import { AlertCircle, RotateCcw, Calculator, ShieldCheck, TrendingUp, RefreshCw, PiggyBank, HelpCircle, Search, Phone, Menu } from 'lucide-react';
 import Image from 'next/image';
 import { WidgetRenderer } from '../widgets/WidgetRenderer';
 import ReactMarkdown from 'react-markdown';
@@ -20,17 +20,17 @@ import { ExitIntentOverlay } from './ExitIntentOverlay';
 import { MobileCallFab } from './MobileCallFab';
 
 const QUICK_ACTIONS_MORTGAGE = [
-  { label: 'Spočítat splátku', icon: Calculator, prompt: 'Chci si spočítat splátku hypotéky.' },
-  { label: 'Ověřit bonitu', icon: ShieldCheck, prompt: 'Chci si ověřit, jestli dosáhnu na hypotéku.' },
-  { label: 'Kolik si mohu půjčit?', icon: TrendingUp, prompt: 'Kolik si mohu maximálně půjčit na hypotéku?' },
-  { label: 'Refinancování hypotéky', icon: RefreshCw, prompt: 'Chci refinancovat hypotéku, jaké jsou aktuální podmínky?' },
+  { label: 'Spočítat splátku', icon: Calculator, materialIcon: 'calculate', prompt: 'Chci si spočítat splátku hypotéky.' },
+  { label: 'Ověřit bonitu', icon: ShieldCheck, materialIcon: 'verified_user', prompt: 'Chci si ověřit, jestli dosáhnu na hypotéku.' },
+  { label: 'Kolik si mohu půjčit?', icon: TrendingUp, materialIcon: 'trending_up', prompt: 'Kolik si mohu maximálně půjčit na hypotéku?' },
+  { label: 'Refinancování', icon: RefreshCw, materialIcon: 'refresh', prompt: 'Chci refinancovat hypotéku, jaké jsou aktuální podmínky?' },
 ];
 
 const QUICK_ACTIONS_VALUATION = [
-  { label: 'Zjistit cenu nemovitosti', icon: Search, prompt: 'Chci zjistit tržní cenu své nemovitosti.' },
-  { label: 'Odhadnout výši nájmu', icon: PiggyBank, prompt: 'Chci zjistit, za kolik bych mohl pronajímat svou nemovitost.' },
-  { label: 'Spočítat hypotéku', icon: Calculator, prompt: 'Chci si spočítat splátku hypotéky.' },
-  { label: 'Poradit s něčím jiným', icon: HelpCircle, prompt: 'Potřebuji poradit s nemovitostí.' },
+  { label: 'Zjistit cenu', icon: Search, materialIcon: 'search', prompt: 'Chci zjistit tržní cenu své nemovitosti.' },
+  { label: 'Odhad nájmu', icon: PiggyBank, materialIcon: 'savings', prompt: 'Chci zjistit, za kolik bych mohl pronajímat svou nemovitost.' },
+  { label: 'Spočítat hypotéku', icon: Calculator, materialIcon: 'calculate', prompt: 'Chci si spočítat splátku hypotéky.' },
+  { label: 'Poradit jinak', icon: HelpCircle, materialIcon: 'help', prompt: 'Potřebuji poradit s nemovitostí.' },
 ];
 
 function getSessionId(initialId: string | null): string {
@@ -211,9 +211,6 @@ export function ChatArea({ initialSessionId = null, onOpenSidebar }: ChatAreaPro
     }
   };
 
-  const glass = 'bg-[#ffffff]/80 backdrop-blur-xl border border-[#e4bdc2]/10 shadow-[0_20px_50px_rgba(0,26,65,0.08)]';
-  const glassHover = 'hover:bg-[#ffffff]/90 hover:shadow-[0_20px_60px_rgba(0,26,65,0.12)]';
-
   // --- HEADER BAR (shared between welcome and chat) ---
   const headerBar = (
     <div className="fixed top-0 left-0 right-0 z-30 glass-panel border-b border-[#e4bdc2]/10" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
@@ -234,26 +231,30 @@ export function ChatArea({ initialSessionId = null, onOpenSidebar }: ChatAreaPro
     </div>
   );
 
-  // --- INPUT BAR ---
+  // --- INPUT BAR (glassmorphic per redesign) ---
   const inputBar = (
-    <form onSubmit={onSubmit} className={`flex items-center rounded-2xl px-4 md:px-5 py-2 transition-all focus-within:bg-white/80 focus-within:shadow-xl focus-within:border-white/60 ${glass}`}>
+    <form onSubmit={onSubmit} className="glass-panel p-2 rounded-3xl border border-white/40 shadow-xl flex items-center gap-2 group focus-within:ring-2 ring-primary/20 transition-all">
+      <button type="button" className="p-3 text-secondary hover:text-primary transition-colors" aria-label="Připojit soubor">
+        <span className="material-symbols-outlined" style={{ fontSize: 20 }}>attach_file</span>
+      </button>
       <input
         ref={inputRef}
         type="text"
         value={inputValue}
         onChange={(e) => setInputValue(e.target.value)}
         onKeyDown={(e) => { if (e.key === 'Escape') setInputValue(''); }}
-        placeholder={isValuation ? 'Zeptejte se na cenu nemovitosti...' : 'Zeptejte se na cokoliv ohledně hypotéky...'}
-        className="flex-1 bg-transparent border-none outline-none text-base md:text-[15px] text-[#001a41] placeholder:text-[#001a41]/30 py-3 md:py-2.5"
+        placeholder={isValuation ? 'Zeptejte se na cenu nemovitosti...' : 'Zeptejte se Huga na cokoliv...'}
+        className="flex-1 bg-transparent border-none outline-none text-base md:text-[15px] text-on-surface placeholder:text-on-surface-variant/60 py-3 px-2"
         autoComplete="off"
         disabled={isLoading}
       />
       <button
         type="submit"
         disabled={isLoading || !inputValue.trim()}
-        className={`w-11 h-11 md:w-10 md:h-10 rounded-xl flex items-center justify-center transition-all flex-shrink-0 ml-2 ${inputValue.trim() ? 'bg-gradient-to-r from-[#b80049] to-[#e2165f] shadow-[0_4px_20px_rgba(184,0,73,0.3)]' : 'bg-[#e9edff]'}`}
+        className={`p-3 rounded-2xl flex items-center justify-center transition-all flex-shrink-0 ${inputValue.trim() ? 'bg-primary text-white shadow-lg hover:scale-105 active:scale-95' : 'bg-surface-container-high text-on-surface-variant/40'}`}
+        aria-label="Odeslat"
       >
-        <Send className="w-[18px] h-[18px] md:w-4 md:h-4 text-white" />
+        <span className="material-symbols-outlined filled" style={{ fontSize: 20 }}>send</span>
       </button>
     </form>
   );
@@ -292,97 +293,118 @@ export function ChatArea({ initialSessionId = null, onOpenSidebar }: ChatAreaPro
   // =============================================
   if (!hasStarted) {
     return (
-      <div className="flex-1 flex flex-col min-h-screen overflow-x-hidden overflow-y-auto min-w-0 w-full">
+      <div className="flex-1 flex flex-col min-h-screen overflow-x-hidden overflow-y-auto min-w-0 w-full chat-bg">
         {headerBar}
 
         <div className="flex-1 flex flex-col items-center justify-center px-4 pt-20 pb-8 w-full min-w-0">
-          {/* Greeting - short, Claude-style */}
-          <div className="text-center mb-8 max-w-lg">
-            <h1 className="text-2xl md:text-[32px] font-extrabold text-[#001a41] tracking-tight leading-tight">
+          {/* Hugo card with portrait + online indicator */}
+          {!isValuation && (
+            <div className="flex items-center gap-4 mb-8 max-w-[600px] w-full justify-center">
+              <div className="relative shrink-0">
+                <Image
+                  src="/images/redesign/hugo-portrait.png"
+                  alt="Hugo"
+                  width={64}
+                  height={64}
+                  className="w-16 h-16 rounded-full border-2 border-primary/30 object-cover shadow-soft"
+                />
+                <span className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-green-500 border-2 border-white rounded-full" />
+              </div>
+              <div className="text-left">
+                <h2 className="text-headline-md text-on-surface leading-tight">Hugo</h2>
+                <p className="text-label-md text-on-surface-variant flex items-center gap-1">
+                  <span className="material-symbols-outlined filled" style={{ fontSize: 14, color: 'var(--color-primary)' }}>bolt</span>
+                  Váš osobní AI expert na hypotéky
+                </p>
+              </div>
+            </div>
+          )}
+
+          {/* Greeting */}
+          <div className="text-center mb-6 max-w-lg">
+            <h1 className="text-headline-lg-mobile md:text-headline-lg text-on-surface tracking-tight">
               {visitorName
                 ? `S čím vám pomůžu, ${visitorNameVocative ?? visitorName}?`
-                : isValuation
-                  ? 'S čím vám pomůžu?'
-                  : 'S čím vám pomůžu?'}
+                : 'S čím vám pomůžu?'}
             </h1>
           </div>
 
           {/* Hugo's dynamic greeting - compact */}
           {(greetingMessage || (isLoading && greetingSentRef.current && !greetingMessage)) && (
             <div className="w-full max-w-[600px] mb-6 min-w-0 animate-in fade-in slide-in-from-bottom-2 duration-500">
-              <div className="text-[#001a41]/60 text-center text-sm leading-relaxed">
+              <div className="text-on-surface-variant text-center text-body-md leading-relaxed">
                 {greetingMessage ? (
                   <ReactMarkdown>{getTextContent(greetingMessage)}</ReactMarkdown>
                 ) : (
                   <span className="inline-flex gap-1 items-center">
-                    <span className="w-1.5 h-1.5 bg-[#bacfff] rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-                    <span className="w-1.5 h-1.5 bg-[#bacfff] rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-                    <span className="w-1.5 h-1.5 bg-[#bacfff] rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                    <span className="w-1.5 h-1.5 bg-primary/40 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                    <span className="w-1.5 h-1.5 bg-primary/40 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                    <span className="w-1.5 h-1.5 bg-primary/40 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
                   </span>
                 )}
               </div>
             </div>
           )}
 
-          {/* Input - HERO element */}
+          {/* Input - glassmorphic HERO */}
           <div className="w-full max-w-[600px] mb-8 min-w-0">
             {inputBar}
           </div>
 
-          {/* 4 Quick action badges - 2x2 grid */}
-          <div className="grid grid-cols-2 gap-2 max-w-[600px] w-full mb-10">
-            {QUICK_ACTIONS.map(({ label, icon: Icon, prompt }) => (
+          {/* Quick action chips - pill style per redesign */}
+          <div className="flex flex-wrap gap-2 justify-center max-w-[600px] w-full mb-10">
+            {QUICK_ACTIONS.map(({ label, materialIcon, prompt }) => (
               <button
                 key={label}
                 onClick={() => useBadge(prompt)}
                 disabled={isLoading}
-                className={`flex items-center gap-2.5 px-4 py-3 rounded-xl text-sm text-gray-600 transition-all disabled:opacity-50 active:scale-[0.98] text-left ${glass} ${glassHover}`}
+                className="bg-surface-container-high hover:bg-primary-container hover:text-on-primary-container px-4 py-2 rounded-full text-label-md text-on-secondary-container transition-all flex items-center gap-2 border border-outline-variant/20 disabled:opacity-50 active:scale-95"
               >
-                <Icon className="w-4 h-4 flex-shrink-0" style={{ color: tenant.branding.primaryColor }} />
+                <span className="material-symbols-outlined" style={{ fontSize: 18 }}>{materialIcon}</span>
                 {label}
               </button>
             ))}
           </div>
 
-          {/* Trust signals strip */}
-          <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 max-w-[600px] w-full mb-8 text-xs text-[#001a41]/40">
+          {/* Trust signals strip — Material Symbols icons */}
+          <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 max-w-[600px] w-full mb-8 text-label-md text-on-surface-variant/70">
             <span className="flex items-center gap-1.5">
-              <Users className="w-3.5 h-3.5" style={{ color: tenant.branding.primaryColor }} />
+              <span className="material-symbols-outlined filled text-primary" style={{ fontSize: 16 }}>groups</span>
               1 000+ klientů
             </span>
             <span className="flex items-center gap-1.5">
-              <Building2 className="w-3.5 h-3.5" style={{ color: tenant.branding.primaryColor }} />
+              <span className="material-symbols-outlined filled text-primary" style={{ fontSize: 16 }}>account_balance</span>
               8+ bank
             </span>
             <span className="flex items-center gap-1.5">
-              <ShieldCheck className="w-3.5 h-3.5" style={{ color: tenant.branding.primaryColor }} />
+              <span className="material-symbols-outlined filled text-primary" style={{ fontSize: 16 }}>verified</span>
               Certifikovaní poradci
             </span>
             <span className="flex items-center gap-1.5">
-              <Gift className="w-3.5 h-3.5" style={{ color: tenant.branding.primaryColor }} />
+              <span className="material-symbols-outlined filled text-primary" style={{ fontSize: 16 }}>card_giftcard</span>
               Zdarma
             </span>
           </div>
 
-          {/* CNB rates - compact single line */}
+          {/* CNB rates */}
           {!isValuation && todayRates && todayRates.mortgage.avgRate > 0 && (
-            <div className="text-center text-xs text-[#001a41]/40 mb-6">
+            <div className="text-center text-label-sm text-on-surface-variant/60 mb-6">
               <span>REPO {todayRates.cnb.repo}%</span>
-              <span className="mx-2 text-[#001a41]/20">·</span>
+              <span className="mx-2 text-on-surface-variant/30">·</span>
               <span>FIX 1-5Y {todayRates.mortgage.rateFix5y}%</span>
-              <span className="mx-2 text-[#001a41]/20">·</span>
+              <span className="mx-2 text-on-surface-variant/30">·</span>
               <span>FIX 5-10Y {todayRates.mortgage.rateFix10y}%</span>
-              <span className="mx-2 text-[#001a41]/20">·</span>
+              <span className="mx-2 text-on-surface-variant/30">·</span>
               <span>RPSN {todayRates.mortgage.rpsn}%</span>
-              <p className="text-[10px] text-[#001a41]/20 mt-1">ČNB ARAD · {todayRates.date}</p>
+              <p className="text-label-sm text-on-surface-variant/40 mt-1 normal-case tracking-normal">ČNB ARAD · {todayRates.date}</p>
             </div>
           )}
 
           {/* Footer disclaimer */}
-          <p className="text-[11px] text-[#001a41]/40 text-center max-w-md leading-relaxed">
+          <p className="text-label-sm text-on-surface-variant/60 text-center max-w-md leading-relaxed normal-case tracking-normal">
             {isValuation
               ? `${tenant.agentName} je AI asistent. Odhady jsou orientační. Může se mýlit.`
-              : `${tenant.agentName} je AI průvodce hypotékami. Výpočty jsou orientační, data z ČNB ARAD.`}
+              : 'Hugo může dělat chyby. Ověřte si důležité informace u Davida.'}
           </p>
         </div>
       </div>
@@ -393,10 +415,36 @@ export function ChatArea({ initialSessionId = null, onOpenSidebar }: ChatAreaPro
   // CHAT VIEW (after conversation starts)
   // =============================================
   return (
-    <div className="flex-1 flex flex-col min-h-screen overflow-x-hidden min-w-0">
+    <div className="flex-1 flex flex-col min-h-screen overflow-x-hidden min-w-0 chat-bg">
       {headerBar}
       <ExitIntentOverlay hasSeenWidget={hasSeenWidget} hasConverted={hasConverted} onSend={useBadge} />
       <MobileCallFab hasSeenWidget={hasSeenWidget} hasConverted={hasConverted} />
+
+      {/* Hugo persistent strip — připomenutí kdo je s vámi */}
+      {!isValuation && (
+        <div className="sticky top-14 z-20 bg-surface/80 backdrop-blur-md border-b border-outline-variant/10">
+          <div className="max-w-[700px] mx-auto px-4 md:px-6 py-2.5 flex items-center gap-3">
+            <div className="relative shrink-0">
+              <Image
+                src="/images/redesign/hugo-portrait.png"
+                alt="Hugo"
+                width={36}
+                height={36}
+                className="w-9 h-9 rounded-full border border-primary/20 object-cover"
+              />
+              <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 border-2 border-white rounded-full" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-label-md font-semibold text-on-surface leading-tight">Hugo</p>
+              <p className="text-label-sm text-on-surface-variant normal-case tracking-normal">AI hypoteční poradce · online</p>
+            </div>
+            <span className="hidden sm:inline-flex items-center gap-1 text-label-sm text-on-surface-variant/60 normal-case tracking-normal">
+              <span className="material-symbols-outlined filled text-primary" style={{ fontSize: 14 }}>bolt</span>
+              odpovídá do 30 s
+            </span>
+          </div>
+        </div>
+      )}
 
       <div className="flex-1 overflow-y-auto overflow-x-hidden min-w-0 pt-14">
         <div className="max-w-[700px] mx-auto px-4 md:px-6 pt-4 md:pt-6 pb-44 md:pb-40 w-full min-w-0">
@@ -406,7 +454,7 @@ export function ChatArea({ initialSessionId = null, onOpenSidebar }: ChatAreaPro
             <div key={message.id} className="mb-4 animate-in">
               {message.role === 'user' && (
                 <div className="flex justify-end mb-2">
-                  <div className="backdrop-blur-sm text-white px-4 py-3 md:py-2.5 rounded-2xl rounded-br-md max-w-[85%] text-base md:text-[15px] leading-relaxed shadow-lg break-words overflow-hidden" style={{ backgroundColor: `${tenant.branding.primaryColor}e6` }}>
+                  <div className="bg-primary text-on-primary px-5 py-3 md:py-3 rounded-2xl rounded-tr-none max-w-[85%] text-body-md leading-relaxed shadow-md break-words overflow-hidden">
                     {getTextContent(message).replace(/\s*\[ADDRESS_DATA:.*?\]/g, '')}
                   </div>
                 </div>
@@ -426,18 +474,18 @@ export function ChatArea({ initialSessionId = null, onOpenSidebar }: ChatAreaPro
                     if (part.type === 'text' && part.text) {
                       return (
                         <div key={index} className="flex justify-start mb-2">
-                          <div className={`text-[#001a41] px-4 py-3 md:py-2.5 rounded-2xl rounded-bl-md max-w-[85%] text-base md:text-[15px] leading-relaxed break-words overflow-hidden ${glass}
+                          <div className="bg-surface-container-lowest text-on-surface px-5 py-3 md:py-3 rounded-2xl rounded-tl-none max-w-[85%] text-body-md leading-relaxed break-words overflow-hidden shadow-sm border border-outline-variant/10
                             prose prose-sm max-w-none
                             [&_p]:my-1 [&_p]:leading-relaxed
-                            [&_strong]:text-[#001a41] [&_strong]:font-semibold
+                            [&_strong]:text-on-surface [&_strong]:font-semibold
                             [&_ul]:my-1 [&_ul]:pl-4 [&_ol]:my-1 [&_ol]:pl-4
                             [&_li]:my-0.5
-                            [&_h2]:text-sm [&_h2]:font-bold [&_h2]:text-[#001a41] [&_h2]:mt-2 [&_h2]:mb-1
-                            [&_h3]:text-sm [&_h3]:font-semibold [&_h3]:text-[#001a41]/80 [&_h3]:mt-2 [&_h3]:mb-1
-                            [&_table]:text-xs [&_th]:px-2 [&_th]:py-1 [&_td]:px-2 [&_td]:py-1 [&_th]:bg-[#f1f3ff] [&_table]:border-collapse [&_td]:border [&_td]:border-[#e9edff] [&_th]:border [&_th]:border-[#e9edff]
-                            [&_blockquote]:border-l-2 [&_blockquote]:border-[#b80049]/20 [&_blockquote]:pl-3 [&_blockquote]:text-[#001a41]/60 [&_blockquote]:my-1
-                            [&_code]:bg-[#f1f3ff] [&_code]:px-1 [&_code]:rounded [&_code]:text-xs
-                          `}>
+                            [&_h2]:text-base [&_h2]:font-bold [&_h2]:text-on-surface [&_h2]:mt-2 [&_h2]:mb-1
+                            [&_h3]:text-sm [&_h3]:font-semibold [&_h3]:text-on-surface/80 [&_h3]:mt-2 [&_h3]:mb-1
+                            [&_table]:text-xs [&_th]:px-2 [&_th]:py-1 [&_td]:px-2 [&_td]:py-1 [&_th]:bg-surface-container [&_table]:border-collapse [&_td]:border [&_td]:border-outline-variant/20 [&_th]:border [&_th]:border-outline-variant/20
+                            [&_blockquote]:border-l-2 [&_blockquote]:border-primary/20 [&_blockquote]:pl-3 [&_blockquote]:text-on-surface-variant [&_blockquote]:my-1
+                            [&_code]:bg-surface-container [&_code]:px-1 [&_code]:rounded [&_code]:text-xs
+                          ">
                             <ReactMarkdown>{part.text}</ReactMarkdown>
                           </div>
                         </div>
@@ -467,11 +515,11 @@ export function ChatArea({ initialSessionId = null, onOpenSidebar }: ChatAreaPro
 
           {isLoading && (
             <div className="flex justify-start mb-2 animate-in">
-              <div className={`text-[#001a41]/40 px-4 py-3 rounded-2xl rounded-bl-md text-sm ${glass}`}>
-                <span className="inline-flex gap-1 items-center">
-                  <span className="w-1.5 h-1.5 bg-[#bacfff] rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-                  <span className="w-1.5 h-1.5 bg-[#bacfff] rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-                  <span className="w-1.5 h-1.5 bg-[#bacfff] rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+              <div className="bg-surface-container-lowest text-on-surface-variant px-5 py-3 rounded-2xl rounded-tl-none text-sm shadow-sm border border-outline-variant/10">
+                <span className="inline-flex gap-1.5 items-center">
+                  <span className="w-2 h-2 bg-primary/50 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                  <span className="w-2 h-2 bg-primary/50 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                  <span className="w-2 h-2 bg-primary/50 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
                 </span>
               </div>
             </div>

@@ -125,6 +125,10 @@ html, body {
     radial-gradient(at 100% 100%, rgba(184, 0, 53, 0.05) 0px, transparent 50%);
 }
 
+.chat-bg {
+  background: radial-gradient(circle at top right, #e5eeff 0%, #f8f9ff 50%, #fffaf9 100%);
+}
+
 /* Typography utility classes paired with design tokens */
 .text-display-xl {
   font-size: 48px;
