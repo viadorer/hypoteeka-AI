@@ -39,7 +39,7 @@ function SpecialistCard({ specialist, isExpanded, onToggle }: { specialist: Spec
         onClick={onToggle}
         className="w-full flex flex-col items-center gap-1.5 cursor-pointer group"
       >
-        <div className="w-[68px] h-[68px] rounded-full border-2 border-outline-variant/30 group-hover:border-primary/40 overflow-hidden bg-gradient-to-br from-[#f1f3ff] to-[#e4bdc2]/20 flex items-center justify-center transition-colors">
+        <div className="w-[68px] h-[68px] rounded-full border-2 border-outline-variant/30 group-hover:border-primary/40 overflow-hidden bg-gradient-to-br from-surface-container-low to-primary-fixed/30 flex items-center justify-center transition-colors">
           {specialist.photo ? (
             <img src={specialist.photo} alt={specialist.name} className="w-full h-full object-cover" />
           ) : (

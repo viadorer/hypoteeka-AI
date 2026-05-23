@@ -81,7 +81,7 @@ export function ChecklistWidget({ type }: Props) {
             className="h-full rounded-full transition-all duration-300"
             style={{
               width: `${pct}%`,
-              backgroundColor: pct === 100 ? '#22c55e' : '#b80049',
+              backgroundColor: pct === 100 ? '#10b981' : 'var(--color-primary)',
             }}
           />
         </div>

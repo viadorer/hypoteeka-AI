@@ -144,7 +144,7 @@ export function NextStepsBar({ toolName, onSend }: Props) {
           {config.title}
         </p>
       </div>
-      <div className="divide-y divide-[#e9edff]">
+      <div className="divide-y divide-outline-variant/20">
         {config.steps.map((step) => {
           const Icon = step.icon;
           return (
