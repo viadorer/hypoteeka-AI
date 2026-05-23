@@ -7,7 +7,6 @@ import { Dashboard } from "@/components/dashboard/Dashboard";
 import { NewsView } from "@/components/news/NewsView";
 import { LandingPage } from "@/components/landing/LandingPage";
 import { useAuth } from '@/lib/auth/auth-context';
-import { getBrowserId } from '@/lib/browser-id';
 import { useTenant } from '@/lib/tenant/use-tenant';
 
 type View = 'landing' | 'chat' | 'dashboard' | 'news';
@@ -17,68 +16,33 @@ export default function Home() {
   const tenant = useTenant();
   const isValuation = tenant.features.primaryFlow === 'valuation';
 
-  const [view, setView] = useState<View>('chat');
+  // Default view = landing pro každý / load. Re-engagement deep linky
+  // (?session=xxx) přepnou na chat. Klik na CTA na landing pak otevře chat
+  // přes handleStartChat.
+  const [view, setView] = useState<View>('landing');
   const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
   const [sessionKey, setSessionKey] = useState(0);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const autoRestoreDone = useRef(false);
 
-  // Auto-restore last session when user is identified
+  // Re-engagement deep link handling — pokud uživatel přijde z emailu
+  // s ?session=xxx, otevřeme rovnou chat s tou session. Bez parametru
+  // se vždy zobrazí landing (aby uživatel viděl hodnotu nabídky).
   useEffect(() => {
     if (authLoading || autoRestoreDone.current) return;
     autoRestoreDone.current = true;
 
-    // Check URL for ?session= param (re-engagement link)
     const urlSession = new URLSearchParams(window.location.search).get('session');
     if (urlSession) {
       setActiveSessionId(urlSession);
       setView('chat');
       setSessionKey(k => k + 1);
-      return;
     }
-
-    // Check if user has seen landing before
-    const hasSeenLanding = localStorage.getItem('hypoteeka_landing_seen');
-
-    const tenantId = process.env.NEXT_PUBLIC_TENANT_ID ?? 'hypoteeka';
-    const params = new URLSearchParams({ tenantId });
-
-    if (user) {
-      params.set('userId', user.id);
-      params.set('authorId', getBrowserId());
-    } else {
-      params.set('authorId', getBrowserId());
-    }
-
-    fetch(`/api/sessions?${params}`)
-      .then(r => r.json())
-      .then((sessions: Array<{ id: string; state: { turnCount: number }; updatedAt: string }>) => {
-        // Extended session recovery: 7 days instead of 24h
-        const recent = sessions.find(s => {
-          if (s.state.turnCount <= 0) return false;
-          const age = Date.now() - new Date(s.updatedAt).getTime();
-          return age < 7 * 24 * 60 * 60 * 1000;
-        });
-        if (recent) {
-          setActiveSessionId(recent.id);
-          setSessionKey(k => k + 1);
-          setView('chat');
-        } else if (hasSeenLanding) {
-          // Returning visitor with no recent session — skip landing, go to chat
-          setView('chat');
-        }
-        // else: first-time visitor, show landing
-        else if (!hasSeenLanding) {
-          setView('landing');
-        }
-      })
-      .catch(() => {
-        if (!hasSeenLanding) setView('landing');
-      });
+    // Bez deep linku zůstaneme na landingu (initial state 'landing').
+    // Sidebar si načte historii sám podle potřeby, až ho uživatel otevře.
   }, [authLoading, user]);
 
   const handleStartChat = useCallback(() => {
-    localStorage.setItem('hypoteeka_landing_seen', '1');
     setActiveSessionId(null);
     setView('chat');
     setSessionKey(k => k + 1);
