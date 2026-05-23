@@ -78,6 +78,8 @@ export function ChatArea({ initialSessionId = null, onOpenSidebar }: ChatAreaPro
   const { messages, setMessages, sendMessage, status, error, clearError } = useChat({ transport });
   const handleCtaChange = useCallback((v: CtaIntensity) => { setCtaIntensity(v); }, []);
   const [inputValue, setInputValue] = useState('');
+  // Per-message timestamps (UIMessage z AI SDK je nenese, tracking samostatně)
+  const [msgTimes, setMsgTimes] = useState<Record<string, string>>({});
   const [visitorName, setVisitorName] = useState<string | null>(null);
   const [visitorNameVocative, setVisitorNameVocative] = useState<string | null>(null);
   const [todayRates, setTodayRates] = useState<{
@@ -200,6 +202,22 @@ export function ChatArea({ initialSessionId = null, onOpenSidebar }: ChatAreaPro
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, isLoading]);
+
+  // Track timestamp when each message first appears (write-once, never overwrite)
+  useEffect(() => {
+    if (messages.length === 0) return;
+    setMsgTimes((prev) => {
+      let changed = false;
+      const next = { ...prev };
+      for (const m of messages) {
+        if (!next[m.id]) {
+          next[m.id] = new Date().toLocaleTimeString('cs-CZ', { hour: '2-digit', minute: '2-digit' });
+          changed = true;
+        }
+      }
+      return changed ? next : prev;
+    });
+  }, [messages]);
 
   useEffect(() => {
     if (!isLoading) inputRef.current?.focus();
@@ -330,7 +348,9 @@ export function ChatArea({ initialSessionId = null, onOpenSidebar }: ChatAreaPro
                 height={36}
                 className="w-9 h-9 rounded-full border border-primary/20 object-cover"
               />
-              <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 border-2 border-white rounded-full" />
+              <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 border-2 border-white rounded-full">
+                <span className="absolute inset-0 rounded-full bg-green-500 animate-ping opacity-60" />
+              </span>
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-label-md font-semibold text-on-surface leading-tight">Hugo</p>
@@ -352,10 +372,15 @@ export function ChatArea({ initialSessionId = null, onOpenSidebar }: ChatAreaPro
             return (
             <div key={message.id} className="mb-4 animate-in">
               {message.role === 'user' && (
-                <div className="flex justify-end mb-2">
+                <div className="flex flex-col items-end mb-2">
                   <div className="bg-primary text-on-primary px-5 py-3 md:py-3 rounded-2xl rounded-tr-none max-w-[85%] text-body-md leading-relaxed shadow-md break-words overflow-hidden">
                     {getTextContent(message).replace(/\s*\[ADDRESS_DATA:.*?\]/g, '')}
                   </div>
+                  {msgTimes[message.id] && (
+                    <span className="text-label-sm text-on-surface-variant/50 normal-case tracking-normal mr-2 mt-1">
+                      {msgTimes[message.id]}
+                    </span>
+                  )}
                 </div>
               )}
 
@@ -406,6 +431,11 @@ export function ChatArea({ initialSessionId = null, onOpenSidebar }: ChatAreaPro
                     }
                     return null;
                   })}
+                  {msgTimes[message.id] && (
+                    <span className="text-label-sm text-on-surface-variant/50 normal-case tracking-normal ml-2 mt-1 block">
+                      {msgTimes[message.id]}
+                    </span>
+                  )}
                 </div>
               )}
             </div>
