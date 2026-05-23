@@ -290,16 +290,17 @@ export function ChatArea({ initialSessionId = null, onOpenSidebar }: ChatAreaPro
   // UNIFIED CHAT VIEW — jediná forma zobrazení
   // Hugo se sám představí jako první bublina (po [GREETING] sentinelu).
   // Quick action chips se zobrazí nad inputem, dokud uživatel nezačne reálný chat.
+  // Layout: column 100vh — header / Hugo strip / messages (flex-1, scroll) / input (auto)
   // =============================================
   return (
-    <div className="flex-1 flex flex-col min-h-screen overflow-x-hidden min-w-0 chat-bg">
+    <div className="flex-1 flex flex-col h-[100dvh] overflow-hidden min-w-0 chat-bg">
       {headerBar}
       <ExitIntentOverlay hasSeenWidget={hasSeenWidget} hasConverted={hasConverted} onSend={useBadge} />
       <MobileCallFab hasSeenWidget={hasSeenWidget} hasConverted={hasConverted} />
 
       {/* Hugo persistent strip — připomenutí kdo je s vámi */}
       {!isValuation && (
-        <div className="sticky top-14 z-20 bg-surface/80 backdrop-blur-md border-b border-outline-variant/10">
+        <div className="z-20 bg-surface/80 backdrop-blur-md border-b border-outline-variant/10 mt-14">
           <div className="max-w-[700px] mx-auto px-4 md:px-6 py-2.5 flex items-center gap-3">
             <div className="relative shrink-0">
               <Image
@@ -323,8 +324,9 @@ export function ChatArea({ initialSessionId = null, onOpenSidebar }: ChatAreaPro
         </div>
       )}
 
-      <div className="flex-1 overflow-y-auto overflow-x-hidden min-w-0 pt-14">
-        <div className="max-w-[700px] mx-auto px-4 md:px-6 pt-4 md:pt-6 pb-44 md:pb-40 w-full min-w-0">
+      {/* Messages — flex-1 takes available space, scrolls when overflow */}
+      <div className="flex-1 overflow-y-auto overflow-x-hidden min-w-0 min-h-0">
+        <div className="max-w-[700px] mx-auto px-4 md:px-6 pt-4 md:pt-6 pb-6 w-full min-w-0">
           {messages.map((message: UIMessage) => {
             if (message.role === 'user' && ['[GREETING]', '[IDLE_CHECK]'].includes(getTextContent(message).trim())) return null;
             return (
@@ -428,10 +430,9 @@ export function ChatArea({ initialSessionId = null, onOpenSidebar }: ChatAreaPro
         </div>
       </div>
 
-      {/* Bottom input bar */}
-      <div className="fixed bottom-0 left-0 right-0 z-30">
-        <div className="bg-gradient-to-t from-surface via-surface/95 to-transparent backdrop-blur-md">
-          <div className="max-w-[700px] mx-auto px-4 md:px-6 pt-4 pb-4" style={{ paddingBottom: 'max(1rem, env(safe-area-inset-bottom))' }}>
+      {/* Input bar — součást flex containeru (ne fixed), takže drží blízko zpráv */}
+      <div className="z-30 shrink-0 border-t border-outline-variant/10 bg-surface/95 backdrop-blur-md">
+        <div className="max-w-[700px] mx-auto px-4 md:px-6 pt-3 pb-3" style={{ paddingBottom: 'max(0.75rem, env(safe-area-inset-bottom))' }}>
             {/* Quick action chips — viditelné dokud uživatel reálně nezačal chat */}
             {!hasStarted && (
               <div className="flex flex-wrap gap-2 mb-3 justify-center animate-in fade-in duration-300">
@@ -466,7 +467,6 @@ export function ChatArea({ initialSessionId = null, onOpenSidebar }: ChatAreaPro
             </div>
           </div>
         </div>
-      </div>
     </div>
   );
 }
