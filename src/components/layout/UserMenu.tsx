@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { User, LogIn, LogOut, KeyRound, Pencil, Save, XCircle, ShieldOff, FileText } from 'lucide-react';
+import { User, LogIn, LogOut, KeyRound, Pencil, Save, XCircle, ShieldOff, FileText, Shield } from 'lucide-react';
 import { useAuth } from '@/lib/auth/auth-context';
 
 type AuthView = 'none' | 'login' | 'signup' | 'change-password' | 'edit-profile';
@@ -20,7 +20,22 @@ export function UserMenu() {
   const [profileForm, setProfileForm] = useState({ displayName: '', phone: '', city: '' });
   const [withdrawing, setWithdrawing] = useState(false);
   const [withdrawMessage, setWithdrawMessage] = useState('');
+  const [isAdmin, setIsAdmin] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+
+  // Po loginu zkontroluj, jestli uživatel má admin/superadmin roli.
+  useEffect(() => {
+    if (!user) {
+      setIsAdmin(false);
+      return;
+    }
+    let cancelled = false;
+    fetch('/api/admin/me')
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => { if (!cancelled && data?.admin) setIsAdmin(true); })
+      .catch(() => { /* not admin, fine */ });
+    return () => { cancelled = true; };
+  }, [user]);
 
   const withdrawConsent = async () => {
     if (withdrawing) return;
@@ -212,6 +227,18 @@ export function UserMenu() {
                     <KeyRound className="w-4 h-4" />
                     Změnit heslo
                   </button>
+                  {isAdmin && (
+                    <>
+                      <div className="border-t border-[#e4bdc2]/10 my-1" />
+                      <a
+                        href="/admin"
+                        className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-[#b80049] hover:bg-[#b80049]/5 transition-all font-medium"
+                      >
+                        <Shield className="w-4 h-4" />
+                        Admin panel
+                      </a>
+                    </>
+                  )}
                   <div className="border-t border-[#e4bdc2]/10 my-1" />
                   <a
                     href="/podminky"
