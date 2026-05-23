@@ -209,19 +209,19 @@ export function ChatArea({ initialSessionId = null, onOpenSidebar }: ChatAreaPro
     }
   };
 
-  // --- HEADER BAR (shared between welcome and chat) ---
+  // --- HEADER BAR (součást flex column, ne fixed — Hugo strip pod tím přirozeně sedne) ---
   const headerBar = (
-    <div className="fixed top-0 left-0 right-0 z-30 glass-panel border-b border-[#e4bdc2]/10" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
+    <div className="shrink-0 z-30 bg-surface/80 backdrop-blur-md border-b border-outline-variant/20" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
       <div className="flex items-center justify-between px-4 h-14 max-w-[900px] mx-auto">
         <div className="flex items-center gap-3">
-          <button onClick={onOpenSidebar} className="p-2 -ml-2 rounded-xl hover:bg-[#e9edff] transition-colors">
-            <Menu className="w-5 h-5 text-[#001a41]/60" />
+          <button onClick={onOpenSidebar} className="p-2 -ml-2 rounded-xl hover:bg-surface-container transition-colors">
+            <Menu className="w-5 h-5 text-on-surface-variant" />
           </button>
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-full bg-[#ffffff] shadow-[0_4px_20px_rgba(0,26,65,0.06)] border border-[#e4bdc2]/10 flex items-center justify-center flex-shrink-0">
+            <div className="w-8 h-8 rounded-full bg-surface-container-lowest shadow-soft border border-outline-variant/10 flex items-center justify-center flex-shrink-0">
               <Image src={tenant.branding.logoUrl ?? '/logo.png'} alt={tenant.branding.title} width={20} height={20} className="object-contain" />
             </div>
-            <span className="text-sm font-bold text-[#001a41] hidden sm:block">{tenant.branding.title}</span>
+            <span className="text-sm font-bold text-on-surface hidden sm:block">{tenant.branding.title}</span>
           </div>
         </div>
         <UserMenu />
@@ -300,7 +300,7 @@ export function ChatArea({ initialSessionId = null, onOpenSidebar }: ChatAreaPro
 
       {/* Hugo persistent strip — připomenutí kdo je s vámi */}
       {!isValuation && (
-        <div className="z-20 bg-surface/80 backdrop-blur-md border-b border-outline-variant/10 mt-14">
+        <div className="shrink-0 z-20 bg-surface/80 backdrop-blur-md border-b border-outline-variant/10">
           <div className="max-w-[700px] mx-auto px-4 md:px-6 py-2.5 flex items-center gap-3">
             <div className="relative shrink-0">
               <Image
