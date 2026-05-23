@@ -104,11 +104,9 @@ export function ChatArea({ initialSessionId = null, onOpenSidebar }: ChatAreaPro
   const isGreetingOnly = messages.length <= 2 && messages.every(m =>
     (m.role === 'user' && getTextContent(m).trim() === '[GREETING]') || m.role === 'assistant'
   ) && greetingSentRef.current;
+  // hasStarted = uživatel reálně něco napsal (ne jen [GREETING] sentinel)
   const hasStarted = messages.length > 0 && !isGreetingOnly;
   const isLoading = status === 'submitted' || status === 'streaming';
-  const greetingMessage = isGreetingOnly
-    ? messages.find(m => m.role === 'assistant')
-    : null;
 
   useEffect(() => {
     fetch('/api/rates').then(r => r.json()).then(data => {
@@ -289,130 +287,9 @@ export function ChatArea({ initialSessionId = null, onOpenSidebar }: ChatAreaPro
   }, [messages.length, hasSeenWidget, hasConverted, isLoading, sendMessage]);
 
   // =============================================
-  // WELCOME SCREEN (before chat starts)
-  // =============================================
-  if (!hasStarted) {
-    return (
-      <div className="flex-1 flex flex-col min-h-screen overflow-x-hidden overflow-y-auto min-w-0 w-full chat-bg">
-        {headerBar}
-
-        <div className="flex-1 flex flex-col items-center justify-center px-4 pt-20 pb-8 w-full min-w-0">
-          {/* Hugo card with portrait + online indicator */}
-          {!isValuation && (
-            <div className="flex items-center gap-4 mb-8 max-w-[600px] w-full justify-center">
-              <div className="relative shrink-0">
-                <Image
-                  src="/images/redesign/hugo-portrait.png"
-                  alt="Hugo"
-                  width={64}
-                  height={64}
-                  className="w-16 h-16 rounded-full border-2 border-primary/30 object-cover shadow-soft"
-                />
-                <span className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-green-500 border-2 border-white rounded-full" />
-              </div>
-              <div className="text-left">
-                <h2 className="text-headline-md text-on-surface leading-tight">Hugo</h2>
-                <p className="text-label-md text-on-surface-variant flex items-center gap-1">
-                  <span className="material-symbols-outlined filled" style={{ fontSize: 14, color: 'var(--color-primary)' }}>bolt</span>
-                  Váš osobní AI expert na hypotéky
-                </p>
-              </div>
-            </div>
-          )}
-
-          {/* Greeting */}
-          <div className="text-center mb-6 max-w-lg">
-            <h1 className="text-headline-lg-mobile md:text-headline-lg text-on-surface tracking-tight">
-              {visitorName
-                ? `S čím vám pomůžu, ${visitorNameVocative ?? visitorName}?`
-                : 'S čím vám pomůžu?'}
-            </h1>
-          </div>
-
-          {/* Hugo's dynamic greeting - compact */}
-          {(greetingMessage || (isLoading && greetingSentRef.current && !greetingMessage)) && (
-            <div className="w-full max-w-[600px] mb-6 min-w-0 animate-in fade-in slide-in-from-bottom-2 duration-500">
-              <div className="text-on-surface-variant text-center text-body-md leading-relaxed">
-                {greetingMessage ? (
-                  <ReactMarkdown>{getTextContent(greetingMessage)}</ReactMarkdown>
-                ) : (
-                  <span className="inline-flex gap-1 items-center">
-                    <span className="w-1.5 h-1.5 bg-primary/40 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-                    <span className="w-1.5 h-1.5 bg-primary/40 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-                    <span className="w-1.5 h-1.5 bg-primary/40 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
-                  </span>
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* Input - glassmorphic HERO */}
-          <div className="w-full max-w-[600px] mb-8 min-w-0">
-            {inputBar}
-          </div>
-
-          {/* Quick action chips - pill style per redesign */}
-          <div className="flex flex-wrap gap-2 justify-center max-w-[600px] w-full mb-10">
-            {QUICK_ACTIONS.map(({ label, materialIcon, prompt }) => (
-              <button
-                key={label}
-                onClick={() => useBadge(prompt)}
-                disabled={isLoading}
-                className="bg-surface-container-high hover:bg-primary-container hover:text-on-primary-container px-4 py-2 rounded-full text-label-md text-on-secondary-container transition-all flex items-center gap-2 border border-outline-variant/20 disabled:opacity-50 active:scale-95"
-              >
-                <span className="material-symbols-outlined" style={{ fontSize: 18 }}>{materialIcon}</span>
-                {label}
-              </button>
-            ))}
-          </div>
-
-          {/* Trust signals strip — Material Symbols icons */}
-          <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 max-w-[600px] w-full mb-8 text-label-md text-on-surface-variant/70">
-            <span className="flex items-center gap-1.5">
-              <span className="material-symbols-outlined filled text-primary" style={{ fontSize: 16 }}>groups</span>
-              1 000+ klientů
-            </span>
-            <span className="flex items-center gap-1.5">
-              <span className="material-symbols-outlined filled text-primary" style={{ fontSize: 16 }}>account_balance</span>
-              8+ bank
-            </span>
-            <span className="flex items-center gap-1.5">
-              <span className="material-symbols-outlined filled text-primary" style={{ fontSize: 16 }}>verified</span>
-              Certifikovaní poradci
-            </span>
-            <span className="flex items-center gap-1.5">
-              <span className="material-symbols-outlined filled text-primary" style={{ fontSize: 16 }}>card_giftcard</span>
-              Zdarma
-            </span>
-          </div>
-
-          {/* CNB rates */}
-          {!isValuation && todayRates && todayRates.mortgage.avgRate > 0 && (
-            <div className="text-center text-label-sm text-on-surface-variant/60 mb-6">
-              <span>REPO {todayRates.cnb.repo}%</span>
-              <span className="mx-2 text-on-surface-variant/30">·</span>
-              <span>FIX 1-5Y {todayRates.mortgage.rateFix5y}%</span>
-              <span className="mx-2 text-on-surface-variant/30">·</span>
-              <span>FIX 5-10Y {todayRates.mortgage.rateFix10y}%</span>
-              <span className="mx-2 text-on-surface-variant/30">·</span>
-              <span>RPSN {todayRates.mortgage.rpsn}%</span>
-              <p className="text-label-sm text-on-surface-variant/40 mt-1 normal-case tracking-normal">ČNB ARAD · {todayRates.date}</p>
-            </div>
-          )}
-
-          {/* Footer disclaimer */}
-          <p className="text-label-sm text-on-surface-variant/60 text-center max-w-md leading-relaxed normal-case tracking-normal">
-            {isValuation
-              ? `${tenant.agentName} je AI asistent. Odhady jsou orientační. Může se mýlit.`
-              : 'Hugo může dělat chyby. Ověřte si důležité informace u Davida.'}
-          </p>
-        </div>
-      </div>
-    );
-  }
-
-  // =============================================
-  // CHAT VIEW (after conversation starts)
+  // UNIFIED CHAT VIEW — jediná forma zobrazení
+  // Hugo se sám představí jako první bublina (po [GREETING] sentinelu).
+  // Quick action chips se zobrazí nad inputem, dokud uživatel nezačne reálný chat.
   // =============================================
   return (
     <div className="flex-1 flex flex-col min-h-screen overflow-x-hidden min-w-0 chat-bg">
@@ -553,20 +430,38 @@ export function ChatArea({ initialSessionId = null, onOpenSidebar }: ChatAreaPro
 
       {/* Bottom input bar */}
       <div className="fixed bottom-0 left-0 right-0 z-30">
-        <div className="bg-gradient-to-t from-[#f9f9ff] via-[#f9f9ff]/95 to-transparent backdrop-blur-md">
+        <div className="bg-gradient-to-t from-surface via-surface/95 to-transparent backdrop-blur-md">
           <div className="max-w-[700px] mx-auto px-4 md:px-6 pt-4 pb-4" style={{ paddingBottom: 'max(1rem, env(safe-area-inset-bottom))' }}>
+            {/* Quick action chips — viditelné dokud uživatel reálně nezačal chat */}
+            {!hasStarted && (
+              <div className="flex flex-wrap gap-2 mb-3 justify-center animate-in fade-in duration-300">
+                {QUICK_ACTIONS.map(({ label, materialIcon, prompt }) => (
+                  <button
+                    key={label}
+                    onClick={() => useBadge(prompt)}
+                    disabled={isLoading}
+                    className="bg-surface-container-high hover:bg-primary-container hover:text-on-primary-container px-4 py-2 rounded-full text-label-md text-on-secondary-container transition-all flex items-center gap-2 border border-outline-variant/20 disabled:opacity-50 active:scale-95 shadow-sm"
+                  >
+                    <span className="material-symbols-outlined" style={{ fontSize: 18 }}>{materialIcon}</span>
+                    {label}
+                  </button>
+                ))}
+              </div>
+            )}
+
             {inputBar}
+
             <div className="flex items-center justify-between mt-2 gap-2">
               <CtaIntensityDial onChange={handleCtaChange} />
               <button
                 onClick={() => useBadge('Chci se spojit se specialistou na bezplatnou konzultaci.')}
-                className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] text-[#001a41]/40 hover:bg-[#f1f3ff] transition-all flex-shrink-0"
+                className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-label-sm text-on-surface-variant/60 hover:bg-surface-container transition-all flex-shrink-0 normal-case tracking-normal"
               >
                 <Phone className="w-3 h-3" />
                 <span className="hidden sm:inline">Expert</span>
               </button>
-              <p className="text-[10px] md:text-[11px] text-[#001a41]/40 truncate">
-                {isValuation ? 'AI odhad -- data z trhu' : 'AI průvodce -- data z ČNB ARAD'}
+              <p className="text-label-sm text-on-surface-variant/60 truncate normal-case tracking-normal">
+                {isValuation ? 'AI odhad — data z trhu' : 'Hugo může dělat chyby. Ověřte si u Davida.'}
               </p>
             </div>
           </div>
