@@ -101,7 +101,15 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="cs">
-      <head />
+      <head>
+        {/* Material Symbols Outlined — ikonový font pro UI.
+            Musí být v <head>, ne v @import globals.css (Tailwind v4 ho nezpracuje). */}
+        {/* eslint-disable-next-line @next/next/no-page-custom-font */}
+        <link
+          rel="stylesheet"
+          href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+        />
+      </head>
       <body className={`${inter.variable} font-sans antialiased bg-surface text-on-surface`}>
         <StructuredData />
         {tenant.gaId && <ConsentAwareAnalytics gaId={tenant.gaId} />}

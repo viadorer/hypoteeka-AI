@@ -80,9 +80,13 @@ export function LandingPage({ onStartChat, logoUrl, title, isValuation }: Props)
             alt="Moderní interiér bytu"
             fill
             priority
-            className="object-cover opacity-30"
+            className="object-cover"
           />
-          <div className="absolute inset-0 bg-gradient-to-b from-surface via-surface/60 to-surface" />
+          {/* Lehký overlay — jen aby byl text čitelný; fotka zůstává viditelná */}
+          <div className="absolute inset-0 bg-white/55" />
+          {/* Soft fade jen u horního a spodního okraje pro splynutí se sekcemi */}
+          <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-surface to-transparent" />
+          <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-surface to-transparent" />
         </div>
         <div className="max-w-[1200px] mx-auto text-center relative z-10">
           <div className="inline-flex items-center gap-2 bg-white/80 backdrop-blur px-4 py-2 rounded-full mb-8 shadow-soft">
