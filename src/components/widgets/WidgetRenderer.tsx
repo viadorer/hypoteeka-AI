@@ -10,7 +10,7 @@ import { RefinanceWidget } from './RefinanceWidget';
 import { AmortizationWidget } from './AmortizationWidget';
 import { StressTestWidget } from './StressTestWidget';
 import { LeadCaptureWidget } from './LeadCaptureWidget';
-import { SpecialistWidget } from './SpecialistWidget';
+import { SpecialistWidget, type Specialist } from './SpecialistWidget';
 import { ValuationWidget } from './ValuationWidget';
 import { ValuationResultWidget } from './ValuationResultWidget';
 import { AddressSuggestWidget } from './AddressSuggestWidget';
@@ -322,8 +322,11 @@ export function WidgetRenderer({ toolInvocation, sessionId, onSend }: { toolInvo
           sessionId={sessionId}
         />
       );
-    case 'show_specialists':
-      return <SpecialistWidget />;
+    case 'show_specialists': {
+      const out = toolInvocation.output;
+      const specialists = out?.specialists as Specialist[] | undefined;
+      return <SpecialistWidget specialists={specialists} />;
+    }
     case 'send_email_summary': {
       const out = toolInvocation.output;
       if (!out) return <WidgetSkeleton toolName={toolName} />;

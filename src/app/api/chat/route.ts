@@ -10,6 +10,8 @@ import type { CtaIntensity } from '@/lib/agent/prompt-builder';
 import { storage } from '@/lib/storage';
 import { getTenantConfigFromDB, getTenantApiKeyFromDB, getDefaultTenantId } from '@/lib/tenant/config';
 import { submitLeadToRealvisor, buildRealvisorPayload } from '@/lib/realvisor';
+import { matchBroker, assignLeadToBroker, markAssignmentNotified, getDefaultBrokerFallback, type BrokerHandoffPayload } from '@/lib/broker-pool';
+import { notifyBrokerOfNewLead } from '@/lib/broker-notify';
 import { v4 as uuidv4 } from 'uuid';
 
 export const maxDuration = 30;
@@ -191,6 +193,38 @@ export async function POST(req: Request) {
 
     // Inject sessionId so Hugo can pass it to request_valuation
     systemPrompt += `\n\nSESSION_ID: "${sessionId}" -- POUŽIJ tuto hodnotu jako sessionId v request_valuation.`;
+
+    // ====================================================================
+    // BROKER POOL PRE-MATCH (042) — informační, ne přiřazení.
+    // Pokud je lead alespoň 'hot' (>= 61), zkus identifikovat nejvhodnějšího
+    // brokera a doplň prompt o konkrétní jméno + SLA. Hugo to pak může použít
+    // v handoff zprávě bez halucinace jména. Skutečné přiřazení nastane až
+    // po klientově souhlasu (Hugo zavolá route_to_broker).
+    // ====================================================================
+    let preMatchedBroker: BrokerHandoffPayload | null = null;
+    if (leadScore.score >= 61) {
+      try {
+        const result = await matchBroker(profile, tenantId);
+        preMatchedBroker = result.ok ? result.payload : getDefaultBrokerFallback();
+      } catch (err) {
+        console.error('[BrokerPool] Pre-match error (non-blocking):', err);
+        preMatchedBroker = getDefaultBrokerFallback();
+      }
+      const b = preMatchedBroker;
+      systemPrompt += `\n\n---\nBROKER PRO HANDOFF (pre-match, ZATÍM NEPŘIŘAZEN):
+- ID: ${b.broker.id}
+- Jméno: ${b.broker.fullName} (oslov: "${b.broker.displayName}")
+- Telefon: ${b.broker.phone}
+- Email: ${b.broker.email}
+- Firma: ${b.broker.company}${b.broker.vazanyZastupceOf ? `, vázaný zástupce ${b.broker.vazanyZastupceOf}` : ''}
+- Vertikála: ${b.vertical}${b.fallback ? ' (FALLBACK — žádný broker s tímto tagem)' : ''}
+
+JAK POUŽÍT:
+- Při handoff zprávě POUŽIJ konkrétně tato data — neměň jméno ani telefon.
+- Pro zobrazení vizitky volej show_specialists({ brokerIds: ["${b.broker.id}"] }).
+- TEPRVE až klient výslovně souhlasí s předáním, zavolej tool route_to_broker.
+- Pokud klient odmítne, NEVOLEJ route_to_broker a neopakuj nabídku v téže zprávě.`;
+    }
 
     // Auto-greeting trigger: if the last user message is [GREETING], instruct Hugo to greet
     const lastMsg = msgArray[msgArray.length - 1];
@@ -587,6 +621,46 @@ export async function POST(req: Request) {
 
             if (toolName === 'show_lead_capture') {
               state.leadCaptured = true;
+            }
+
+            // === BROKER POOL HANDOFF (042) ===
+            // Hugo zavolal route_to_broker — klient souhlasil s předáním.
+            // 1) Match brokera, 2) zapiš broker_assignments řádek,
+            // 3) pošli brokerovi email s detaily leadu, 4) označ notified_at.
+            if (toolName === 'route_to_broker') {
+              try {
+                const matchResult = await matchBroker(profile, tenantId);
+                const handoff = matchResult.ok ? matchResult.payload : getDefaultBrokerFallback();
+                const assignReason = (input.reason as string | undefined) ?? 'Hugo handoff';
+
+                const assign = await assignLeadToBroker({
+                  match: handoff,
+                  sessionId,
+                  tenantId,
+                });
+
+                if (assign.ok && assign.assignmentId) {
+                  // Email notifikace (non-blocking)
+                  notifyBrokerOfNewLead({
+                    broker: handoff.broker,
+                    profile,
+                    sessionId,
+                    vertical: handoff.vertical,
+                    reason: assignReason,
+                  })
+                    .then((res) => {
+                      if (res.ok && assign.assignmentId) {
+                        markAssignmentNotified(assign.assignmentId).catch(() => {});
+                      }
+                      console.log(`[BrokerNotify] ${handoff.broker.email}: ${res.ok ? 'sent' : 'FAIL ' + res.error}`);
+                    })
+                    .catch((e) => console.error('[BrokerNotify] error:', e));
+                }
+
+                console.log(`[BrokerPool] route_to_broker → ${handoff.broker.fullName} (assign=${assign.ok ? assign.assignmentId : 'FAIL: ' + assign.error}, reason="${assignReason}")`);
+              } catch (err) {
+                console.error('[BrokerPool] route_to_broker handler error (non-blocking):', err);
+              }
             }
 
             // Save property record when property-related widgets are shown

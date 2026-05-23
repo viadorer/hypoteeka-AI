@@ -14,6 +14,7 @@ import { formatCZK, formatPercent } from './format';
 import { getDynamicDefaultRate, getMarketRates, getBankRates } from './data/rates';
 import { getCnbLimits } from './data/cnb-limits';
 import { sendBrevoEmail, buildCalculationEmailHtml } from './brevo';
+import { loadSpecialistsForWidget } from './broker-pool';
 
 export const toolDefinitions = {
   show_property: {
@@ -315,6 +316,11 @@ export const toolDefinitions = {
       preferredRate: z.number().optional().describe('Sazba kterou klient zminil (napr. 0.0375 pro 3.75%)'),
       targetLoanAmount: z.number().optional().describe('Pozadovana vyse uveru v CZK (pro refinancovani = zustatek hypoteky)'),
       horizonMonths: z.number().optional().describe('Casovy horizont v mesicich: 0=hned, 3=do 3 mesicu, 12=do roka, 24=pozdeji'),
+      // 041: investor-specific (zjednodušeno na to, co Hugo reálně používá pro routing + persona)
+      isFirstInvestment: z.boolean().optional().describe('Prvni investicni nemovitost klienta?'),
+      investmentExperience: z.enum(['none', 'one', 'portfolio']).optional().describe('Zkusenost: none=zadna, one=jedna, portfolio=2+'),
+      targetRentalYield: z.number().optional().describe('Cilovy hruby vynos v % p.a. (napr. 5.0)'),
+      legalForm: z.enum(['fyzicka_osoba', 'sro', 'kombinace']).optional().describe('Forma: fyzicka_osoba, sro, kombinace (FO+sro)'),
     }),
     execute: async (data: Record<string, unknown>) => {
       // Data se zpracovávají v API route přes onStepFinish
@@ -531,12 +537,44 @@ export const toolDefinitions = {
   },
 
   show_specialists: {
-    description: 'Zobraz widget s dostupnymi specialisty. Pouzij VZDY kdyz nabizis osobni konzultaci, schuzku s poradcem, nebo kdyz klient chce mluvit se specialistou.',
-    inputSchema: z.object({}),
-    execute: async () => {
+    description: 'Zobraz vizitku specialisty/specialistů. Pouzij VZDY kdyz nabizis osobni konzultaci, schuzku s poradcem, nebo kdyz klient chce mluvit se specialistou. Pokud znas konkretni broker_id z pre-match v promptu (sekce BROKER PRO HANDOFF), predej ho v brokerIds. Bez brokerIds se zobrazi vsichni aktivni brokeri.',
+    inputSchema: z.object({
+      brokerIds: z.array(z.string()).optional().describe('Konkretni broker UUID pro zobrazeni (z pre-matched broker context v system promptu). Bez argumentu se zobrazi vsichni aktivni.'),
+    }),
+    execute: async ({ brokerIds }: { brokerIds?: string[] }) => {
+      // Server-side fetch z brokers tabulky (Supabase service role).
+      // Pokud Supabase down → fallback Davida.
+      const brokers = await loadSpecialistsForWidget(brokerIds);
+      const specialists = brokers.map((b) => ({
+        id: b.id,
+        name: b.fullName,
+        photo: b.photoUrl ?? null,
+        role: b.roleLabel,
+        phone: b.phone,
+        email: b.email,
+        description: b.shortDescription ?? '',
+        specialization: b.specializations,
+      }));
       return {
-        summary: 'Zobrazeni dostupnych specialistu.',
+        specialists,
+        count: specialists.length,
+        summary: `Zobrazeno ${specialists.length} specialist${specialists.length === 1 ? 'a' : 'ů'}.`,
         displayed: true,
+      };
+    },
+  },
+
+  route_to_broker: {
+    description: 'Předá kvalifikovaného klienta konkrétnímu brokerovi z poolu. VOLEJ TENTO TOOL až KDYŽ: (1) klient EXPLICITNĚ souhlasil s předáním specialistovi, (2) máš v profilu jméno + (email NEBO telefon) + účel (purpose), (3) GDPR souhlas byl získán. Tool sám vybere nejvhodnějšího brokera podle vertikály. Vrátí konkrétní jméno + telefon, které POUŽIJ v další zprávě klientovi (NEVYMÝŠLEJ si jméno ani telefon).',
+    inputSchema: z.object({
+      reason: z.string().describe('Stručný důvod předání (např. "investiční hypotéka Brno, klient chce konkrétní nabídky")'),
+    }),
+    execute: async ({ reason }: { reason: string }) => {
+      // Skutečný matching + assignment + notifikace v chat route (onStepFinish).
+      return {
+        requested: true,
+        reason,
+        summary: 'Routing brokera spuštěn — chat route doplní detaily.',
       };
     },
   },

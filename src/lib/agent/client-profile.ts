@@ -77,6 +77,14 @@ export interface ClientProfile {
   // Investiční parametry
   expectedRentalIncome?: number;
   monthlyExpenses?: number;
+  // Investor-specific (zavedeno migrací 041 — broker routing + insight protocol).
+  // Drženo jen to, co Hugo reálně používá pro persona detekci a routing.
+  // portfolioSize / existingInvestmentDebt / rentalContractInPlace odstraněny —
+  // broker je zjistí v osobní konzultaci.
+  isFirstInvestment?: boolean;             // první investiční nemovitost klienta
+  investmentExperience?: 'none' | 'one' | 'portfolio'; // 0 / 1 / 2+ nemovitostí
+  targetRentalYield?: number;              // očekávaný hrubý výnos v % p.a.
+  legalForm?: 'fyzicka_osoba' | 'sro' | 'kombinace';
 
   // Preference
   preferredRate?: number;
@@ -155,6 +163,10 @@ export function profileSummary(profile: ClientProfile): string {
   if (profile.targetLoanAmount) parts.push(`Požadovaná výše úvěru: ${fmt(profile.targetLoanAmount)} Kč`);
   if (profile.horizonMonths !== undefined) parts.push(`Časový horizont: ${profile.horizonMonths === 0 ? 'hned' : `do ${profile.horizonMonths} měsíců`}`);
   if (profile.expectedRentalIncome) parts.push(`Očekávaný nájem: ${fmt(profile.expectedRentalIncome)} Kč`);
+  if (profile.isFirstInvestment !== undefined) parts.push(`První investice: ${profile.isFirstInvestment ? 'ano' : 'ne'}`);
+  if (profile.investmentExperience) parts.push(`Zkušenost s investicemi: ${profile.investmentExperience}`);
+  if (profile.targetRentalYield !== undefined) parts.push(`Cílový výnos: ${profile.targetRentalYield} % p.a.`);
+  if (profile.legalForm) parts.push(`Forma: ${profile.legalForm === 'sro' ? 's.r.o.' : profile.legalForm === 'kombinace' ? 'FO + s.r.o.' : 'fyzická osoba'}`);
   if (profile.name) parts.push(`Jméno: ${profile.name}`);
   if (profile.email) parts.push(`Email: ${profile.email}`);
   if (profile.phone) parts.push(`Telefon: ${profile.phone}`);

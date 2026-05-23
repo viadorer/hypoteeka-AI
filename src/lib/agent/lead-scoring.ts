@@ -134,7 +134,73 @@ export interface HandoffQualification {
   reasons: string[]; // lidsky čitelné popisy
 }
 
-export function isQualifiedForHandoff(profile: ClientProfile): HandoffQualification {
+/**
+ * Vrátí "vertikálu" pro broker routing — 3 stavy + unknown.
+ * Záměrně zjednodušené z předchozích 8 vertikál; jemnější granularita
+ * je v `brokers.specializations` jako tagy, ne v routing typu.
+ */
+export type RoutingVertical = 'bydleni' | 'investice' | 'refi' | 'unknown';
+
+export function classifyVerticalForRouting(profile: ClientProfile): RoutingVertical {
+  // Refi / refix má prioritu (explicitní signál klienta)
+  if (profile.purpose === 'refinancovani' || profile.purpose === 'refixace') {
+    return 'refi';
+  }
+
+  // Investice — purpose nebo silný signál (rentální příjem, cíl výnosu)
+  if (
+    profile.purpose === 'investice' ||
+    profile.expectedRentalIncome !== undefined ||
+    profile.targetRentalYield !== undefined ||
+    profile.isFirstInvestment !== undefined ||
+    profile.investmentExperience !== undefined
+  ) {
+    return 'investice';
+  }
+
+  // Vlastní bydlení — purpose nebo přítomnost ceny bez investičního signálu
+  if (profile.purpose === 'vlastni_bydleni' || profile.propertyPrice) {
+    return 'bydleni';
+  }
+
+  return 'unknown';
+}
+
+/**
+ * Investor-specific qualification kritéria. Vrací doplňující missing
+ * pole nad rámec standardního isQualifiedForHandoff().
+ */
+function investorExtraMissing(profile: ClientProfile): { missing: string[]; reasons: string[] } {
+  const missing: string[] = [];
+  const reasons: string[] = [];
+
+  if (profile.purpose !== 'investice') {
+    missing.push('investor.purpose');
+    reasons.push('Klient neoznačil investice jako účel.');
+  }
+
+  // Equity ≥ 20 % ceny (investiční LTV strop typicky 80 %)
+  if (profile.propertyPrice && profile.equity !== undefined && profile.equity !== null) {
+    const equityRatio = profile.equity / profile.propertyPrice;
+    if (equityRatio < 0.2) {
+      missing.push('investor.equity_ratio');
+      reasons.push('Vlastní zdroje < 20 % — investiční LTV limit (typicky 80 %) nebude splněn.');
+    }
+  }
+
+  // Alespoň 1 signál o nájmu / výnosu
+  if (!profile.expectedRentalIncome && profile.targetRentalYield === undefined) {
+    missing.push('investor.rental_signal');
+    reasons.push('Chybí signál o nájmu (očekávaný nájem nebo cílový výnos).');
+  }
+
+  return { missing, reasons };
+}
+
+export function isQualifiedForHandoff(
+  profile: ClientProfile,
+  kind: 'standard' | 'investor' = 'standard',
+): HandoffQualification {
   const missing: string[] = [];
   const reasons: string[] = [];
 
@@ -190,6 +256,13 @@ export function isQualifiedForHandoff(profile: ClientProfile): HandoffQualificat
   if (!profile.consentHandoffId) {
     missing.push('consent');
     reasons.push('Chybí GDPR souhlas s předáním partnerovi');
+  }
+
+  // 6. Investor-specific (jen pokud kind='investor')
+  if (kind === 'investor') {
+    const extra = investorExtraMissing(profile);
+    missing.push(...extra.missing);
+    reasons.push(...extra.reasons);
   }
 
   return {

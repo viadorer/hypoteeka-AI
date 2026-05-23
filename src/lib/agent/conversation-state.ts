@@ -18,7 +18,47 @@ export type ConversationPhase =
   | 'conversion'
   | 'followup';
 
-export type ClientPersona = 'unknown' | 'first_time_buyer' | 'experienced' | 'investor' | 'complex_case';
+export type ClientPersona =
+  | 'unknown'
+  | 'first_time_buyer'
+  | 'experienced'
+  | 'investor'               // legacy — zachováno pro zpětnou kompatibilitu prompts
+  | 'investor_first'         // 038: první investiční nemovitost
+  | 'investor_portfolio'     // 038: 2+ nemovitostí, zkušený
+  | 'complex_case';
+
+/**
+ * Vertikála pro broker pool routing (uložené v profile.purpose
+ * po intent routing chipech / detekci ze zprávy klienta).
+ */
+export type ConversationVertical = 'vlastni_bydleni' | 'investice' | 'refinancovani' | 'refixace' | 'unknown';
+
+/**
+ * Detekce vertikály z textu klienta — fallback, pokud klient
+ * neklikl na intent routing chip. Záměrně tolerantní — pokud
+ * není jisté, vrátí 'unknown' a Hugo se zeptá.
+ */
+export function detectVertical(text: string | undefined | null): ConversationVertical {
+  if (!text) return 'unknown';
+  const t = text.toLowerCase();
+
+  // Refi / refix má nejvyšší prioritu — slova jsou jednoznačná
+  if (/refi(n|x|nanc)|refix|prefinanc|p[rř]efinanc|kon[čc]í fixace|kon[čc]í mi fixace/.test(t)) {
+    return 'refinancovani';
+  }
+
+  // Investice — pronájem, výnos, cash flow, pasivní příjem
+  if (/invest|pron[áa]j|n[áa]jem|v[ýy]nos|cash[\s-]?flow|pasivn[ií] p[rř][ií]jem|yield|cap[\s-]?rate/.test(t)) {
+    return 'investice';
+  }
+
+  // Vlastní bydlení — pro nás, na bydlení, kupujeme byt/dům
+  if (/vlastn[ií]\s*bydlen|na bydlen|pro n[áa]s|kupujeme|chceme byt|hled[áa]me d[ůu]m|prvn[ií] byt/.test(t)) {
+    return 'vlastni_bydleni';
+  }
+
+  return 'unknown';
+}
 
 export interface ConversationState {
   phase: ConversationPhase;
@@ -164,9 +204,28 @@ export function detectPersona(profile: {
   equity?: number;
   employmentType?: string;
   expectedRentalIncome?: number;
+  // 041: investor refinement signály (zúženo na to, co Hugo reálně sbírá v chatu)
+  isFirstInvestment?: boolean;
+  investmentExperience?: 'none' | 'one' | 'portfolio';
+  legalForm?: 'fyzicka_osoba' | 'sro' | 'kombinace';
 }): ClientPersona {
-  // Investice = investor
+  // Investice = investor — rozlišit first vs portfolio podle zkušenosti / formy
   if (profile.purpose === 'investice' || profile.expectedRentalIncome) {
+    // Portfolio signály: 2+ nemovitostí nebo s.r.o./kombinace forma
+    const portfolioSignal =
+      profile.investmentExperience === 'portfolio' ||
+      profile.legalForm === 'sro' ||
+      profile.legalForm === 'kombinace';
+    if (portfolioSignal) return 'investor_portfolio';
+
+    // First-investment signály (explicitní nebo implicitní)
+    const firstSignal =
+      profile.isFirstInvestment === true ||
+      profile.investmentExperience === 'none' ||
+      profile.investmentExperience === 'one';
+    if (firstSignal) return 'investor_first';
+
+    // Neznáme detaily → zatím obecný "investor" (legacy bucket)
     return 'investor';
   }
 
