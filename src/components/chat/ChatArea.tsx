@@ -114,6 +114,12 @@ export function ChatArea({ initialSessionId = null, onOpenSidebar }: ChatAreaPro
     }).catch(() => {});
   }, []);
 
+  // Mobile app-like: lock body scroll when chat is mounted (no rubber band, no bounce)
+  useEffect(() => {
+    document.body.classList.add('chat-locked');
+    return () => { document.body.classList.remove('chat-locked'); };
+  }, []);
+
   useEffect(() => {
     const wasStreaming = prevStatusRef.current === 'streaming' || prevStatusRef.current === 'submitted';
     const isNowReady = status === 'ready';
