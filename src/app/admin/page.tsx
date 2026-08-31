@@ -2,20 +2,22 @@
 
 import { useState } from 'react';
 import { useAdmin } from './layout';
-import { Settings, MessageSquare, BookOpen, Palette, Layout, Download, Users } from 'lucide-react';
+import { Settings, MessageSquare, BookOpen, Palette, Layout, Download, Users, Newspaper } from 'lucide-react';
 import { TenantSettings } from './components/TenantSettings';
 import { PromptEditor } from './components/PromptEditor';
 import { StyleEditor } from './components/StyleEditor';
 import { KnowledgeEditor } from './components/KnowledgeEditor';
 import { WelcomeEditor } from './components/WelcomeEditor';
 import { BrokersEditor } from './components/BrokersEditor';
+import { NewsEditor } from './components/NewsEditor';
 
-type Tab = 'tenant' | 'prompts' | 'styles' | 'knowledge' | 'welcome' | 'brokers';
+type Tab = 'tenant' | 'prompts' | 'styles' | 'knowledge' | 'welcome' | 'brokers' | 'news';
 
 const TABS: { id: Tab; label: string; icon: typeof Settings }[] = [
   { id: 'tenant', label: 'Tenant', icon: Settings },
   { id: 'welcome', label: 'Welcome', icon: Layout },
   { id: 'brokers', label: 'Brokeři', icon: Users },
+  { id: 'news', label: 'Články', icon: Newspaper },
   { id: 'prompts', label: 'Prompty', icon: MessageSquare },
   { id: 'styles', label: 'Tón komunikace', icon: Palette },
   { id: 'knowledge', label: 'Knowledge Base', icon: BookOpen },
@@ -62,6 +64,7 @@ export default function AdminPage() {
         {tab === 'tenant' && <TenantSettings key={activeTenant} />}
         {tab === 'welcome' && <WelcomeEditor key={activeTenant} />}
         {tab === 'brokers' && <BrokersEditor key={activeTenant} />}
+        {tab === 'news' && <NewsEditor key={activeTenant} />}
         {tab === 'prompts' && <PromptEditor key={activeTenant} />}
         {tab === 'styles' && <StyleEditor key={activeTenant} />}
         {tab === 'knowledge' && <KnowledgeEditor key={activeTenant} />}
