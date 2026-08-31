@@ -50,7 +50,7 @@ export function TenantSettings() {
       description: (b.description as string) ?? '',
       logo_url: (b.logo_url as string) ?? '',
       provider: (a.provider as string) ?? 'google',
-      model: (a.model as string) ?? 'gemini-2.0-flash',
+      model: (a.model as string) ?? 'gemini-3.6-flash',
       temperature: (a.temperature as number) ?? 0.7,
       max_steps: (a.max_steps as number) ?? 5,
       api_key_env: (a.api_key_env as string) ?? '',

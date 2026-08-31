@@ -43,11 +43,11 @@ create table public.tenants (
 insert into public.tenants (id, name, domain, branding, ai_config, features) values
 ('hypoteeka', 'Hypoteeka.cz', 'hypoteeka.cz',
   '{"primary_color": "#E91E63", "accent_color": "#0047FF", "title": "Hypoteeka AI", "description": "Hypoteční poradce"}',
-  '{"provider": "google", "model": "gemini-2.0-flash", "temperature": 0.7, "max_steps": 5, "api_key_env": "GOOGLE_AI_KEY_HYPOTEEKA"}',
+  '{"provider": "google", "model": "gemini-3.6-flash", "temperature": 0.7, "max_steps": 5, "api_key_env": "GOOGLE_AI_KEY_HYPOTEEKA"}',
   '{"live_rates": true, "vocative_greeting": true, "lead_capture": true, "knowledge_base_rag": false}'),
 ('odhad', 'Odhad.online', 'odhad.online',
   '{"primary_color": "#2196F3", "accent_color": "#FF9800", "title": "Odhad.online", "description": "Odhad nemovitosti"}',
-  '{"provider": "google", "model": "gemini-2.0-flash", "temperature": 0.5, "max_steps": 5, "api_key_env": "GOOGLE_AI_KEY_ODHAD"}',
+  '{"provider": "google", "model": "gemini-3.6-flash", "temperature": 0.5, "max_steps": 5, "api_key_env": "GOOGLE_AI_KEY_ODHAD"}',
   '{"live_rates": false, "vocative_greeting": true, "lead_capture": true, "knowledge_base_rag": false}');
 
 -- ============================================================

@@ -53,7 +53,7 @@ const TENANT_CONFIGS: Record<string, TenantConfig> = {
     },
     aiConfig: {
       provider: 'google',
-      model: 'gemini-2.0-flash',
+      model: 'gemini-3.6-flash',
       temperature: 0.7,
       maxSteps: 5,
       apiKeyEnv: 'GOOGLE_AI_KEY_HYPOTEEKA',
@@ -82,7 +82,7 @@ const TENANT_CONFIGS: Record<string, TenantConfig> = {
     },
     aiConfig: {
       provider: 'google',
-      model: 'gemini-2.0-flash',
+      model: 'gemini-3.6-flash',
       temperature: 0.5,
       maxSteps: 5,
       apiKeyEnv: 'GOOGLE_AI_KEY_ODHAD',
@@ -173,7 +173,7 @@ function mapDbRowToConfig(row: TenantDbRow): TenantConfig {
     },
     aiConfig: {
       provider: (a.provider as string) ?? hardcoded?.aiConfig.provider ?? 'google',
-      model: (a.model as string) ?? hardcoded?.aiConfig.model ?? 'gemini-2.0-flash',
+      model: (a.model as string) ?? hardcoded?.aiConfig.model ?? 'gemini-3.6-flash',
       temperature: (a.temperature as number) ?? hardcoded?.aiConfig.temperature ?? 0.7,
       maxSteps: (a.max_steps as number) ?? (a.maxSteps as number) ?? hardcoded?.aiConfig.maxSteps ?? 5,
       apiKeyEnv: (a.api_key_env as string) ?? (a.apiKeyEnv as string) ?? hardcoded?.aiConfig.apiKeyEnv ?? '',
