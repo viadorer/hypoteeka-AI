@@ -14,7 +14,7 @@
  * 'webnabidky').
  *
  * Env:
- *   PTF_API_URL      – např. https://ptf-reality-production.up.railway.app
+ *   PTF_API_URL      – https://ptf-production.up.railway.app
  *   PTF_TENANT_SLUG  – slug tenanta v PTF DB (default "ptf-reality")
  *
  * Bez PTF_API_URL se předání tiše přeskočí (lead zůstává uložený lokálně

@@ -49,8 +49,8 @@ PTF workflow engine.
 | `NEXT_PUBLIC_SUPABASE_URL` | URL Supabase projektu PTF |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | anon key PTF projektu |
 | `SUPABASE_SERVICE_ROLE_KEY` | service role key PTF projektu |
-| `PTF_API_URL` | `https://ptf-reality-production.up.railway.app` |
-| `PTF_TENANT_SLUG` | `hypoteeka` |
+| `PTF_API_URL` | `https://ptf-production.up.railway.app` |
+| `PTF_TENANT_SLUG` | `ptf-reality` (leady musí padat pod tenanta, kterého vidí PTF admin) |
 | `NEXT_PUBLIC_TENANT_ID` | `hypoteeka` (beze změny) |
 | + stávající | `GOOGLE_GENERATIVE_AI_API_KEY`, `BREVO_API_KEY`, `CNB_ARAD_API_KEY`, Realvisor |
 
@@ -60,8 +60,15 @@ Produkce bez Supabase proměnných **tvrdě selže** při prvním použití stor
 ### 4. PTF strana — nic
 
 Backend na Railway se nemění ani neredeployuje; tenanta pozná z hlavičky
-`X-Tenant-Slug`. Jediná volitelná věc: v PTF adminu přiřadit tenantovi
-`hypoteeka` makléře (team_members), aby auto-assign leadů měl komu přiřazovat.
+`X-Tenant-Slug`. CORS se řešit nemusí — předání leadu jde ze serveru na
+server (API routa na Vercelu → Railway), CORS je browserová ochrana.
+
+**Viditelnost leadů v adminu:** PTF admin filtruje případy přes
+`leads.tenant_id = admin_users.tenant_id` a nemá přepínač tenantů, proto
+leady posíláme pod tenantem `ptf-reality` a rozlišujeme je přes
+`metadata.origin = 'hypoteeka'` (admin na to má filtr, stejně jako
+u `mamtip` / `webnabidky`). Tenant `hypoteeka` v tabulce `tenants`
+existuje, ale pro leady se nepoužívá.
 
 ## Co bylo při generování schématu záměrně vynecháno
 
