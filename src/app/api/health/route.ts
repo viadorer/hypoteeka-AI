@@ -19,18 +19,27 @@ interface CheckResult {
   detail?: string;
 }
 
+/** PostgrestError má kromě message i code/details/hint — u schema/grant
+ *  problémů je message často prázdná, kdežto code (PGRST106, 42501…) mluví. */
+function formatDbError(error: { message?: string; code?: string; details?: string | null; hint?: string | null }): string {
+  return [error.code, error.message, error.details, error.hint]
+    .filter(Boolean)
+    .join(' | ') || 'unknown DB error (empty response)';
+}
+
 async function probeSupabase(): Promise<CheckResult> {
   if (!isSupabaseConfigured() || !supabase) {
     return { ok: false, detail: 'Supabase not configured (env vars missing)' };
   }
   const start = Date.now();
   try {
+    // head:true zamerne NE — HEAD odpoved nenese telo chyby a detail by byl prazdny
     const { error } = await supabase
       .from('tenants')
-      .select('id', { count: 'exact', head: true })
+      .select('id')
       .limit(1);
     const ms = Date.now() - start;
-    if (error) return { ok: false, ms, detail: error.message };
+    if (error) return { ok: false, ms, detail: formatDbError(error) };
     return { ok: true, ms };
   } catch (e) {
     return {
@@ -49,10 +58,11 @@ async function probePromptsTable(): Promise<CheckResult> {
   try {
     const { count, error } = await supabase
       .from('prompt_templates')
-      .select('*', { count: 'exact', head: true })
-      .eq('is_active', true);
+      .select('id', { count: 'exact' })
+      .eq('is_active', true)
+      .limit(1);
     const ms = Date.now() - start;
-    if (error) return { ok: false, ms, detail: error.message };
+    if (error) return { ok: false, ms, detail: formatDbError(error) };
     if (!count || count === 0) return { ok: false, ms, detail: 'empty — run seed_full.sql' };
     return { ok: true, ms, detail: `${count} active prompts` };
   } catch (e) {
