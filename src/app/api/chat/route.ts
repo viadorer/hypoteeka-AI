@@ -607,6 +607,12 @@ JAK POUŽÍT:
             const input = ('input' in tr && tr.input && typeof tr.input === 'object')
               ? tr.input as Record<string, unknown>
               : {};
+            // Výsledek kalkulačky (splátka, LTV, DSTI, výnos…). Bez něj bychom
+            // věděli jen s čím klient počítal, ne co mu Hugo ukázal — a přesně
+            // to potřebuje poradce vidět u případu.
+            const output = ('output' in tr && tr.output && typeof tr.output === 'object')
+              ? tr.output as Record<string, unknown>
+              : undefined;
 
             // Track shown widgets + valuation tools
             if (toolName.startsWith('show_') || toolName === 'geocode_address' || toolName === 'request_valuation') {
@@ -619,6 +625,7 @@ JAK POUŽÍT:
                 sessionId,
                 widgetType: toolName.replace('show_', ''),
                 inputData: input,
+                outputData: output,
               }).catch(err => console.error('[Storage] Widget event save error:', err));
             }
 
