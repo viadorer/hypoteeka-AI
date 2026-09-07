@@ -145,6 +145,10 @@ export async function POST(req: Request) {
         success: true,
         realvisorLeadId: rvResult.leadId,
         realvisorContactId: rvResult.contactId,
+        // Bez tohohle se nedalo poznat, jestli případ v PTF CRM vznikl —
+        // selhání se dřív objevilo jen v serverovém logu.
+        ptfLeadId: ptfResult.success ? ptfResult.ptfLeadId : undefined,
+        ptfError: ptfResult.success ? undefined : ptfResult.error,
       }),
       { status: 200, headers: { 'Content-Type': 'application/json' } }
     );
