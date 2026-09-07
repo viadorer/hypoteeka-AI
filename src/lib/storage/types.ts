@@ -80,6 +80,7 @@ export interface WidgetEventRecord {
   inputData: Record<string, unknown>;
   outputData?: Record<string, unknown>;
   interaction?: string;
+  createdAt?: string;
 }
 
 export interface PropertyRecord {
@@ -165,6 +166,7 @@ export interface StorageProvider {
 
   // Widget events
   saveWidgetEvent(event: WidgetEventRecord): Promise<void>;
+  listWidgetEvents(sessionId: string): Promise<WidgetEventRecord[]>;
 
   // Properties
   saveProperty(property: PropertyRecord): Promise<void>;

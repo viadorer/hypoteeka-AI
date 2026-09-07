@@ -180,6 +180,11 @@ export class JsonFileStorage implements StorageProvider {
     console.log(`[JsonStorage] Widget event: ${event.widgetType} (session: ${event.sessionId})`);
   }
 
+  async listWidgetEvents(): Promise<WidgetEventRecord[]> {
+    // JsonStorage widget eventy neukládá (jen loguje), takže není co vracet.
+    return [];
+  }
+
   async saveProperty(property: PropertyRecord): Promise<void> {
     console.log(`[JsonStorage] Property saved: ${property.price} ${property.propertyType ?? ''} (session: ${property.sessionId})`);
   }

@@ -326,6 +326,29 @@ export class SupabaseStorage implements StorageProvider {
     return data?.length ?? 0;
   }
 
+  async listWidgetEvents(sessionId: string): Promise<WidgetEventRecord[]> {
+    const { data, error } = await this.db
+      .from('widget_events')
+      .select('*')
+      .eq('session_id', sessionId)
+      .order('created_at', { ascending: true });
+
+    if (error) {
+      console.error('[SupabaseStorage] listWidgetEvents error:', error.message);
+      return [];
+    }
+
+    return (data ?? []).map(w => ({
+      tenantId: w.tenant_id,
+      sessionId: w.session_id,
+      widgetType: w.widget_type,
+      inputData: w.input_data ?? {},
+      outputData: w.output_data ?? undefined,
+      interaction: w.interaction ?? undefined,
+      createdAt: w.created_at,
+    }));
+  }
+
   async saveWidgetEvent(event: WidgetEventRecord): Promise<void> {
     const { error } = await this.db
       .from('widget_events')
