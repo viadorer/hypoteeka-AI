@@ -70,6 +70,31 @@ leady posíláme pod tenantem `ptf-reality` a rozlišujeme je přes
 u `mamtip` / `webnabidky`). Tenant `hypoteeka` v tabulce `tenants`
 existuje, ale pro leady se nepoužívá.
 
+## Jak vypadá hypoteční případ v PTF adminu
+
+| Vlastnost | Hodnota | Odkud se bere |
+|---|---|---|
+| `source` | `web_formular` | PTF normalizuje z `'hypoteeka'` |
+| `metadata.form` | `hypoteeka` | doplní normalizace PTF |
+| `metadata.origin` | `hypoteeka` | filtr v seznamu případů |
+| `case_type` | `hypoteka` → štítek „Hypotéka" | nastavíme po založení |
+| timeline | aktivita `note` s přepisem | nastavíme po založení |
+
+Aktivita nese: zjištěné údaje o klientovi, seznam použitých kalkulaček
+se vstupy i výsledky a přepis konverzace. `activities.description` je
+TEXT renderovaný ve frontendu s `whitespace-pre-wrap` — řádkování se
+zachová, markdown ani HTML se nevykreslí (proto prostý text).
+
+Strukturovaná data (kalkulačky, profil) jdou navíc do
+`activities.metadata`. Pozor: admin API `metadata` u aktivit nevrací,
+takže v UI vidět nejsou — jsou tam pro dotazy nad DB a pro budoucí use.
+
+**Zápis mimo API:** `case_type` a aktivity veřejné API PTF nastavit
+neumí (admin API je za přihlášením), proto je zapisujeme service klíčem
+přímo do `public.leads` / `public.activities`
+([ptf-db.ts](../../src/lib/integrations/ptf-db.ts)). Zapisují se jen
+data do existujících tabulek — žádný sloupec, enum ani trigger.
+
 ## Co bylo při generování schématu záměrně vynecháno
 
 1. **Trigger `on_auth_user_created` na `auth.users`** — auth je sdílená s PTF,
