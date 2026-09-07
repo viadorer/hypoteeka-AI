@@ -30,6 +30,7 @@ interface NavLink {
 const NAV_LINKS: NavLink[] = [
   { href: '/', label: 'Hugo' },
   { href: '/kalkulacka', label: 'Kalkulačka' },
+  { href: '/nabidky', label: 'Sazby' },
   { href: '/clanky', label: 'Články' },
 ];
 

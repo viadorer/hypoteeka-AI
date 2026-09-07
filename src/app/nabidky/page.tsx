@@ -1,12 +1,12 @@
 import type { Metadata } from 'next';
-import { getTenantConfig, getDefaultTenantId } from '@/lib/tenant/config';
 import { LegalFooter } from '@/components/layout/LegalFooter';
-import { OffersClient } from './OffersClient';
+import { SiteHeader } from '@/components/layout/SiteHeader';
+import { RateGuideClient } from './RateGuideClient';
 
 export const metadata: Metadata = {
-  title: 'Nabídky hypoték | Srovnání bank',
+  title: 'Jakou sazbu reálně dostanete | Hypoteční sazby',
   description:
-    'Porovnání aktuálních sazeb hypoték z 8+ partnerských bank. Najděte nejlepší nabídku pro vaši situaci.',
+    'Kde se pohybuje trh podle ČNB ARAD a co rozhoduje o tom, jakou sazbu vám banka nabídne — LTV, fixace, typ příjmu, navázané produkty.',
   alternates: { canonical: 'https://www.hypoteeka.cz/nabidky' },
 };
 
@@ -21,29 +21,33 @@ async function fetchRates() {
   }
 }
 
-export default async function OffersPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ loan?: string; years?: string }>;
-}) {
-  const tenant = getTenantConfig(getDefaultTenantId());
+export default async function OffersPage() {
   const rates = await fetchRates();
-  const params = await searchParams;
-  const loanAmount = params.loan ? Number(params.loan) : 4_000_000;
-  const years = params.years ? Number(params.years) : 30;
+  const avgRate = rates?.mortgage?.avgRate;
 
   return (
-    <div className="min-h-screen bg-surface">
-      <OffersClient
-        tenantTitle={tenant.branding.title}
-        logoUrl={tenant.branding.logoUrl ?? '/logo.png'}
-        loanAmount={loanAmount}
-        years={years}
-        rateFix5y={rates?.mortgage?.rateFix5y ?? 4.5}
-        rateFix1y={rates?.mortgage?.rateFix1y ?? 4.7}
-        rateFix10y={rates?.mortgage?.rateFix10y ?? 4.2}
-        ratesDate={rates?.date ?? ''}
-      />
+    <div className="min-h-screen bg-surface flex flex-col">
+      <SiteHeader />
+      {typeof avgRate === 'number' && avgRate > 0 ? (
+        <RateGuideClient avgRate={avgRate} />
+      ) : (
+        // Bez dat z ARAD se žádné číslo neukazuje. Dřív se sem dosazovala
+        // záložní konstanta, takže stránka tvrdila sazbu, kterou neměla odkud
+        // vědět.
+        <main className="max-w-[820px] mx-auto px-4 py-16 flex-1">
+          <h1 className="text-3xl font-bold text-on-surface mb-3">
+            Jakou sazbu reálně dostanete
+          </h1>
+          <p className="text-on-surface-variant leading-relaxed">
+            Aktuální tržní údaj ČNB se teď nepodařilo načíst. Spočítat splátku na
+            vašich číslech ale můžete v{' '}
+            <a href="/kalkulacka" className="underline hover:text-on-surface">
+              kalkulačce
+            </a>
+            , nebo se zeptejte Huga.
+          </p>
+        </main>
+      )}
       <LegalFooter />
     </div>
   );

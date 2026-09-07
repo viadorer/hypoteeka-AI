@@ -158,8 +158,8 @@ export function DashboardClient({ firstName, tenantTitle, logoUrl, sessions }: P
               className="bg-surface-container-high p-5 rounded-2xl flex flex-col gap-2 hover:shadow-soft active:scale-95 transition-all"
             >
               <span className="material-symbols-outlined text-primary" style={{ fontSize: 28 }}>local_offer</span>
-              <p className="text-label-md text-on-surface font-bold">Nabídky bank</p>
-              <p className="text-label-sm text-on-surface-variant/70 normal-case tracking-normal">Porovnat sazby</p>
+              <p className="text-label-md text-on-surface font-bold">Sazby</p>
+              <p className="text-label-sm text-on-surface-variant/70 normal-case tracking-normal">Kde se pohybuje trh</p>
             </Link>
             <Link
               href="/clanky"
