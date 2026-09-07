@@ -14,6 +14,7 @@
  */
 
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import { HYPOTEEKA_DB_SCHEMA } from '../supabase/client';
 import { getDefaultTenantId } from '../tenant/config';
 
 // ---- ARAD config ----
@@ -81,11 +82,11 @@ let spreadsCacheTs = 0;
 const SPREADS_CACHE_TTL = 60 * 60 * 1000; // 1 hour
 
 // ---- Supabase helper ----
-function getDb(): SupabaseClient | null {
+function getDb(): SupabaseClient<any, any, any, any, any> | null {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
   if (!url || !key) return null;
-  return createClient(url, key);
+  return createClient(url, key, { db: { schema: HYPOTEEKA_DB_SCHEMA } });
 }
 
 function round2(n: number): number {
@@ -154,7 +155,7 @@ function buildRates(aradData: Record<string, number>, prev: Partial<LiveRates> =
 // ============================================================
 // Save to DB (upsert by date)
 // ============================================================
-async function saveRatesToDb(db: SupabaseClient, rates: LiveRates): Promise<void> {
+async function saveRatesToDb(db: SupabaseClient<any, any, any, any, any>, rates: LiveRates): Promise<void> {
   const { error } = await db.from('market_rates').upsert({
     rate_date: rates.lastUpdated,
     cnb_repo: rates.cnbRepo,
@@ -179,7 +180,7 @@ async function saveRatesToDb(db: SupabaseClient, rates: LiveRates): Promise<void
 // ============================================================
 // Load latest rates from DB
 // ============================================================
-async function loadRatesFromDb(db: SupabaseClient): Promise<LiveRates | null> {
+async function loadRatesFromDb(db: SupabaseClient<any, any, any, any, any>): Promise<LiveRates | null> {
   const { data, error } = await db
     .from('market_rates')
     .select('*')

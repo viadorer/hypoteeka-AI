@@ -7,6 +7,7 @@
  */
 
 import { createClient } from '@supabase/supabase-js';
+import { HYPOTEEKA_DB_SCHEMA } from '../supabase/client';
 import { getDefaultTenantId } from '../tenant/config';
 
 export interface CnbLimits {
@@ -53,7 +54,7 @@ export async function getCnbLimits(tenantId = getDefaultTenantId()): Promise<Cnb
   }
 
   try {
-    const db = createClient(supabaseUrl, supabaseKey);
+    const db = createClient(supabaseUrl, supabaseKey, { db: { schema: HYPOTEEKA_DB_SCHEMA } });
     const { data, error } = await db
       .from('cnb_limits')
       .select('*')

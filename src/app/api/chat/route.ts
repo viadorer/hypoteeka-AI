@@ -10,6 +10,7 @@ import type { CtaIntensity } from '@/lib/agent/prompt-builder';
 import { storage } from '@/lib/storage';
 import { getTenantConfigFromDB, getTenantApiKeyFromDB, getDefaultTenantId } from '@/lib/tenant/config';
 import { submitLeadToRealvisor, buildRealvisorPayload } from '@/lib/realvisor';
+import { submitLeadToPtf } from '@/lib/integrations/ptf-leads';
 import { matchBroker, assignLeadToBroker, markAssignmentNotified, getDefaultBrokerFallback, type BrokerHandoffPayload } from '@/lib/broker-pool';
 import { notifyBrokerOfNewLead } from '@/lib/broker-notify';
 import { v4 as uuidv4 } from 'uuid';
@@ -584,14 +585,16 @@ JAK POUŽÍT:
                 submitLeadToRealvisor(rvPayload)
                   .then(rv => {
                     console.log(`[Lead] Auto-submitted to Realvisor: ${rv.success ? rv.leadId : 'failed'}`);
-                    storage.saveLead({
+                    const leadRecord = {
                       id: uuidv4(), tenantId, sessionId,
                       name: leadName, email: profile.email ?? '', phone: profile.phone ?? '',
                       context: `Auto-lead z chatu (${state.phase})`, profile,
                       leadScore: state.leadScore ?? 0, leadTemperature: leadTemp,
                       realvisorLeadId: rv.leadId, realvisorContactId: rv.contactId,
                       createdAt: new Date().toISOString(),
-                    }).catch(e => console.error('[Storage] Lead save error:', e));
+                    };
+                    storage.saveLead(leadRecord).catch(e => console.error('[Storage] Lead save error:', e));
+                    submitLeadToPtf(leadRecord).catch(e => console.error('[PTF] submit error:', e));
                   })
                   .catch(err => console.error('[Lead] Realvisor submit error:', err));
               }

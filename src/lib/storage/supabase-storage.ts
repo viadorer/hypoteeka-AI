@@ -9,7 +9,7 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 import type { StorageProvider, SessionData, LeadRecord, WidgetEventRecord, PropertyRecord, ProjectRecord, NewsRecord, UserProfile, ConsentRecord } from './types';
 
 export class SupabaseStorage implements StorageProvider {
-  constructor(private db: SupabaseClient) {}
+  constructor(private db: SupabaseClient<any, any, any, any, any>) {}
 
   async getSession(sessionId: string): Promise<SessionData | null> {
     const { data, error } = await this.db

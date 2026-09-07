@@ -2,6 +2,7 @@ import { storage } from '@/lib/storage';
 import { v4 as uuidv4 } from 'uuid';
 import { createHash } from 'crypto';
 import { submitLeadToRealvisor, buildRealvisorPayload } from '@/lib/realvisor';
+import { submitLeadToPtf } from '@/lib/integrations/ptf-leads';
 import { getDefaultTenantId } from '@/lib/tenant/config';
 import { sendBrevoEmail, buildLeadConfirmationEmailHtml } from '@/lib/brevo';
 import type { ConsentScope } from '@/lib/storage/types';
@@ -84,7 +85,7 @@ export async function POST(req: Request) {
 
     // Save lead locally with Realvisor IDs
     const leadId = uuidv4();
-    await storage.saveLead({
+    const leadRecord = {
       id: leadId,
       tenantId: tid,
       sessionId: sessionId ?? '',
@@ -98,7 +99,11 @@ export async function POST(req: Request) {
       realvisorLeadId: rvResult.leadId,
       realvisorContactId: rvResult.contactId,
       createdAt: new Date().toISOString(),
-    });
+    };
+    await storage.saveLead(leadRecord);
+
+    // Předání do PTF reality CRM (non-blocking — lead je už uložený lokálně)
+    submitLeadToPtf(leadRecord).catch(err => console.error('[PTF] submit error:', err));
 
     // Update session profile with contact info
     if (session) {
