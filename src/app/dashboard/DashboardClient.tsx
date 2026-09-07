@@ -2,7 +2,7 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { UserMenu } from '@/components/layout/UserMenu';
+import { SiteHeader } from '@/components/layout/SiteHeader';
 import { formatCZK } from '@/lib/format';
 
 interface SessionPreview {
@@ -46,18 +46,7 @@ export function DashboardClient({ firstName, tenantTitle, logoUrl, sessions }: P
         />
       </div>
 
-      {/* Header */}
-      <header className="sticky top-0 z-30 bg-surface/80 backdrop-blur-md border-b border-outline-variant/20">
-        <div className="max-w-[900px] mx-auto px-4 h-16 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-primary-container rounded-xl flex items-center justify-center overflow-hidden shadow-soft">
-              <Image src={logoUrl} alt={tenantTitle} width={40} height={40} className="w-full h-full object-cover" />
-            </div>
-            <span className="text-headline-md font-bold text-on-surface hidden sm:block">{tenantTitle}</span>
-          </Link>
-          <UserMenu />
-        </div>
-      </header>
+      <SiteHeader />
 
       <main className="max-w-[700px] mx-auto px-4 pt-8 pb-16 relative z-10">
         {/* Greeting */}

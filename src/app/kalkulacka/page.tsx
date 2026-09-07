@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { getTenantConfig, getDefaultTenantId } from '@/lib/tenant/config';
 import { LegalFooter } from '@/components/layout/LegalFooter';
 import { CalculatorClient } from './CalculatorClient';
+import { SiteHeader } from '@/components/layout/SiteHeader';
 
 export const metadata: Metadata = {
   title: 'Kalkulačka hypotéky | Spočítejte si splátku',
@@ -34,6 +35,7 @@ export default async function CalculatorPage() {
 
   return (
     <div className="min-h-screen bg-surface">
+      <SiteHeader />
       <CalculatorClient
         tenantTitle={tenant.branding.title}
         logoUrl={tenant.branding.logoUrl ?? '/logo.png'}

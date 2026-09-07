@@ -3,6 +3,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { trackEvent } from '@/lib/analytics';
+import { SiteHeader } from '@/components/layout/SiteHeader';
 
 interface Props {
   onStartChat: () => void;
@@ -33,44 +34,7 @@ export function LandingPage({ onStartChat, logoUrl, title, isValuation }: Props)
 
   return (
     <div className="min-h-screen bg-mesh text-on-surface">
-      {/* Sticky Top Navigation */}
-      <header className="bg-surface/80 backdrop-blur-md sticky top-0 z-50 border-b border-outline-variant/30 shadow-sm">
-        <nav className="flex justify-between items-center w-full px-6 max-w-[1200px] mx-auto h-20">
-          <Link href="/" className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-primary-container rounded-xl flex items-center justify-center text-white overflow-hidden shadow-soft">
-              <Image src={logoUrl} alt={title} width={40} height={40} className="w-full h-full object-cover" />
-            </div>
-            <span className="text-headline-md font-bold text-on-surface">{title}</span>
-          </Link>
-          <div className="hidden md:flex gap-8 items-center">
-            <Link className="text-body-md text-on-surface-variant hover:text-primary transition-colors" href="/kalkulacka">
-              Kalkulačka
-            </Link>
-            <Link className="text-body-md text-on-surface-variant hover:text-primary transition-colors" href="/nabidky">
-              Nabídky bank
-            </Link>
-            <Link className="text-body-md text-on-surface-variant hover:text-primary transition-colors" href="/clanky">
-              Články
-            </Link>
-            <a className="text-body-md text-on-surface-variant hover:text-primary transition-colors" href="#jak-to-funguje">
-              Jak to funguje
-            </a>
-            <button
-              onClick={() => handleCTA('header')}
-              className="bg-primary-container text-on-primary-container px-6 py-3 rounded-full font-bold hover:scale-95 transition-all duration-100 shadow-soft"
-            >
-              Spočítat hypotéku
-            </button>
-          </div>
-          <button
-            onClick={() => handleCTA('mobile-header')}
-            className="md:hidden text-on-surface p-2 rounded-lg hover:bg-surface-container-low transition-colors"
-            aria-label="Spočítat hypotéku"
-          >
-            <span className="material-symbols-outlined filled">calculate</span>
-          </button>
-        </nav>
-      </header>
+      <SiteHeader cta={{ label: 'Spočítat hypotéku', onClick: () => handleCTA('header') }} />
 
       {/* Hero Section with Background Image */}
       <section className="relative py-16 md:py-24 px-6 overflow-hidden min-h-[600px] flex items-center">

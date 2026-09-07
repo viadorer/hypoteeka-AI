@@ -3,7 +3,7 @@
 import { useChat } from '@ai-sdk/react';
 import { useRef, useEffect, useState, useMemo, useCallback } from 'react';
 import { v4 as uuidv4 } from 'uuid';
-import { AlertCircle, RotateCcw, Calculator, ShieldCheck, TrendingUp, RefreshCw, PiggyBank, HelpCircle, Search, Phone, Menu } from 'lucide-react';
+import { AlertCircle, RotateCcw, Calculator, ShieldCheck, TrendingUp, RefreshCw, PiggyBank, HelpCircle, Search, Phone } from 'lucide-react';
 import Image from 'next/image';
 import { WidgetRenderer } from '../widgets/WidgetRenderer';
 import ReactMarkdown from 'react-markdown';
@@ -15,7 +15,7 @@ import { useTenant } from '@/lib/tenant/use-tenant';
 import { trackEvent } from '@/lib/analytics';
 import { getBrowserId } from '@/lib/browser-id';
 import { useAuth } from '@/lib/auth/auth-context';
-import { UserMenu } from '../layout/UserMenu';
+import { SiteHeader } from '../layout/SiteHeader';
 import { ExitIntentOverlay } from './ExitIntentOverlay';
 import { MobileCallFab } from './MobileCallFab';
 
@@ -248,24 +248,7 @@ export function ChatArea({ initialSessionId = null, onOpenSidebar }: ChatAreaPro
   };
 
   // --- HEADER BAR (součást flex column, ne fixed — Hugo strip pod tím přirozeně sedne) ---
-  const headerBar = (
-    <div className="shrink-0 z-30 bg-surface/80 backdrop-blur-md border-b border-outline-variant/20" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
-      <div className="flex items-center justify-between px-4 h-14 max-w-[900px] mx-auto">
-        <div className="flex items-center gap-3">
-          <button onClick={onOpenSidebar} className="p-2 -ml-2 rounded-xl hover:bg-surface-container transition-colors">
-            <Menu className="w-5 h-5 text-on-surface-variant" />
-          </button>
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-full bg-surface-container-lowest shadow-soft border border-outline-variant/10 flex items-center justify-center flex-shrink-0">
-              <Image src={tenant.branding.logoUrl ?? '/logo.png'} alt={tenant.branding.title} width={20} height={20} className="object-contain" />
-            </div>
-            <span className="text-sm font-bold text-on-surface hidden sm:block">{tenant.branding.title}</span>
-          </div>
-        </div>
-        <UserMenu />
-      </div>
-    </div>
-  );
+  const headerBar = <SiteHeader onOpenSidebar={onOpenSidebar} />;
 
   // --- INPUT BAR (glassmorphic per redesign) ---
   const inputBar = (

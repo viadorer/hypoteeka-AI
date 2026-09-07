@@ -3,6 +3,7 @@ import { getTenantConfig, getDefaultTenantId } from '@/lib/tenant/config';
 import { LegalFooter } from '@/components/layout/LegalFooter';
 import Link from 'next/link';
 import type { Metadata } from 'next';
+import { SiteHeader } from '@/components/layout/SiteHeader';
 
 export const metadata: Metadata = {
   title: 'Články a rady',
@@ -17,6 +18,7 @@ export default async function ArticlesPage() {
 
   return (
     <div className="min-h-screen bg-[#F5F7FA]">
+      <SiteHeader />
       <div className="max-w-3xl mx-auto px-4 py-16 md:py-24">
         <Link href="/" className="text-sm text-gray-400 hover:text-gray-600 transition-colors mb-8 inline-block">
           &larr; Zpět na {tenant.branding.title}
