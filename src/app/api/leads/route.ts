@@ -3,6 +3,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { createHash } from 'crypto';
 import { submitLeadToRealvisor, buildRealvisorPayload } from '@/lib/realvisor';
 import { submitLeadToPtf } from '@/lib/integrations/ptf-leads';
+import { getAdminUser, canManageTenant, unauthorizedResponse, forbiddenTenantResponse } from '@/lib/admin/auth';
 import { getDefaultTenantId } from '@/lib/tenant/config';
 import { sendBrevoEmail, buildLeadConfirmationEmailHtml } from '@/lib/brevo';
 import type { ConsentScope } from '@/lib/storage/types';
@@ -159,8 +160,18 @@ export async function POST(req: Request) {
 
 export async function GET(req: Request) {
   try {
+    // BEZPEČNOST: endpoint byl veřejný a vracel všechny leady — jméno,
+    // e-mail, telefon i celý profil (příjem, cena nemovitosti). Stačilo
+    // znát URL. Nic ve frontendu ho nevolá, čte ho jen správa.
+    const admin = await getAdminUser();
+    if (!admin) return unauthorizedResponse();
+
     const url = new URL(req.url);
     const tenantId = url.searchParams.get('tenantId') ?? undefined;
+    if (tenantId && !canManageTenant(admin, tenantId)) {
+      return forbiddenTenantResponse(tenantId);
+    }
+
     const leads = await storage.getLeads(tenantId);
     return new Response(
       JSON.stringify(leads),
