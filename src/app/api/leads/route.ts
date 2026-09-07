@@ -102,8 +102,14 @@ export async function POST(req: Request) {
     };
     await storage.saveLead(leadRecord);
 
-    // Předání do PTF reality CRM (non-blocking — lead je už uložený lokálně)
-    submitLeadToPtf(leadRecord).catch(err => console.error('[PTF] submit error:', err));
+    // Předání do PTF reality CRM. Čeká se na dokončení: na serverless se
+    // funkce po odeslání odpovědi ukončí a nedokončený zápis by lead
+    // v CRM tiše ztratil. Chyba předání ale nesmí shodit odpověď klientovi —
+    // lead je v tu chvíli už bezpečně uložený v hypoteeka.leads.
+    const ptfResult = await submitLeadToPtf(leadRecord).catch(err => {
+      console.error('[PTF] submit error:', err);
+      return { success: false as const, error: 'exception' };
+    });
 
     // Update session profile with contact info
     if (session) {
@@ -114,7 +120,7 @@ export async function POST(req: Request) {
       await storage.saveSession(session);
     }
 
-    console.log(`[Lead] Captured: ${name} (${email}, ${phone}), session: ${sessionId}, score: ${score}, realvisor: ${rvResult.success ? rvResult.leadId : 'failed'}`);
+    console.log(`[Lead] Captured: ${name} (${email}, ${phone}), session: ${sessionId}, score: ${score}, realvisor: ${rvResult.success ? rvResult.leadId : 'failed'}, ptf: ${ptfResult.success ? 'ok' : ptfResult.error}`);
 
     // Send confirmation email (non-blocking, don't fail the lead if email fails)
     if (email) {
