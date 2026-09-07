@@ -6,9 +6,16 @@
  * Backend nad vloženým leadem spouští workflow (welcome email, auto-assign
  * makléře, demand) — přímý zápis do DB by je obešel.
  *
+ * TENANT: leady se posílají pod tenantem "ptf-reality", ne "hypoteeka".
+ * Admin PTF filtruje případy přes `leads.tenant_id = admin_users.tenant_id`
+ * (backend/src/modules/admin/leads.routes.ts) a nemá přepínač tenantů —
+ * lead pod tenantem "hypoteeka" by v adminu nebyl vidět. Rozlišení dělá
+ * `metadata.origin`, na který má admin filtr (stejně jako 'mamtip',
+ * 'webnabidky').
+ *
  * Env:
  *   PTF_API_URL      – např. https://ptf-reality-production.up.railway.app
- *   PTF_TENANT_SLUG  – slug tenanta v PTF DB (default "hypoteeka")
+ *   PTF_TENANT_SLUG  – slug tenanta v PTF DB (default "ptf-reality")
  *
  * Bez PTF_API_URL se předání tiše přeskočí (lead zůstává uložený lokálně
  * ve schématu hypoteeka i v Realvisoru).
@@ -36,7 +43,7 @@ function splitName(name: string): { first: string; last: string } {
 
 export async function submitLeadToPtf(lead: LeadRecord): Promise<PtfLeadResult> {
   const apiUrl = process.env.PTF_API_URL;
-  const tenantSlug = process.env.PTF_TENANT_SLUG ?? 'hypoteeka';
+  const tenantSlug = process.env.PTF_TENANT_SLUG ?? 'ptf-reality';
 
   if (!apiUrl) {
     console.log('[PTF] PTF_API_URL není nastaveno — předání leadu přeskočeno');
@@ -58,11 +65,13 @@ export async function submitLeadToPtf(lead: LeadRecord): Promise<PtfLeadResult> 
     email: lead.email,
     phone: lead.phone || undefined,
     message: lead.context || 'Lead z hypoteeka.cz (AI asistent)',
-    source: 'web',
+    // PTF enum lead_source je uzavřený; neznámou hodnotu normalizuje na
+    // 'web_formular' a slug si odloží do metadata.form (viz lead-source.ts).
+    source: 'hypoteeka',
     gdpr_consent: true, // souhlas zachycen v hypoteeka.consent_log (scope handoff_partner)
     marketing_consent: false,
     metadata: {
-      origin: 'hypoteeka.cz',
+      origin: 'hypoteeka',
       hypoteeka_lead_id: lead.id,
       session_id: lead.sessionId || undefined,
       lead_score: lead.leadScore,

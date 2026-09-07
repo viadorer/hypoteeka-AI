@@ -94,6 +94,31 @@ async function probeAradRates(): Promise<CheckResult> {
   }
 }
 
+/** Project ref z URL i ze service klíče (JWT claim). Když se liší, míří
+ *  aplikace jinam, než kde běžela migrace — typická příčina PGRST106.
+ *  Ref není tajný: je v každém klientském bundlu (NEXT_PUBLIC_SUPABASE_URL). */
+function checkProjectRef(): CheckResult {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL ?? '';
+  const urlRef = url.match(/https:\/\/([a-z0-9]+)\.supabase\./)?.[1] ?? 'unknown';
+
+  let keyRef = 'unparsed';
+  try {
+    const payload = process.env.SUPABASE_SERVICE_ROLE_KEY?.split('.')[1];
+    if (payload) {
+      const decoded = JSON.parse(Buffer.from(payload, 'base64').toString('utf-8'));
+      keyRef = decoded.ref ?? 'no-ref-claim';
+    }
+  } catch {
+    keyRef = 'unparsed';
+  }
+
+  const match = keyRef === urlRef || keyRef === 'unparsed' || keyRef === 'no-ref-claim';
+  return {
+    ok: match,
+    detail: `url=${urlRef} serviceKey=${keyRef}${match ? '' : ' — NESHODA: klíč patří jinému projektu'}`,
+  };
+}
+
 function checkEnvVars(): CheckResult {
   const required = [
     'NEXT_PUBLIC_SUPABASE_URL',
@@ -121,6 +146,7 @@ export async function GET() {
 
   const checks = {
     env: envCheck,
+    project: checkProjectRef(),
     supabase: supabaseCheck,
     prompts: promptsCheck,
     arad: aradCheck,
