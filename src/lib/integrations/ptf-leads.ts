@@ -133,6 +133,13 @@ export async function submitLeadToPtf(lead: LeadRecord): Promise<PtfLeadResult> 
     return { success: false, error: 'not-configured' };
   }
 
+  // Záměna PTF_API_URL a PTF_TENANT_SLUG se jinak projeví až nesrozumitelným
+  // „Failed to parse URL" uprostřed předání leadu.
+  if (!/^https?:\/\//i.test(apiUrl)) {
+    console.error(`[PTF] PTF_API_URL není adresa ('${apiUrl}') — čekám https://…, ne tenant slug`);
+    return { success: false, error: 'invalid-api-url' };
+  }
+
   // PTF endpoint vyžaduje email; lead jen s telefonem předat nejde.
   if (!lead.email) {
     console.warn(`[PTF] Lead ${lead.id} nemá email — PTF ho vyžaduje, předání přeskočeno (lead zůstává lokálně a v Realvisoru)`);

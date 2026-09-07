@@ -127,6 +127,18 @@ async function probePtfApi(): Promise<CheckResult> {
   if (!apiUrl) {
     return { ok: false, detail: 'PTF_API_URL nenastaveno — leady se do PTF CRM nepředávají' };
   }
+  if (!/^https?:\/\//i.test(apiUrl)) {
+    return {
+      ok: false,
+      detail: `PTF_API_URL='${apiUrl}' není adresa — čekám https://…, ne tenant slug (nezaměnily se hodnoty s PTF_TENANT_SLUG?)`,
+    };
+  }
+  if (/^https?:\/\//i.test(tenantSlug)) {
+    return {
+      ok: false,
+      detail: `PTF_TENANT_SLUG='${tenantSlug}' je adresa — čekám slug jako 'ptf-reality'`,
+    };
+  }
   const start = Date.now();
   try {
     const res = await fetch(`${apiUrl.replace(/\/$/, '')}/api/settings`, {
