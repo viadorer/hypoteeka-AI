@@ -119,6 +119,35 @@ function checkProjectRef(): CheckResult {
   };
 }
 
+/** Dosažitelnost PTF backendu + rozpoznání tenanta. Bez toho leady do CRM
+ *  nedojdou a pozná se to jen z logů. Čte se veřejné /api/settings, nic nezapisuje. */
+async function probePtfApi(): Promise<CheckResult> {
+  const apiUrl = process.env.PTF_API_URL;
+  const tenantSlug = process.env.PTF_TENANT_SLUG ?? 'ptf-reality';
+  if (!apiUrl) {
+    return { ok: false, detail: 'PTF_API_URL nenastaveno — leady se do PTF CRM nepředávají' };
+  }
+  const start = Date.now();
+  try {
+    const res = await fetch(`${apiUrl.replace(/\/$/, '')}/api/settings`, {
+      headers: { 'X-Tenant-Slug': tenantSlug },
+      signal: AbortSignal.timeout(8000),
+    });
+    const ms = Date.now() - start;
+    if (!res.ok) {
+      return { ok: false, ms, detail: `HTTP ${res.status} pro tenanta '${tenantSlug}'` };
+    }
+    const data = (await res.json().catch(() => ({}))) as { slug?: string; name?: string };
+    return { ok: true, ms, detail: `tenant '${data.slug ?? tenantSlug}' (${data.name ?? '?'})` };
+  } catch (e) {
+    return {
+      ok: false,
+      ms: Date.now() - start,
+      detail: e instanceof Error ? e.message : 'unknown',
+    };
+  }
+}
+
 function checkEnvVars(): CheckResult {
   const required = [
     'NEXT_PUBLIC_SUPABASE_URL',
@@ -137,11 +166,12 @@ function checkEnvVars(): CheckResult {
 }
 
 export async function GET() {
-  const [envCheck, supabaseCheck, promptsCheck, aradCheck] = await Promise.all([
+  const [envCheck, supabaseCheck, promptsCheck, aradCheck, ptfCheck] = await Promise.all([
     Promise.resolve(checkEnvVars()),
     probeSupabase(),
     probePromptsTable(),
     probeAradRates(),
+    probePtfApi(),
   ]);
 
   const checks = {
@@ -149,12 +179,15 @@ export async function GET() {
     project: checkProjectRef(),
     supabase: supabaseCheck,
     prompts: promptsCheck,
+    ptf: ptfCheck,
     arad: aradCheck,
   };
 
   // Criticals = env + supabase + prompts. Arad downtime is recoverable.
+  // PTF: nedostupné CRM lead neztratí (zůstává v hypoteeka.leads), ale
+  // poradce ho neuvidí — degraded, ne down.
   const criticalsOk = envCheck.ok && supabaseCheck.ok && promptsCheck.ok;
-  const allOk = criticalsOk && aradCheck.ok;
+  const allOk = criticalsOk && aradCheck.ok && ptfCheck.ok;
 
   const status: 'ok' | 'degraded' | 'down' = allOk
     ? 'ok'
