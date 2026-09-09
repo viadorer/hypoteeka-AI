@@ -9,6 +9,7 @@
 
 import { createSupabaseServer } from '@/lib/supabase/server';
 import { NextResponse, type NextRequest } from 'next/server';
+import { ensureProfile } from '@/lib/auth/ensure-profile';
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
@@ -22,7 +23,7 @@ export async function GET(request: NextRequest) {
 
   const supabase = await createSupabaseServer();
 
-  const { error } = await supabase.auth.verifyOtp({
+  const { data, error } = await supabase.auth.verifyOtp({
     token_hash,
     type,
   });
@@ -31,6 +32,10 @@ export async function GET(request: NextRequest) {
     console.error('[Auth] Confirm error:', error.message);
     return NextResponse.redirect(new URL('/?error=confirm_failed', request.url));
   }
+
+  // Odkaz z e-mailu může být první místo, kde uživatel dorazí — profil
+  // nemusí existovat (registrace s potvrzením, účet založený jinde).
+  await ensureProfile(data.user);
 
   // Redirect based on type
   switch (type) {

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
+import { ensureProfile } from '@/lib/auth/ensure-profile';
 
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url);
@@ -26,8 +27,12 @@ export async function GET(request: Request) {
       }
     );
 
-    const { error } = await supabase.auth.exchangeCodeForSession(code);
+    const { data, error } = await supabase.auth.exchangeCodeForSession(code);
     if (!error) {
+      // Přihlášení přes Google nikde jinde profil nezakládá — bez něj by
+      // uživatel neměl roli ani uložené konverzace (sessions.user_id má na
+      // profiles cizí klíč).
+      await ensureProfile(data.user);
       return NextResponse.redirect(`${origin}${next}`);
     }
   }
