@@ -474,7 +474,16 @@ export function ChatArea({ initialSessionId = null, onOpenSidebar }: ChatAreaPro
                             toolInvocation={{ toolName, state: p.state, args: (p.input ?? {}) as Record<string, unknown>, output: p.output }}
                             sessionId={sessionId}
                             onSend={useBadge}
-                            isLatest={message.id === lastWidgetMessageId}
+                            isLatest={
+                              // Poslední zpráva s widgetem A zároveň poslední
+                              // widget v ní — když Hugo pošle dva výpočty
+                              // najednou, nabídka patří jen pod ten druhý.
+                              message.id === lastWidgetMessageId &&
+                              index === (message.parts ?? []).reduce((last, p, i) => {
+                                const n = toolNameOf(p as { type: string; toolName?: string });
+                                return n.startsWith('show_') || n === 'request_valuation' ? i : last;
+                              }, -1)
+                            }
                             seenWidgets={seenWidgets}
                             showSpecialist={showSpecialistStep}
                           />
