@@ -24,6 +24,7 @@ export type BrokerVertical = 'bydleni' | 'investice' | 'refi' | 'prodej' | 'unkn
 export interface BrokerHandoffPayload {
   broker: {
     id: string;
+    slug: string;               // "david-choc" — pro URL a featured-broker match
     displayName: string;       // "David"
     fullName: string;          // "David Choc"
     email: string;
@@ -35,6 +36,7 @@ export interface BrokerHandoffPayload {
     specializations: string[]; // ['Hypotéky', 'Investice', ...]
     company: string;
     vazanyZastupceOf: string | null;
+    cnbLicenseId: string | null; // reg. číslo v JERRS, pro přímý odkaz na /poradce
     legalDisclosure: string | null;
   };
   vertical: BrokerVertical;
@@ -67,6 +69,7 @@ interface BrokerRow {
   vertical_tags: string[];
   company: string;
   vazany_zastupce_of: string | null;
+  cnb_license_id: string | null;
   legal_disclosure: string | null;
   is_active: boolean;
   accepts_leads: boolean;
@@ -98,6 +101,7 @@ const OWNER_BROKER_SLUG = 'david-choc';
 function toBrokerPayload(b: BrokerRow): BrokerHandoffPayload['broker'] {
   return {
     id: b.id,
+    slug: b.slug,
     displayName: b.display_name,
     fullName: `${b.first_name} ${b.last_name}`,
     email: b.email,
@@ -109,6 +113,7 @@ function toBrokerPayload(b: BrokerRow): BrokerHandoffPayload['broker'] {
     specializations: b.specializations,
     company: b.company,
     vazanyZastupceOf: b.vazany_zastupce_of,
+    cnbLicenseId: b.cnb_license_id,
     legalDisclosure: b.legal_disclosure,
   };
 }
@@ -256,18 +261,20 @@ export function getDefaultBrokerFallback(): BrokerHandoffPayload {
   return {
     broker: {
       id: 'fallback-david',
+      slug: 'david-choc',
       displayName: 'David',
       fullName: 'David Choc',
       email: 'david.choc@quadrum.cz',
       phone: '+420774052232',
       whatsappPhone: '+420774052232',
-      photoUrl: null,
+      photoUrl: '/images/team/david-choc.png',
       roleLabel: 'Hypoteční specialista · Quadrum',
       shortDescription:
-        'Vázaný zástupce SAB servis pro spotřebitelské úvěry. Porovnám nabídky 8+ bank a vyjednám podmínky, které běžně nedostanete. Konzultace zdarma.',
+        'Vázaný zástupce SAB servis pro spotřebitelské úvěry. Porovnám nabídky bank a vyjednám podmínky, které běžně nedostanete. Konzultace zdarma — odměnu hradí banka.',
       specializations: ['Hypotéky', 'Refinancování', 'Investice', 'OSVČ', 'Mladí do 36'],
       company: 'Quadrum',
       vazanyZastupceOf: 'SAB servis s.r.o.',
+      cnbLicenseId: null,
       legalDisclosure: null,
     },
     vertical: 'unknown',
@@ -303,19 +310,18 @@ export async function loadSpecialistsForWidget(
     return [getDefaultBrokerFallback().broker];
   }
 
-  return (data as BrokerRow[]).map((b) => ({
-    id: b.id,
-    displayName: b.display_name,
-    fullName: `${b.first_name} ${b.last_name}`,
-    email: b.email,
-    phone: b.phone,
-    whatsappPhone: b.whatsapp_phone,
-    photoUrl: b.photo_url,
-    roleLabel: b.role_label,
-    shortDescription: b.short_description,
-    specializations: b.specializations,
-    company: b.company,
-    vazanyZastupceOf: b.vazany_zastupce_of,
-    legalDisclosure: b.legal_disclosure,
-  }));
+  return (data as BrokerRow[]).map((b) => toBrokerPayload(b));
+}
+
+/**
+ * Všichni aktivní poradci pro veřejnou stránku /poradce, s Davidem (majitel
+ * byznysu) vždy první bez ohledu na pořadí z DB.
+ */
+export async function loadAllActiveBrokers(tenantId: string = 'hypoteeka'): Promise<BrokerHandoffPayload['broker'][]> {
+  const brokers = await loadSpecialistsForWidget(undefined, tenantId);
+  return [...brokers].sort((a, b) => {
+    if (a.slug === OWNER_BROKER_SLUG) return -1;
+    if (b.slug === OWNER_BROKER_SLUG) return 1;
+    return a.fullName.localeCompare(b.fullName, 'cs');
+  });
 }

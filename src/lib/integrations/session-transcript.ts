@@ -8,7 +8,7 @@
  */
 
 import { storage } from '../storage';
-import { formatCZK, formatPercent } from '../format';
+import { formatCZK, formatNumber, formatPercent } from '../format';
 import type { SessionData, WidgetEventRecord } from '../storage/types';
 
 /** Lidské názvy kalkulaček — widget_type je technický (payment, ltv…). */
@@ -33,28 +33,138 @@ const WIDGET_LABELS: Record<string, string> = {
   request_valuation: 'Žádost o ocenění',
 };
 
-/** Pole profilu, která poradce zajímají, v pořadí pro výpis. */
-const PROFILE_LABELS: Array<[string, string, 'czk' | 'pct' | 'text' | 'years']> = [
-  ['propertyPrice', 'Cena nemovitosti', 'czk'],
-  ['equity', 'Vlastní zdroje', 'czk'],
-  ['targetLoanAmount', 'Požadovaný úvěr', 'czk'],
-  ['monthlyIncome', 'Měsíční příjem', 'czk'],
-  ['partnerIncome', 'Příjem partnera', 'czk'],
-  ['totalMonthlyIncome', 'Příjem domácnosti celkem', 'czk'],
-  ['monthlyExpenses', 'Měsíční výdaje', 'czk'],
-  ['existingLoans', 'Stávající úvěry', 'czk'],
-  ['maxMonthlyPayment', 'Max. splátka', 'czk'],
-  ['currentRent', 'Současný nájem', 'czk'],
-  ['expectedRentalIncome', 'Očekávaný nájem', 'czk'],
-  ['propertyType', 'Typ nemovitosti', 'text'],
-  ['propertyAddress', 'Adresa', 'text'],
-  ['location', 'Lokalita', 'text'],
-  ['propertySize', 'Velikost', 'text'],
-  ['purpose', 'Účel', 'text'],
-  ['employmentType', 'Typ příjmu', 'text'],
-  ['age', 'Věk', 'text'],
-  ['preferredYears', 'Preferovaná splatnost', 'years'],
-  ['horizonMonths', 'Horizont (měsíce)', 'text'],
+/** Číselníky profilu na lidský text — poradce nemá číst `nothing_much`. */
+const ENUM_LABELS: Record<string, Record<string, string>> = {
+  purpose: {
+    vlastni_bydleni: 'vlastní bydlení',
+    investice: 'investice',
+    refinancovani: 'refinancování',
+    refixace: 'refixace',
+    prodej: 'prodej',
+  },
+  propertyType: { byt: 'byt', dum: 'dům', pozemek: 'pozemek', rekonstrukce: 'rekonstrukce' },
+  employmentType: {
+    zamestnanec: 'zaměstnanec',
+    osvc: 'OSVČ',
+    kombinace: 'zaměstnání + podnikání',
+  },
+  propertyRating: {
+    bad: 'špatný',
+    nothing_much: 'podprůměrný',
+    good: 'dobrý',
+    very_good: 'velmi dobrý',
+    new: 'novostavba',
+    excellent: 'výborný',
+  },
+  propertyConstruction: {
+    brick: 'cihla',
+    panel: 'panel',
+    wood: 'dřevo',
+    stone: 'kámen',
+    montage: 'montovaná',
+    mixed: 'smíšená',
+  },
+  propertyOwnership: { private: 'osobní', cooperative: 'družstevní', council: 'obecní' },
+  valuationKind: { sale: 'prodej', lease: 'pronájem' },
+  investmentExperience: { none: 'žádná', one: '1 nemovitost', portfolio: '2+ nemovitostí' },
+  legalForm: { fyzicka_osoba: 'fyzická osoba', sro: 's.r.o.', kombinace: 'FO + s.r.o.' },
+};
+
+type ValueKind =
+  | 'czk' | 'rate' | 'pct' | 'share' | 'text' | 'years' | 'months'
+  | 'm2' | 'days' | 'bool' | 'date' | 'enum';
+
+/**
+ * Pole profilu pro poradce, po skupinách.
+ *
+ * Do `description` patří všechno, co Hugo zjistil — `activities.metadata`
+ * s celým profilem admin PTF nevrací, takže co není tady, poradce nevidí.
+ */
+const PROFILE_GROUPS: Array<{ title: string; fields: Array<[string, string, ValueKind]> }> = [
+  {
+    title: 'Záměr',
+    fields: [
+      ['purpose', 'Účel', 'enum'],
+      ['horizonMonths', 'Časový horizont', 'months'],
+      ['targetLoanAmount', 'Požadovaný úvěr', 'czk'],
+    ],
+  },
+  {
+    title: 'Nemovitost',
+    fields: [
+      ['propertyPrice', 'Cena nemovitosti', 'czk'],
+      ['propertyType', 'Typ', 'enum'],
+      ['propertySize', 'Dispozice', 'text'],
+      ['propertyAddress', 'Adresa (ověřená)', 'text'],
+      ['location', 'Lokalita', 'text'],
+      ['floorArea', 'Užitná plocha', 'm2'],
+      ['lotArea', 'Plocha pozemku', 'm2'],
+      ['propertyRating', 'Stav', 'enum'],
+      ['propertyConstruction', 'Konstrukce', 'enum'],
+      ['propertyFloor', 'Patro', 'text'],
+      ['propertyTotalFloors', 'Podlaží celkem', 'text'],
+      ['propertyElevator', 'Výtah', 'bool'],
+      ['propertyOwnership', 'Vlastnictví', 'enum'],
+      ['cadastralArea', 'Katastrální území', 'text'],
+      ['parcelNumber', 'Číslo parcely', 'text'],
+    ],
+  },
+  {
+    title: 'Ocenění (RealVisor)',
+    fields: [
+      ['valuationKind', 'Typ ocenění', 'enum'],
+      ['valuationAvgPrice', 'Odhad ceny', 'czk'],
+      ['valuationMinPrice', 'Odhad — dolní hranice', 'czk'],
+      ['valuationMaxPrice', 'Odhad — horní hranice', 'czk'],
+      ['valuationAvgPriceM2', 'Cena za m²', 'czk'],
+      ['valuationCalcArea', 'Počítaná plocha', 'm2'],
+      ['valuationAvgDuration', 'Prům. doba prodeje', 'days'],
+      ['valuationAvgScore', 'Skóre shody srovnatelných', 'share'],
+      ['valuationDate', 'Datum ocenění', 'date'],
+      ['valuationId', 'ID ocenění', 'text'],
+    ],
+  },
+  {
+    title: 'Příjmy a výdaje',
+    fields: [
+      ['monthlyIncome', 'Měsíční příjem', 'czk'],
+      ['partnerIncome', 'Příjem partnera', 'czk'],
+      ['totalMonthlyIncome', 'Příjem domácnosti celkem', 'czk'],
+      ['employmentType', 'Typ příjmu', 'enum'],
+      ['monthlyExpenses', 'Měsíční výdaje', 'czk'],
+      ['currentRent', 'Současný nájem', 'czk'],
+      ['age', 'Věk', 'years'],
+      ['isYoung', 'Do 36 let (vyšší LTV limit)', 'bool'],
+    ],
+  },
+  {
+    title: 'Financování',
+    fields: [
+      ['equity', 'Vlastní zdroje', 'czk'],
+      ['existingLoans', 'Stávající úvěry', 'czk'],
+      ['existingMortgageBalance', 'Zůstatek stávající hypotéky', 'czk'],
+      ['existingMortgageRate', 'Sazba stávající hypotéky', 'rate'],
+      ['existingMortgageYears', 'Zbývající splatnost', 'years'],
+      ['maxMonthlyPayment', 'Max. splátka', 'czk'],
+    ],
+  },
+  {
+    title: 'Investiční záměr',
+    fields: [
+      ['expectedRentalIncome', 'Očekávaný nájem', 'czk'],
+      ['targetRentalYield', 'Cílový výnos p.a.', 'pct'],
+      ['isFirstInvestment', 'První investiční nemovitost', 'bool'],
+      ['investmentExperience', 'Zkušenost s investicemi', 'enum'],
+      ['legalForm', 'Forma pořízení', 'enum'],
+    ],
+  },
+  {
+    title: 'Preference',
+    fields: [
+      ['preferredRate', 'Preferovaná sazba', 'rate'],
+      ['preferredYears', 'Preferovaná splatnost', 'years'],
+    ],
+  },
 ];
 
 export interface SessionTranscript {
@@ -78,11 +188,33 @@ export interface SessionTranscript {
   };
 }
 
-function fmtValue(value: unknown, kind: 'czk' | 'pct' | 'text' | 'years'): string | null {
+function plural(n: number, one: string, few: string, many: string): string {
+  if (n === 1) return `${n} ${one}`;
+  if (n >= 2 && n <= 4) return `${n} ${few}`;
+  return `${n} ${many}`;
+}
+
+function fmtValue(key: string, value: unknown, kind: ValueKind): string | null {
   if (value === null || value === undefined || value === '') return null;
-  if (kind === 'czk' && typeof value === 'number') return formatCZK(value);
-  if (kind === 'pct' && typeof value === 'number') return formatPercent(value);
-  if (kind === 'years' && typeof value === 'number') return `${value} let`;
+
+  if (kind === 'bool') return value ? 'ano' : 'ne';
+  if (kind === 'enum') return ENUM_LABELS[key]?.[String(value)] ?? String(value);
+  if (kind === 'date') {
+    const d = new Date(String(value));
+    return Number.isNaN(d.getTime()) ? String(value) : d.toLocaleDateString('cs-CZ');
+  }
+
+  if (typeof value === 'number') {
+    if (kind === 'czk') return formatCZK(value);
+    if (kind === 'rate') return formatPercent(value, 2);
+    if (kind === 'share') return formatPercent(value, 0);
+    if (kind === 'pct') return `${String(value).replace('.', ',')} %`;
+    if (kind === 'm2') return `${formatNumber(value)} m²`;
+    if (kind === 'years') return plural(value, 'rok', 'roky', 'let');
+    if (kind === 'days') return plural(value, 'den', 'dny', 'dní');
+    if (kind === 'months') return value === 0 ? 'hned' : plural(value, 'měsíc', 'měsíce', 'měsíců');
+  }
+
   return String(value);
 }
 
@@ -107,9 +239,15 @@ function summarizeOutput(output: Record<string, unknown> | undefined): string | 
 
 function buildProfileLines(profile: Record<string, unknown>): string[] {
   const lines: string[] = [];
-  for (const [key, label, kind] of PROFILE_LABELS) {
-    const formatted = fmtValue(profile[key], kind);
-    if (formatted) lines.push(`  • ${label}: ${formatted}`);
+  for (const group of PROFILE_GROUPS) {
+    const groupLines: string[] = [];
+    for (const [key, label, kind] of group.fields) {
+      const formatted = fmtValue(key, profile[key], kind);
+      if (formatted) groupLines.push(`  • ${label}: ${formatted}`);
+    }
+    if (groupLines.length === 0) continue;
+    if (lines.length > 0) lines.push('');
+    lines.push(`  ${group.title}:`, ...groupLines);
   }
   return lines;
 }

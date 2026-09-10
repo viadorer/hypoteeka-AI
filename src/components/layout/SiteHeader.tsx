@@ -32,6 +32,7 @@ const NAV_LINKS: NavLink[] = [
   { href: '/kalkulacka', label: 'Kalkulačka' },
   { href: '/nabidky', label: 'Sazby' },
   { href: '/clanky', label: 'Články' },
+  { href: '/poradce', label: 'Poradci' },
 ];
 
 interface Props {

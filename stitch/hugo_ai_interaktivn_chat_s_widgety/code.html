@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+
+<html class="light" lang="cs"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "secondary": "#4a5e88",
+              "on-secondary": "#ffffff",
+              "on-tertiary-container": "#fffbff",
+              "on-surface": "#001a41",
+              "secondary-fixed": "#d8e2ff",
+              "outline-variant": "#e4bdc2",
+              "surface": "#f9f9ff",
+              "on-primary-container": "#fffbff",
+              "on-tertiary-fixed": "#25181e",
+              "surface-bright": "#f9f9ff",
+              "secondary-container": "#bacfff",
+              "inverse-primary": "#ffb2be",
+              "tertiary-container": "#827077",
+              "on-surface-variant": "#5b3f43",
+              "surface-container-low": "#f1f3ff",
+              "on-error-container": "#93000a",
+              "surface-container-high": "#e0e8ff",
+              "on-primary-fixed-variant": "#900038",
+              "surface-container": "#e9edff",
+              "on-primary-fixed": "#400014",
+              "error": "#ba1a1a",
+              "surface-container-highest": "#d8e2ff",
+              "surface-container-lowest": "#ffffff",
+              "error-container": "#ffdad6",
+              "primary-fixed-dim": "#ffb2be",
+              "primary-fixed": "#ffd9de",
+              "on-secondary-container": "#435881",
+              "on-primary": "#ffffff",
+              "surface-dim": "#cbdaff",
+              "surface-variant": "#d8e2ff",
+              "on-tertiary": "#ffffff",
+              "on-secondary-fixed-variant": "#32466f",
+              "inverse-on-surface": "#edf0ff",
+              "secondary-fixed-dim": "#b2c6f7",
+              "tertiary-fixed-dim": "#d7c1c8",
+              "on-error": "#ffffff",
+              "on-tertiary-fixed-variant": "#524249",
+              "on-secondary-fixed": "#001a41",
+              "inverse-surface": "#1a3057",
+              "tertiary": "#69575e",
+              "primary": "#b80049",
+              "outline": "#8f6f73",
+              "on-background": "#001a41",
+              "surface-tint": "#bc004b",
+              "tertiary-fixed": "#f4dce4",
+              "primary-container": "#e2165f",
+              "background": "#f9f9ff"
+            },
+            fontFamily: {
+              "headline": ["Inter"],
+              "body": ["Inter"],
+              "label": ["Inter"]
+            },
+            borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #d8e2ff;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body class="bg-surface font-body text-on-surface selection:bg-primary-fixed selection:text-on-primary-fixed">
+<!-- Desktop SideNav -->
+<aside class="hidden md:flex flex-col p-4 gap-2 h-screen w-64 fixed left-0 top-0 bg-[#f9f9ff] dark:bg-[#001a41] z-40">
+<div class="mb-8 px-2 pt-4">
+<h1 class="text-xl font-extrabold text-[#001a41] dark:text-white">Hypoteeka</h1>
+<p class="text-[10px] font-bold uppercase tracking-widest text-[#001a41]/60">Premium Mortgage Partner</p>
+</div>
+<nav class="flex-1 space-y-1">
+<p class="font-['Inter'] uppercase tracking-widest text-[10px] font-bold text-[#b80049] mb-4 px-2">Navigation</p>
+<a class="flex items-center gap-3 px-3 py-2 text-on-surface/60 dark:text-slate-400 hover:bg-[#e9edff] rounded-xl transition-all duration-200 cursor-pointer active:opacity-70 group" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="text-sm font-semibold">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 bg-[#ffffff] dark:bg-[#b80049]/10 text-[#b80049] rounded-xl shadow-sm transition-all duration-200 cursor-pointer active:opacity-70" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">insights</span>
+<span class="text-sm font-semibold">Hugo AI</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-on-surface/60 dark:text-slate-400 hover:bg-[#e9edff] rounded-xl transition-all duration-200 cursor-pointer active:opacity-70" href="#">
+<span class="material-symbols-outlined">home_work</span>
+<span class="text-sm font-semibold">Mortgages</span>
+</a>
+<div class="mt-8">
+<p class="font-['Inter'] uppercase tracking-widest text-[10px] font-bold text-[#b80049] mb-4 px-2">Recent Consultations</p>
+<div class="space-y-1">
+<div class="px-3 py-2 text-xs font-medium text-on-surface/70 truncate hover:bg-surface-container-high rounded-lg cursor-pointer transition-colors">Byt Praha 4 - Pankrác</div>
+<div class="px-3 py-2 text-xs font-medium text-on-surface/70 truncate hover:bg-surface-container-high rounded-lg cursor-pointer transition-colors">Refinancování rodinného domu</div>
+<div class="px-3 py-2 text-xs font-medium text-on-surface/70 truncate hover:bg-surface-container-high rounded-lg cursor-pointer transition-colors">Srovnání úroků Leden 2024</div>
+</div>
+</div>
+<div class="mt-8">
+<p class="font-['Inter'] uppercase tracking-widest text-[10px] font-bold text-[#b80049] mb-4 px-2">Saved Widgets</p>
+<div class="space-y-1">
+<div class="px-3 py-2 text-xs flex items-center gap-2 font-medium text-on-surface/70 hover:bg-surface-container-high rounded-lg cursor-pointer transition-colors">
+<span class="material-symbols-outlined text-[16px]">map</span> Market Estimator
+                    </div>
+</div>
+</div>
+</nav>
+<div class="mt-auto pt-4 flex flex-col gap-2">
+<button class="w-full py-3 px-4 bg-gradient-to-r from-primary to-primary-container text-white rounded-full font-bold text-sm shadow-[0_4px_20px_rgba(184,0,73,0.3)] hover:opacity-90 transition-all flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-[18px]">auto_awesome</span>
+                Consult Hugo AI
+            </button>
+<div class="flex items-center gap-3 p-2 mt-2">
+<div class="w-8 h-8 rounded-full bg-secondary-container flex items-center justify-center text-on-secondary-container font-bold text-xs">JD</div>
+<div class="flex-1 min-w-0">
+<p class="text-xs font-bold text-on-surface truncate">Jan Dvořák</p>
+<p class="text-[10px] text-on-surface/60 truncate">Premium Plan</p>
+</div>
+<span class="material-symbols-outlined text-on-surface/40 text-[20px] cursor-pointer hover:text-primary transition-colors">settings</span>
+</div>
+</div>
+</aside>
+<!-- Main Content Canvas -->
+<main class="md:ml-64 flex flex-col min-h-screen relative">
+<!-- Header -->
+<header class="sticky top-0 z-30 glass-panel h-16 flex items-center justify-between px-8">
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">bolt</span>
+<h2 class="text-lg font-bold tracking-tight">Hugo <span class="text-primary">Intelligence</span></h2>
+</div>
+<div class="flex gap-4">
+<button class="flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-bold bg-surface-container-lowest shadow-sm hover:shadow-md transition-shadow">
+<span class="material-symbols-outlined text-[16px]">share</span> Share
+                </button>
+<button class="flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-bold bg-on-surface text-white hover:opacity-90 transition-opacity">
+<span class="material-symbols-outlined text-[16px]">download</span> Export Report
+                </button>
+</div>
+</header>
+<!-- Chat Conversation Area -->
+<section class="flex-1 max-w-5xl mx-auto w-full p-6 md:p-10 space-y-12 mb-32 custom-scrollbar overflow-y-auto">
+<!-- User Question -->
+<div class="flex justify-end items-start gap-4">
+<div class="max-w-[80%] bg-surface-container-low p-4 rounded-2xl rounded-tr-none">
+<p class="text-sm font-medium leading-relaxed">Ahoj Hugo, potřeboval bych zjistit aktuální tržní cenu bytu na Praze 4, konkrétně ulice Na Strži. A pak mi prosím ukaž, jaké jsou teď nejlepší nabídky hypoték na trhu.</p>
+</div>
+<div class="w-8 h-8 rounded-full bg-secondary-container flex-shrink-0 flex items-center justify-center text-[10px] font-bold">ME</div>
+</div>
+<!-- Hugo Response -->
+<div class="flex justify-start items-start gap-4">
+<div class="w-10 h-10 rounded-full bg-primary flex-shrink-0 flex items-center justify-center text-white shadow-lg">
+<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">smart_toy</span>
+</div>
+<div class="flex-1 space-y-8">
+<div class="max-w-[90%] space-y-4">
+<p class="text-base font-medium leading-relaxed text-on-surface">Rozumím. Pro lokalitu Praha 4 - Pankrác jsem zpracoval analýzu trhu v reálném čase. Zde je odhad tržní ceny pro standardní byt 3+kk o výměře 75m²:</p>
+<!-- Widget 1: Market Price Estimator -->
+<div class="bg-surface-container-lowest rounded-2xl shadow-[0_20px_50px_rgba(0,26,65,0.08)] overflow-hidden border border-outline-variant/10">
+<div class="p-6 space-y-6">
+<div class="flex justify-between items-start">
+<div>
+<h3 class="text-sm font-bold uppercase tracking-wider text-primary">Odhad tržní ceny nemovitosti</h3>
+<p class="text-xs text-on-surface/60 mt-1">Lokalita: Na Strži, Praha 4 - Pankrác</p>
+</div>
+<div class="bg-primary/10 px-3 py-1 rounded-full flex items-center gap-1.5">
+<span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+<span class="text-[10px] font-bold text-primary">Live Data</span>
+</div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<!-- Map Mockup -->
+<div class="relative h-48 rounded-xl overflow-hidden group">
+<img alt="Map view of Prague" class="w-full h-full object-cover grayscale-[20%] group-hover:scale-105 transition-transform duration-700" data-alt="Modern satellite map view of Prague 4 city district with subtle digital overlays and location pin on Pankrác area" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDlZRsENQyei4UvHHLCLqD6ow5FdLXjuXHcH80UD87mbSnWWCAptw4xWsW8OTEkbS_nmUq5ZzMoIjEvYl77ooopEvbGJbqnicn9E_hRkNRHYWeAxMhleRYIhRE-HpYJrow8fuRDbMHFhYvT6qClKPZIvK4RGbtXS4cQm2mMZmmgf6hzrA3K4RkUcRny2nJmRtetmQrTHCNNeAaSkME5BTBaDv8ZyGhyoXNhHFKWetv46dlrgGmS22Wu2SyC1GWRRXZxIup2bEyo18CN"/>
+<div class="absolute inset-0 bg-primary/10 mix-blend-multiply"></div>
+<div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
+<div class="w-10 h-10 bg-primary text-white rounded-full flex items-center justify-center shadow-xl border-4 border-white">
+<span class="material-symbols-outlined text-[20px]">location_on</span>
+</div>
+</div>
+</div>
+<!-- Price Details -->
+<div class="flex flex-col justify-center space-y-4">
+<div>
+<p class="text-[10px] font-bold text-on-surface/40 uppercase">Odhadovaná hodnota</p>
+<p class="text-4xl font-black text-on-surface tracking-tighter">8.450.000 <span class="text-lg font-bold text-primary">Kč</span></p>
+</div>
+<div class="space-y-2">
+<div class="flex justify-between text-[11px] font-bold uppercase text-on-surface/60">
+<span>Rozptyl trhu</span>
+<span>Spolehlivost 94%</span>
+</div>
+<div class="h-2 bg-surface-container rounded-full overflow-hidden flex">
+<div class="w-[15%] h-full"></div>
+<div class="w-[70%] h-full bg-gradient-to-r from-primary/40 via-primary to-primary/40 rounded-full"></div>
+<div class="w-[15%] h-full"></div>
+</div>
+<div class="flex justify-between text-xs font-bold text-on-surface">
+<span>7.9M Kč</span>
+<span>9.2M Kč</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="bg-surface-container-high/50 p-4 flex justify-between items-center border-t border-outline-variant/5">
+<span class="text-xs font-semibold text-on-surface/60 italic">Data aktualizována před 12 minutami</span>
+<button class="text-xs font-bold text-primary flex items-center gap-1 hover:gap-2 transition-all">Stáhnout podrobnou analýzu <span class="material-symbols-outlined text-[16px]">chevron_right</span></button>
+</div>
+</div>
+<p class="text-base font-medium leading-relaxed text-on-surface pt-4">Na základě této ceny jsem pro vás srovnal aktuální nabídky hypoték. Při 80% LTV a fixaci na 5 let jsou nejvýhodnější tyto instituce:</p>
+<!-- Widget 2: Mortgage Comparison Table -->
+<div class="bg-surface-container-lowest rounded-2xl shadow-[0_20px_50px_rgba(0,26,65,0.08)] overflow-hidden border border-outline-variant/10">
+<div class="p-6">
+<h3 class="text-sm font-bold uppercase tracking-wider text-primary mb-6">Srovnání hypoték</h3>
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="border-b border-surface-container">
+<th class="pb-4 text-[10px] font-bold uppercase tracking-widest text-on-surface/40">Banka</th>
+<th class="pb-4 text-[10px] font-bold uppercase tracking-widest text-on-surface/40">Úrok</th>
+<th class="pb-4 text-[10px] font-bold uppercase tracking-widest text-on-surface/40">Měsíční splátka</th>
+<th class="pb-4 text-[10px] font-bold uppercase tracking-widest text-on-surface/40">RPSN</th>
+<th class="pb-4"></th>
+</tr>
+</thead>
+<tbody class="divide-y divide-surface-container">
+<!-- Row 1: Moneta -->
+<tr class="group hover:bg-surface-container-low transition-colors">
+<td class="py-4">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-lg bg-white border border-surface-container flex items-center justify-center p-1 shadow-sm">
+<img alt="Moneta Logo" class="max-w-full h-auto" data-alt="Official logo of Moneta Money Bank in high resolution" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD3_QZ2TzqGnSUIAlP05LALzWcG3SYkT4xxPpKlP5KT-eHFMf21aOXXCKCbCbPFGBPILLkxsKwbxqOhYqdkK5zipjmBSEl9x9AqHO3Fdo1EcZsnJgogAVYTdrevHl9hb-CPvAdsZ372xcT-EFXBpzQ9BBJaWYypdRWVZo4Fh19hgREnODZBqm4emV0nSnAA1Ly1Vkd5fetHVYqZPEThBYSAjRt1wnbIor2ruuXqd5sJjD1FFTCDAXNH09JA6n9Zx9cBMZ9rmnfE_eui"/>
+</div>
+<span class="text-sm font-bold">Moneta</span>
+</div>
+</td>
+<td class="py-4"><span class="text-sm font-black text-on-surface">5,29 %</span></td>
+<td class="py-4"><span class="text-sm font-bold">36.420 Kč</span></td>
+<td class="py-4"><span class="text-sm text-on-surface/60">5,41 %</span></td>
+<td class="py-4 text-right">
+<button class="px-4 py-2 bg-on-surface text-white text-[10px] font-bold uppercase tracking-widest rounded-full hover:bg-primary transition-all">Sjednat</button>
+</td>
+</tr>
+<!-- Row 2: CS -->
+<tr class="group hover:bg-surface-container-low transition-colors">
+<td class="py-4">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-lg bg-white border border-surface-container flex items-center justify-center p-1 shadow-sm">
+<img alt="CS Logo" class="max-w-full h-auto" data-alt="Official logo of Ceska sporitelna in high resolution" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBiDUaVVpm_V3m4Bqzu15q3sOZdWxO0LatpCSgWEGgHyH0EV9MyF65T3jwhMRIG2Nemao8XmO6qjKhEdKMbPlp-V5nEnsDW9q4uTBQAlj2IYmxmxLVPNyvlr2RoPn9jWoSLSTARbciUAfMJpI2Reo1IJMUIiYfB1mxsjVLyklNQAkYeFcEuvqdGWQcUWFmzYJLCHPOwW32CR87XJwpEOykX0PzsBmoujRjPz3tx4AVI7fIWOcNBEdSZE4wVwBmMm5FVo1dn88b4gM6T"/>
+</div>
+<span class="text-sm font-bold">Česká spořitelna</span>
+</div>
+</td>
+<td class="py-4"><span class="text-sm font-black text-on-surface">5,49 %</span></td>
+<td class="py-4"><span class="text-sm font-bold">37.180 Kč</span></td>
+<td class="py-4"><span class="text-sm text-on-surface/60">5,62 %</span></td>
+<td class="py-4 text-right">
+<button class="px-4 py-2 bg-on-surface/5 text-on-surface text-[10px] font-bold uppercase tracking-widest rounded-full hover:bg-on-surface hover:text-white transition-all">Detaily</button>
+</td>
+</tr>
+<!-- Row 3: KB -->
+<tr class="group hover:bg-surface-container-low transition-colors">
+<td class="py-4">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-lg bg-white border border-surface-container flex items-center justify-center p-1 shadow-sm">
+<img alt="KB Logo" class="max-w-full h-auto" data-alt="Official logo of Komercni banka in high resolution" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAZ7jdk_TRnjg-Wk9Xm5AU7FSeYQv9Z8RF9jzdY6583owc7OXaaPO5U-yuN_HRrVqCCG8OcopIQN3HAGCqMruVmrlRWQwemHTieUXTc1igQK239RSSwGuxgFU62COQ2iobNwJtbqbv7YQ216BR_lzLDTpWyAVACpUn0M7tqpJNexV2SQyZ8xRw5qdcOhs36Xc0pM4BbUF2PIFd0PWl5xrLFgdiCPPHGfTft9T1Ixn_BJlwuN8-uvPNGGTzcGS-vrc6mrRFvnyF_jai2"/>
+</div>
+<span class="text-sm font-bold">Komerční banka</span>
+</div>
+</td>
+<td class="py-4"><span class="text-sm font-black text-on-surface">5,54 %</span></td>
+<td class="py-4"><span class="text-sm font-bold">37.410 Kč</span></td>
+<td class="py-4"><span class="text-sm text-on-surface/60">5,68 %</span></td>
+<td class="py-4 text-right">
+<button class="px-4 py-2 bg-on-surface/5 text-on-surface text-[10px] font-bold uppercase tracking-widest rounded-full hover:bg-on-surface hover:text-white transition-all">Detaily</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<p class="text-base font-medium leading-relaxed text-on-surface italic opacity-80 border-l-2 border-primary/20 pl-4">Hugo Tip: Aktuálně doporučuji zvážit kratší fixaci na 3 roky, očekáváme další pokles sazeb v horizontu 12-18 měsíců. Chcete abych spočítal model úspory při refinancování po 3 letech?</p>
+</div>
+</div>
+</div>
+</section>
+<!-- Floating Chat Input Bar -->
+<div class="fixed bottom-8 left-0 right-0 md:left-64 px-6 md:px-12 flex justify-center z-40 pointer-events-none">
+<div class="max-w-4xl w-full glass-panel rounded-full shadow-[0_30px_60px_-15px_rgba(0,26,65,0.15)] border border-outline-variant/10 flex items-center p-2 pointer-events-auto">
+<button class="w-12 h-12 rounded-full flex items-center justify-center text-on-surface/40 hover:text-primary transition-colors">
+<span class="material-symbols-outlined">attach_file</span>
+</button>
+<input class="flex-1 bg-transparent border-none focus:ring-0 text-sm font-medium placeholder:text-on-surface/30 px-4" placeholder="Zeptejte se Huga na cokoliv o financích..." type="text"/>
+<div class="flex items-center gap-2 px-2">
+<button class="w-10 h-10 rounded-full flex items-center justify-center text-on-surface/40 hover:bg-surface-container-high transition-colors">
+<span class="material-symbols-outlined">mic</span>
+</button>
+<button class="w-12 h-12 rounded-full bg-gradient-to-r from-primary to-primary-container text-white flex items-center justify-center shadow-lg hover:shadow-primary/20 transition-all">
+<span class="material-symbols-outlined">send</span>
+</button>
+</div>
+</div>
+</div>
+</main>
+<!-- Footer for context suppression: Not visible as per instructions for task-focused pages -->
+</body></html>

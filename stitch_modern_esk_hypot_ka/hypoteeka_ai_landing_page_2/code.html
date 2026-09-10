@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+
+<html class="light" lang="cs"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Hypoteeka AI | Chytrá cesta k vlastnímu bydlení</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-tertiary-fixed-variant": "#444749",
+                    "on-surface-variant": "#5c3f40",
+                    "on-primary": "#ffffff",
+                    "error-container": "#ffdad6",
+                    "outline": "#906f70",
+                    "tertiary-fixed": "#e0e3e5",
+                    "surface-container": "#e5eeff",
+                    "surface-container-high": "#dce9ff",
+                    "on-surface": "#0b1c30",
+                    "on-primary-fixed-variant": "#920028",
+                    "on-secondary": "#ffffff",
+                    "error": "#ba1a1a",
+                    "tertiary-fixed-dim": "#c4c7c9",
+                    "surface-container-low": "#eff4ff",
+                    "tertiary": "#585c5d",
+                    "on-background": "#0b1c30",
+                    "on-error-container": "#93000a",
+                    "on-tertiary-container": "#f9fbfd",
+                    "secondary-container": "#dae2fd",
+                    "secondary-fixed-dim": "#bec6e0",
+                    "outline-variant": "#e5bdbe",
+                    "primary-fixed": "#ffdada",
+                    "on-primary-container": "#fffaf9",
+                    "surface-tint": "#be0037",
+                    "on-tertiary": "#ffffff",
+                    "on-secondary-fixed-variant": "#3f465c",
+                    "primary-fixed-dim": "#ffb3b6",
+                    "secondary-fixed": "#dae2fd",
+                    "surface-variant": "#d3e4fe",
+                    "surface-bright": "#f8f9ff",
+                    "tertiary-container": "#717476",
+                    "on-secondary-container": "#5c647a",
+                    "surface-container-highest": "#d3e4fe",
+                    "inverse-primary": "#ffb3b6",
+                    "primary-container": "#e11d48",
+                    "on-secondary-fixed": "#131b2e",
+                    "surface": "#f8f9ff",
+                    "on-tertiary-fixed": "#191c1e",
+                    "surface-dim": "#cbdbf5",
+                    "surface-container-lowest": "#ffffff",
+                    "on-error": "#ffffff",
+                    "primary": "#b80035",
+                    "inverse-surface": "#213145",
+                    "background": "#f8f9ff",
+                    "secondary": "#565e74",
+                    "on-primary-fixed": "#40000c",
+                    "inverse-on-surface": "#eaf1ff"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "section-gap-desktop": "120px",
+                    "base": "8px",
+                    "container-max": "1200px",
+                    "gutter": "24px",
+                    "section-gap-mobile": "64px"
+            },
+            "fontFamily": {
+                    "display-xl-mobile": ["Inter"],
+                    "display-xl": ["Inter"],
+                    "body-lg": ["Inter"],
+                    "label-sm": ["Inter"],
+                    "body-md": ["Inter"],
+                    "label-md": ["Inter"],
+                    "headline-md": ["Inter"],
+                    "headline-lg": ["Inter"],
+                    "headline-lg-mobile": ["Inter"]
+            },
+            "fontSize": {
+                    "display-xl-mobile": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "display-xl": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                    "label-sm": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "500"}],
+                    "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                    "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                    "headline-lg-mobile": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; background-color: #f8f9ff; scroll-behavior: smooth; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; vertical-align: middle; }
+        .shadow-soft { box-shadow: 0 4px 20px -2px rgba(11, 28, 48, 0.08); }
+        .shadow-premium { box-shadow: 0 10px 40px -10px rgba(11, 28, 48, 0.12); }
+        .bg-mesh { background: radial-gradient(at 0% 0%, rgba(225, 29, 72, 0.05) 0px, transparent 50%), radial-gradient(at 100% 100%, rgba(184, 0, 53, 0.05) 0px, transparent 50%); }
+    </style>
+</head>
+<body class="text-on-surface bg-mesh">
+<!-- Top Navigation -->
+<header class="bg-surface/80 dark:bg-surface-dim/80 backdrop-blur-md docked full-width top-0 sticky z-50 border-b border-outline-variant/30 shadow-sm">
+<nav class="flex justify-between items-center w-full px-gutter max-w-container-max mx-auto h-20">
+<div class="flex items-center gap-2">
+<div class="w-10 h-10 bg-primary-container rounded-xl flex items-center justify-center text-white">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">key</span>
+</div>
+<span class="text-headline-md font-headline-md font-bold text-on-surface dark:text-on-background">Hypoteeka AI</span>
+</div>
+<div class="hidden md:flex gap-8 items-center">
+<a class="font-body-md text-body-md text-primary font-bold border-b-2 border-primary pb-1" href="#">Mortgage calculator</a>
+<a class="font-body-md text-body-md text-on-surface-variant hover:text-primary transition-colors duration-200" href="#">Refinancing</a>
+<a class="font-body-md text-body-md text-on-surface-variant hover:text-primary transition-colors duration-200" href="#">How it works</a>
+<a class="font-body-md text-body-md text-on-surface-variant hover:text-primary transition-colors duration-200" href="#">About us</a>
+<button class="bg-primary-container text-on-primary-container px-6 py-3 rounded-full font-bold hover:scale-95 transition-all duration-100 shadow-soft">
+                Calculate mortgage
+            </button>
+</div>
+<button class="md:hidden text-on-surface p-2">
+<span class="material-symbols-outlined">menu</span>
+</button>
+</nav>
+</header>
+<!-- Hero Section with Background Image -->
+<section class="relative py-section-gap-mobile md:py-24 px-gutter overflow-hidden min-h-[600px] flex items-center">
+<div class="absolute inset-0 z-0">
+<img alt="Moderní interiér bytu" class="w-full h-full object-cover opacity-30" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB6gAkE8hSogVhcw7zACClZuicf0pbZ9TVjspgrP4BuDGUx6QJ9PtTkKJWdHil3owIeXnfDjItN6xaF8y2IrwPhhLy2AR4lRR-X5_Bh3HcfK9L4gR7pYDE4oA9Ajp41_o2rQc5_byyvIIDWF6rICZUir5hsDpV6OtQ7aOX5DjSzpjVEu2Md9Wktat7gimMYyAYPMFoF3dnmC1qEX5cTw9qY24WHyuC_GTB9iojyKYlYyqIQwfV-K5i4oS1z7cZ61fd7BohVjz7D9A"/>
+<div class="absolute inset-0 bg-gradient-to-b from-surface via-surface/60 to-surface"></div>
+</div>
+<div class="max-w-container-max mx-auto text-center relative z-10">
+<div class="inline-flex items-center gap-2 bg-white/80 backdrop-blur px-4 py-2 rounded-full mb-8 shadow-sm">
+<span class="material-symbols-outlined text-primary-container" style="font-variation-settings: 'FILL' 1;">smart_toy</span>
+<span class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Seznamte se s Hugem</span>
+</div>
+<h1 class="font-display-xl-mobile md:font-display-xl text-display-xl-mobile md:text-display-xl text-on-surface max-w-4xl mx-auto mb-6">
+            Zjistěte za 2 minuty, na jakou hypotéku dosáhnete
+        </h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant max-w-2xl mx-auto mb-10">
+            AI poradce Hugo vám spočítá splátku, ověří bonitu a spojí vás s hypotečním specialistou. Zdarma a bez závazků.
+        </p>
+<div class="flex flex-col sm:flex-row gap-4 justify-center items-center">
+<button class="bg-primary-container text-on-primary px-8 py-5 rounded-full font-bold text-lg hover:scale-105 active:scale-95 transition-all shadow-premium flex items-center gap-2 group">
+                Spočítat hypotéku
+                <span class="material-symbols-outlined group-hover:translate-x-1 transition-transform">arrow_forward</span>
+</button>
+<p class="text-on-surface-variant font-label-md text-label-md">Žádná registrace, žádné závazky</p>
+</div>
+</div>
+</section>
+<!-- Trust indicators / Stats -->
+<section class="py-16 px-gutter bg-surface-container-lowest">
+<div class="max-w-container-max mx-auto grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-12">
+<div class="text-center group">
+<div class="w-12 h-12 bg-primary/5 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300">
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">groups</span>
+</div>
+<div class="font-display-xl-mobile text-on-surface mb-1">1 000+</div>
+<div class="font-label-md text-on-surface-variant">spokojených klientů</div>
+</div>
+<div class="text-center group">
+<div class="w-12 h-12 bg-primary/5 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300">
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">account_balance</span>
+</div>
+<div class="font-display-xl-mobile text-on-surface mb-1">8+</div>
+<div class="font-label-md text-on-surface-variant">partnerských bank</div>
+</div>
+<div class="text-center group">
+<div class="w-12 h-12 bg-primary/5 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300">
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">verified</span>
+</div>
+<div class="font-display-xl-mobile text-on-surface mb-1">100%</div>
+<div class="font-label-md text-on-surface-variant">certifikovaní poradci</div>
+</div>
+<div class="text-center group">
+<div class="w-12 h-12 bg-primary/5 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300">
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">grade</span>
+</div>
+<div class="font-display-xl-mobile text-on-surface mb-1">4.9</div>
+<div class="font-label-md text-on-surface-variant">hodnocení klientů</div>
+</div>
+</div>
+</section>
+<!-- How it Works (3 Steps) with Hugo Portrait -->
+<section class="py-section-gap-mobile md:py-section-gap-desktop px-gutter max-w-container-max mx-auto">
+<div class="flex flex-col lg:flex-row items-center gap-16 mb-20">
+<div class="lg:w-1/2">
+<span class="font-label-md text-label-md text-on-surface-variant uppercase tracking-widest block mb-4">Osobní přístup s AI</span>
+<h2 class="font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg text-on-surface mb-6">Seznamte se s Hugem, vaším AI specialistou</h2>
+<p class="font-body-lg text-body-lg text-on-surface-variant mb-8">
+                Hugo není jen obyčejný kalkulátor. Je to pokročilá AI, která rozumí světu hypoték a mluví lidskou řečí. Provede vás procesem hladce, rychle a s maximální přesností.
+            </p>
+<div class="flex items-center gap-4 p-4 bg-primary-container/5 rounded-2xl border border-primary-container/10">
+<div class="w-12 h-12 bg-primary-container rounded-full flex items-center justify-center text-white shrink-0">
+<span class="material-symbols-outlined">bolt</span>
+</div>
+<p class="font-label-md text-label-md text-on-surface-variant">Analýza vašeho případu zabere Hugovi méně než 120 vteřin.</p>
+</div>
+</div>
+<div class="lg:w-1/2 relative">
+<div class="absolute -inset-4 bg-primary/10 rounded-[40px] blur-2xl -z-10"></div>
+<img alt="Hugo - AI specialista" class="w-full h-auto rounded-[32px] shadow-premium object-cover aspect-square max-w-[400px] mx-auto" src="https://lh3.googleusercontent.com/aida-public/AB6AXuATz-1XGaCdWs4-No2l112N7bwMcj3iFTYbf9BH0qOEySp6r3EwT80NOI9vTJZ2dlWMNoLPyulGEMoH9wsYmYPfjstYswCOwuON5Y4QbHJcwXkiiyvbGC88HmxySP9jAPREi-QRalLC2U97tzfUexyGjwL_0wEctV4uUo67gXiy2YBhgis0Jd0EvoN9HW6AV0XSjqodef044cKu5R8xDOa-QkJ-6-QMB3QffQ6HnQCHENsXrFwBv0AtviEoy8jbKAJMdTRSzNx5bg"/>
+<div class="absolute -bottom-6 -right-6 bg-white p-4 rounded-2xl shadow-lg hidden md:block">
+<div class="flex items-center gap-3">
+<div class="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
+<span class="font-label-md font-bold">Hugo je online</span>
+</div>
+</div>
+</div>
+</div>
+<div class="text-center mb-16">
+<span class="font-label-md text-label-md text-on-surface-variant uppercase tracking-widest block mb-4">Proces</span>
+<h2 class="font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg text-on-surface">3 jednoduché kroky</h2>
+</div>
+<div class="grid md:grid-cols-3 gap-8 relative">
+<!-- Connector Line (Desktop) -->
+<div class="hidden md:block absolute top-1/3 left-1/4 right-1/4 h-0.5 bg-outline-variant/30 -z-10"></div>
+<div class="bg-surface-container-low p-8 rounded-3xl text-center border border-white hover:border-primary/20 transition-all shadow-soft group">
+<div class="w-16 h-16 bg-white rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-sm group-hover:bg-primary group-hover:text-white transition-all duration-300">
+<span class="material-symbols-outlined text-primary group-hover:text-white">chat_bubble</span>
+</div>
+<span class="text-primary font-bold block mb-2">1.</span>
+<h3 class="font-headline-md text-headline-md text-on-surface mb-4">Řekněte nám o nemovitosti</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">
+                Hugo se vás zeptá na cenu, vlastní zdroje a příjem. Konverzace, ne formulář.
+            </p>
+</div>
+<div class="bg-surface-container-low p-8 rounded-3xl text-center border border-white hover:border-primary/20 transition-all shadow-soft group">
+<div class="w-16 h-16 bg-white rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-sm group-hover:bg-primary group-hover:text-white transition-all duration-300">
+<span class="material-symbols-outlined text-primary group-hover:text-white">calculate</span>
+</div>
+<span class="text-primary font-bold block mb-2">2.</span>
+<h3 class="font-headline-md text-headline-md text-on-surface mb-4">Spočítáme všechno</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">
+                Splátka, bonita ČNB, porovnání sazeb bank. Vše na jednom místě.
+            </p>
+</div>
+<div class="bg-surface-container-low p-8 rounded-3xl text-center border border-white hover:border-primary/20 transition-all shadow-soft group">
+<div class="w-16 h-16 bg-white rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-sm group-hover:bg-primary group-hover:text-white transition-all duration-300">
+<span class="material-symbols-outlined text-primary group-hover:text-white">person_pin</span>
+</div>
+<span class="text-primary font-bold block mb-2">3.</span>
+<h3 class="font-headline-md text-headline-md text-on-surface mb-4">Spojíme vás s poradcem</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">
+                Certifikovaný specialista porovná nabídky 8+ bank a vyjedná nejlepší podmínky.
+            </p>
+</div>
+</div>
+</section>
+<!-- Social Proof / Testimonials -->
+<section class="py-section-gap-mobile md:py-section-gap-desktop bg-surface-container-low/50 px-gutter">
+<div class="max-w-container-max mx-auto">
+<div class="text-center mb-16">
+<span class="font-label-md text-label-md text-on-surface-variant uppercase tracking-widest block mb-4">Co říkají klienti</span>
+<h2 class="font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg text-on-surface">Přečtěte si zkušenosti ostatních</h2>
+</div>
+<div class="grid md:grid-cols-3 gap-6">
+<!-- Testimonial 1 -->
+<div class="bg-white p-8 rounded-3xl shadow-soft flex flex-col justify-between hover:shadow-premium transition-shadow">
+<div>
+<div class="flex gap-1 mb-6">
+<span class="material-symbols-outlined text-primary text-lg" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-primary text-lg" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-primary text-lg" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-primary text-lg" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-primary text-lg" style="font-variation-settings: 'FILL' 1;">star</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant italic mb-8 italic">
+                        "Hugo mi pomohl zorientovat se v nabídkách bank. Díky poradci jsem ušetřila přes 200 tisíc na úrocích."
+                    </p>
+</div>
+<div>
+<div class="font-bold text-on-surface">Martina K.</div>
+<div class="text-label-md text-on-surface-variant">Praha</div>
+</div>
+</div>
+<!-- Testimonial 2 -->
+<div class="bg-white p-8 rounded-3xl shadow-soft flex flex-col justify-between hover:shadow-premium transition-shadow">
+<div>
+<div class="flex gap-1 mb-6">
+<span class="material-symbols-outlined text-primary text-lg" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-primary text-lg" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-primary text-lg" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-primary text-lg" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-primary text-lg" style="font-variation-settings: 'FILL' 1;">star</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant italic mb-8 italic">
+                        "Konečně někdo, kdo vysvětlí hypotéku srozumitelně. Za 5 minut jsem věděl, na co dosáhnu."
+                    </p>
+</div>
+<div>
+<div class="font-bold text-on-surface">Tomáš P.</div>
+<div class="text-label-md text-on-surface-variant">Brno</div>
+</div>
+</div>
+<!-- Testimonial 3 -->
+<div class="bg-white p-8 rounded-3xl shadow-soft flex flex-col justify-between hover:shadow-premium transition-shadow">
+<div>
+<div class="flex gap-1 mb-6">
+<span class="material-symbols-outlined text-primary text-lg" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-primary text-lg" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-primary text-lg" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-primary text-lg" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-primary text-lg" style="font-variation-settings: 'FILL' 1;">star</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant italic mb-8 italic">
+                        "Refinancování jsem řešila měsíce. Tady mi poradce vyřídil vše za týden. Sazba klesla o 1,5 %."
+                    </p>
+</div>
+<div>
+<div class="font-bold text-on-surface">Lucie M.</div>
+<div class="text-label-md text-on-surface-variant">Ostrava</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Final CTA with Couple Photo -->
+<section class="py-section-gap-mobile md:py-24 px-gutter text-center">
+<div class="max-w-container-max mx-auto flex flex-col lg:flex-row items-stretch rounded-[40px] overflow-hidden shadow-premium bg-primary text-on-primary">
+<div class="lg:w-1/2 relative min-h-[300px]">
+<img alt="Šťastný pár v novém domově" class="absolute inset-0 w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCMBIsx2aFYyM1Ow15vtEy_zjG96y3Rkoqcej-weN-mtEjAayPCNwrSQpnBmqXfqk70cgP90jaDr_D6eWZ_T-r8z8B8cEcFRagcXHsmjPASAW6xOQl1TvhB7-j7NExlmXPQQYZ8OA9szA3OYQxNREeCtbfo_Fb53_wDovOO4xa6X1gEwGfW_1SYxG0KTq0riTTTpZB1sHQMfkt4Xtz5dL1QuWRojPNvB2LXP-kwhcp2CPI2faYNO8yIF1qC0prZDU8seZ8J1Wfpkw"/>
+<div class="absolute inset-0 bg-gradient-to-r from-primary/20 to-transparent lg:hidden"></div>
+</div>
+<div class="lg:w-1/2 p-12 md:p-20 flex flex-col justify-center text-left relative overflow-hidden group">
+<!-- Decorative circle -->
+<div class="absolute -top-24 -right-24 w-64 h-64 bg-white/10 rounded-full blur-2xl group-hover:scale-125 transition-transform duration-700"></div>
+<h2 class="font-display-xl-mobile md:font-display-xl text-display-xl-mobile md:text-display-xl mb-6 relative z-10">
+                Připraveni na vlastní bydlení?
+            </h2>
+<p class="font-body-lg text-body-lg text-on-primary/90 max-w-xl mb-10 relative z-10">
+                Začněte konverzaci s Hugem a zjistěte, na co dosáhnete. Je to zdarma a nezávazné. Jako tihle spokojení novomanželé.
+            </p>
+<div class="relative z-10">
+<button class="bg-white text-primary px-10 py-5 rounded-full font-bold text-xl hover:bg-surface-bright active:scale-95 transition-all shadow-lg flex items-center gap-2 group/btn inline-flex">
+                    Začít zdarma
+                    <span class="material-symbols-outlined group-hover/btn:translate-x-1 transition-transform">bolt</span>
+</button>
+</div>
+</div>
+</div>
+</section>
+<!-- Footer -->
+<footer class="bg-surface-bright dark:bg-surface-dim border-t border-outline-variant/20">
+<div class="flex flex-col items-center w-full py-section-gap-mobile md:py-16 px-gutter max-w-container-max mx-auto text-center gap-8">
+<div class="flex flex-wrap justify-center gap-x-8 gap-y-4">
+<span class="font-label-md text-label-md font-bold text-on-surface">Hypoteeka AI</span>
+<span class="font-label-md text-label-md text-on-surface-variant">Provozovatel: QUADRUM s.r.o.</span>
+<span class="font-label-md text-label-md text-on-surface-variant">Plzeň · Praha</span>
+<a class="font-label-md text-label-md text-on-surface-variant hover:text-primary underline transition-colors" href="mailto:info@quadrum.cz">info@quadrum.cz</a>
+<a class="font-label-md text-label-md text-on-surface-variant hover:text-primary underline transition-colors" href="tel:+420736483169">+420 736 483 169</a>
+</div>
+<div class="max-w-4xl font-label-md text-label-sm text-on-surface-variant/70 leading-relaxed text-left md:text-center">
+<p class="mb-4">Jsme partnerem servisní společnosti SAB servis.</p>
+<p class="mb-4 italic">
+                „Finanční služby zde propagované a nabízené poskytují uvedení poradci jako fyzické osoby, a to v roli vázaných zástupců pro samostatného zprostředkovatele <span class="font-bold">SAB servis s.r.o.</span>, IČO: 24704008, se sídlem Jungmannova 748/30, 110 00 Praha 1, v oblasti spotřebitelských úvěrů dle zákona č. 257/2016 Sb. Jejich oprávnění je možné ověřit v Seznamu regulovaných a registrovaných subjektů finančního trhu České národní banky na <a class="underline" href="http://www.cnb.cz/cnb/jerrs">www.cnb.cz/cnb/jerrs</a>, kde také najdete aktuální informace a podrobnosti o jejich registraci a rozsahu jejich oprávnění. Hypoteeka AI ani QUADRUM s.r.o. ve zmíněné oblasti finanční služby neposkytuje.“
+            </p>
+<p>
+                Detailní právní informace k nabízeným službám a produktům (včetně veřejného reklamačního řádu, možnosti podání stížnosti, řešení sporů, orgánu dohledu, udržitelnosti atd.) najdete na <a class="underline" href="https://sabservis.cz/informace">sabservis.cz/informace</a>.
+            </p>
+</div>
+<div class="w-full h-px bg-outline-variant/10"></div>
+<div class="font-label-md text-label-md text-on-surface-variant">
+            © 2020 - 2026 QUADRUM s.r.o. Všechna práva vyhrazena. Data o sazbách: ČNB ARAD.
+        </div>
+</div>
+</footer>
+<!-- Micro-interaction script -->
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const observerOptions = {
+            threshold: 0.1
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('opacity-100', 'translate-y-0');
+                    entry.target.classList.remove('opacity-0', 'translate-y-10');
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('section > div > div, section > div').forEach(el => {
+            if (!el.classList.contains('absolute')) {
+                el.classList.add('transition-all', 'duration-700', 'opacity-0', 'translate-y-10');
+                observer.observe(el);
+            }
+        });
+    });
+</script>
+</body></html>

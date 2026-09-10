@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+
+<html class="light" lang="cs"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "secondary": "#4a5e88",
+              "on-secondary": "#ffffff",
+              "on-tertiary-container": "#fffbff",
+              "on-surface": "#001a41",
+              "secondary-fixed": "#d8e2ff",
+              "outline-variant": "#e4bdc2",
+              "surface": "#f9f9ff",
+              "on-primary-container": "#fffbff",
+              "on-tertiary-fixed": "#25181e",
+              "surface-bright": "#f9f9ff",
+              "secondary-container": "#bacfff",
+              "inverse-primary": "#ffb2be",
+              "tertiary-container": "#827077",
+              "on-surface-variant": "#5b3f43",
+              "surface-container-low": "#f1f3ff",
+              "on-error-container": "#93000a",
+              "surface-container-high": "#e0e8ff",
+              "on-primary-fixed-variant": "#900038",
+              "surface-container": "#e9edff",
+              "on-primary-fixed": "#400014",
+              "error": "#ba1a1a",
+              "surface-container-highest": "#d8e2ff",
+              "surface-container-lowest": "#ffffff",
+              "error-container": "#ffdad6",
+              "primary-fixed-dim": "#ffb2be",
+              "primary-fixed": "#ffd9de",
+              "on-secondary-container": "#435881",
+              "on-primary": "#ffffff",
+              "surface-dim": "#cbdaff",
+              "surface-variant": "#d8e2ff",
+              "on-tertiary": "#ffffff",
+              "on-secondary-fixed-variant": "#32466f",
+              "inverse-on-surface": "#edf0ff",
+              "secondary-fixed-dim": "#b2c6f7",
+              "tertiary-fixed-dim": "#d7c1c8",
+              "on-error": "#ffffff",
+              "on-tertiary-fixed-variant": "#524249",
+              "on-secondary-fixed": "#001a41",
+              "inverse-surface": "#1a3057",
+              "tertiary": "#69575e",
+              "primary": "#b80049",
+              "outline": "#8f6f73",
+              "on-background": "#001a41",
+              "surface-tint": "#bc004b",
+              "tertiary-fixed": "#f4dce4",
+              "primary-container": "#e2165f",
+              "background": "#f9f9ff"
+            },
+            fontFamily: {
+              "headline": ["Inter"],
+              "body": ["Inter"],
+              "label": ["Inter"]
+            },
+            borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+      .material-symbols-outlined {
+        font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      }
+      .glass-effect {
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+      }
+      .text-editorial-tight {
+        letter-spacing: -0.02em;
+      }
+      .text-label-caps {
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+      }
+    </style>
+</head>
+<body class="bg-surface font-body text-on-surface">
+<!-- TopNavBar -->
+<nav class="fixed top-0 w-full z-50 bg-white/80 dark:bg-[#001a41]/80 backdrop-blur-md shadow-[0_40px_60px_-15px_rgba(0,26,65,0.06)]">
+<div class="flex justify-between items-center max-w-7xl mx-auto px-6 h-20">
+<div class="text-2xl font-black tracking-tighter text-[#001a41] dark:text-white">Hypoteeka.cz</div>
+<div class="hidden md:flex items-center gap-8">
+<a class="font-['Inter'] font-semibold tracking-tight text-sm text-[#001a41] dark:text-slate-300 hover:text-[#b80049] transition-colors" href="#">Dashboard</a>
+<a class="font-['Inter'] font-semibold tracking-tight text-sm text-[#001a41] dark:text-slate-300 hover:text-[#b80049] transition-colors" href="#">Mortgages</a>
+<a class="font-['Inter'] font-semibold tracking-tight text-sm text-[#001a41] dark:text-slate-300 hover:text-[#b80049] transition-colors" href="#">Analysis</a>
+<a class="font-['Inter'] font-semibold tracking-tight text-sm text-[#001a41] dark:text-slate-300 hover:text-[#b80049] transition-colors" href="#">Market</a>
+<a class="font-['Inter'] font-semibold tracking-tight text-sm text-[#001a41] dark:text-slate-300 hover:text-[#b80049] transition-colors" href="#">Blog</a>
+</div>
+<div class="flex items-center gap-4">
+<button class="text-sm font-semibold text-[#001a41] hover:opacity-80 transition-all duration-300 scale-95 active:scale-90 transition-transform px-4 py-2">Login</button>
+<button class="bg-gradient-to-r from-primary to-primary-container text-white px-6 py-2.5 rounded-full text-sm font-bold shadow-lg hover:shadow-primary/20 transition-all">Get Started</button>
+</div>
+</div>
+<div class="bg-[#e9edff] dark:bg-[#001a41] h-[1px] w-full absolute bottom-0 opacity-20"></div>
+</nav>
+<main class="pt-20">
+<!-- Hero Section -->
+<section class="relative min-h-[870px] flex items-center justify-center overflow-hidden px-6">
+<div class="absolute inset-0 z-0">
+<div class="absolute top-[-10%] right-[-5%] w-[600px] h-[600px] bg-primary/5 rounded-full blur-[120px]"></div>
+<div class="absolute bottom-[-10%] left-[-5%] w-[500px] h-[500px] bg-secondary-container/20 rounded-full blur-[100px]"></div>
+</div>
+<div class="relative z-10 max-w-4xl w-full text-center space-y-12">
+<div class="space-y-6">
+<span class="inline-block py-1 px-3 bg-secondary-fixed text-on-secondary-fixed text-[10px] font-bold tracking-widest uppercase rounded-full">Intelligent Curator</span>
+<h1 class="text-5xl md:text-7xl font-semibold text-on-surface text-editorial-tight leading-[1.1]">Your mortgage, <br/><span class="text-primary italic">redefined by AI.</span></h1>
+<p class="text-lg md:text-xl text-secondary max-w-2xl mx-auto leading-relaxed">Hypoteeka pairs institutional-grade financial analysis with Hugo, your personal AI partner for navigating the Czech property market.</p>
+</div>
+<!-- AI Search Bar / Hugo Interaction -->
+<div class="relative max-w-3xl mx-auto">
+<div class="glass-effect bg-surface-container-lowest/80 p-2 rounded-full shadow-[0_40px_60px_-15px_rgba(0,26,65,0.1)] flex items-center gap-4 border border-white/50">
+<div class="pl-6 text-primary">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">smart_toy</span>
+</div>
+<input class="flex-1 bg-transparent border-none focus:ring-0 text-on-surface placeholder-on-surface/40 py-4 text-lg" placeholder="Ask Hugo: 'What is the best rate for 5M CZK mortgage today?'" type="text"/>
+<button class="bg-primary hover:bg-primary-container text-white p-4 rounded-full transition-all flex items-center justify-center shadow-lg shadow-primary/20">
+<span class="material-symbols-outlined">arrow_forward</span>
+</button>
+</div>
+</div>
+</div>
+</section>
+<!-- Partnering Banks Section -->
+<section class="py-12 bg-surface-container-low/50">
+<div class="max-w-7xl mx-auto px-6">
+<p class="text-center text-label-caps text-xs font-bold text-on-surface/50 mb-10">Directly Integrated with National Leaders</p>
+<div class="flex flex-wrap justify-center items-center gap-12 md:gap-20 opacity-70 grayscale hover:grayscale-0 transition-all duration-500">
+<!-- Placeholder logos with high-quality descriptions -->
+<div class="h-8 w-32 bg-contain bg-center bg-no-repeat" data-alt="clean minimalist logo of Air Bank Czech Republic in green and white" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBF-BIKZWq3o--HjEC1GxcNzQK3mq9fMDRReOdS5u4nc16NFLxMkHq3_ueOTSrpZw5teC_rhaewnh9s8laeK_jIBJpfmVr428N3sxFFWxbxW_dMEggo1mQ_3zoTfIeOlu4eHTOP066snyBQLadANGkFcXwsGJhiXwpbwQiK10NKG-tZPpPH8tPj2UkwhMp3AtMoXmzEX_JWb0gmIZL1gkYd7FoAeEaCTs-uHqFRB2f0kfD2UyfCQyn3lem112eypSa1Dt7jnJ3mT9qN')"></div>
+<div class="h-8 w-32 bg-contain bg-center bg-no-repeat" data-alt="professional logo of Komerční banka with red and black typographic design" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuA_BiyAGEv91kZ2jVg_Xsgntw0fWp2kfgsn-63mwkbbAPn8YYpsnW4ga1ZRycZfHG0iBPSMkSFEdYzEMzCP1gfQqRo-SbyqigNFpcvARcS4B1AMaKki0JHhnJ1WVGVMJgbKI12ene-ij5KWPsrz8gyuGyMD8-_CA96sb5ANJH6PLb3N_hdx1Ospz_rWINTqD0UmPB8YTZsfUgdFbzkwCmwOnUbCWlPbTD5zcIjw9J9ME2ZZaPFiqf5RctvBRPUnAYMQVdBRx2rjdulH')"></div>
+<div class="h-8 w-40 bg-contain bg-center bg-no-repeat" data-alt="blue and red logo of Česká spořitelna representing traditional Czech banking authority" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBJ6ggndy8gX3fRclejXGrrf7uX3CFN9lWXDrDLHAvJH4oOhp75pNdiq9gRdT-o5oC9MhUbz7zKfdTiBKb0DujE1AJSxODzRNHkZ9wlCo95TqAsigjKXeOSTCdKBBv_nN5qe8bI_jQQN6qxkwMEFAlyyL9dK4OgVnxX92aGZElaT0l1slA4LK9mBFUhrrNgEisr1QhQJ4wtizSJkJ0Mnpi0imgQNAuu7VPWY1CmVeXUbfGE0dxQRz-2oM9yBpDdKRp2p5kObZXSKiR8')"></div>
+<div class="h-8 w-28 bg-contain bg-center bg-no-repeat" data-alt="modern bold blue logo of ČSOB bank with geometric letterforms" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCTO7NEhdiS_n0Tw9J5ZC_D6UTtd3icQ7OJzBn2a8D0iL8MQg1XOs4uvLO8zO0EiZOv9uMRB7DQH5ko4Ir17bJHqhB9a1Lp9bhz_Up9DY5R-fFGfrG9JaqFZP1kWKu0UyPoEsCMzALojkYXKcBdJu_Vqmvv81G0xADOoh0rgR85RvDytynhXi4747mHuG5-F7JP5e1qEtDO-IbwtY5-o5jls2qWE9bCXAGoBXwFR7k5Sugch0SYSI9-L9A8OWnPIeQz1F8FegHMHSVv')"></div>
+<div class="h-8 w-32 bg-contain bg-center bg-no-repeat" data-alt="iconic yellow and black logo of Raiffeisenbank showing professional banking heritage" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDsqeCBVxkPZOP1rVMYr9LH4DeqXndZ4a3Vv5kADqcuNfxFj7JaMvYZXm41Z9rYQZWzLso9AC-myHDCIyhQC9OlPjI8dzGDl4-opWuoQzFNXsRNP3znY-CSKS3mSpsYP9CKA6YE7AgFSAMwOLWJeesRLYvDeFuCTMf9RGx19nu2lmx93tIbBCUBxwwVtMtI6bSA23Jmaz8thP5J-5bKGzqxmCmwZkrbZsF4tMzEJ2dJKBtnTN9U5ElVzwV03M7lPDut_pxgzV2Hxz15')"></div>
+</div>
+</div>
+</section>
+<!-- How it Works / Interactive Hugo Widgets -->
+<section class="py-24 max-w-7xl mx-auto px-6">
+<div class="grid md:grid-cols-2 gap-20 items-center">
+<div class="space-y-8">
+<span class="text-label-caps text-xs font-bold text-primary">Interactive Journey</span>
+<h2 class="text-4xl md:text-5xl font-semibold leading-tight text-editorial-tight">Meet Hugo, your <br/>24/7 Mortgage Analyst.</h2>
+<p class="text-secondary body-lg leading-relaxed">Forget complex spreadsheets. Hugo interacts with you in plain language, generating live market simulations and personalized offers instantly.</p>
+<div class="space-y-6 pt-6">
+<div class="flex items-start gap-4">
+<div class="bg-primary/10 text-primary p-2 rounded-lg">
+<span class="material-symbols-outlined">query_stats</span>
+</div>
+<div>
+<h4 class="font-bold text-on-surface">Live Market Benchmarking</h4>
+<p class="text-sm text-secondary">Hugo compares your profile against 15+ lenders in milliseconds.</p>
+</div>
+</div>
+<div class="flex items-start gap-4">
+<div class="bg-primary/10 text-primary p-2 rounded-lg">
+<span class="material-symbols-outlined">document_scanner</span>
+</div>
+<div>
+<h4 class="font-bold text-on-surface">Automated Pre-Approval</h4>
+<p class="text-sm text-secondary">Upload your data and get an unofficial certificate of eligibility instantly.</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Chat UI / Widget Presentation -->
+<div class="relative">
+<div class="absolute inset-0 bg-primary/5 rounded-[40px] transform rotate-3 translate-x-4"></div>
+<div class="relative bg-surface-container-lowest border border-outline-variant/20 rounded-[40px] shadow-2xl overflow-hidden p-6 space-y-6 min-h-[500px]">
+<!-- Chat Header -->
+<div class="flex items-center justify-between pb-4 border-b border-surface-container">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-white">
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">smart_toy</span>
+</div>
+<div>
+<p class="font-bold text-sm">Hugo AI</p>
+<p class="text-[10px] text-green-600 flex items-center gap-1 font-bold tracking-wide uppercase">
+<span class="w-1.5 h-1.5 bg-green-600 rounded-full animate-pulse"></span> Analyzing Live Rates
+                                    </p>
+</div>
+</div>
+</div>
+<!-- Chat Messages -->
+<div class="space-y-6">
+<div class="bg-secondary-container/20 p-4 rounded-2xl rounded-tl-none mr-12">
+<p class="text-sm leading-relaxed">Hi! I've analyzed the latest ČNB rate shift. Based on your 5M CZK request, here is a comparison of current mortgage rates:</p>
+</div>
+<!-- Widget: Rate Comparison -->
+<div class="bg-white rounded-2xl border border-outline-variant/30 p-4 shadow-sm space-y-4">
+<div class="flex justify-between items-center text-xs font-bold text-on-surface/40 uppercase tracking-widest">
+<span>Bank</span>
+<span>Rate</span>
+</div>
+<div class="space-y-3">
+<div class="flex justify-between items-center py-2 border-b border-surface-container/50">
+<div class="flex items-center gap-2">
+<div class="w-6 h-6 rounded bg-on-surface/5 flex items-center justify-center text-[10px] font-bold">KB</div>
+<span class="text-sm font-semibold">Komerční banka</span>
+</div>
+<span class="text-sm font-bold text-primary">5.49%</span>
+</div>
+<div class="flex justify-between items-center py-2 border-b border-surface-container/50">
+<div class="flex items-center gap-2">
+<div class="w-6 h-6 rounded bg-on-surface/5 flex items-center justify-center text-[10px] font-bold">ČS</div>
+<span class="text-sm font-semibold">Česká spořitelna</span>
+</div>
+<span class="text-sm font-bold">5.64%</span>
+</div>
+</div>
+<button class="w-full py-2 bg-surface-container-low text-primary text-xs font-bold rounded-lg hover:bg-surface-container transition-colors">Apply with Hugo</button>
+</div>
+<div class="flex justify-end ml-12">
+<div class="bg-primary text-white p-4 rounded-2xl rounded-tr-none text-sm shadow-lg shadow-primary/20">
+                                    How about 10-year fixation?
+                                </div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Market Insights Section -->
+<section class="py-24 bg-surface-container-low/30">
+<div class="max-w-7xl mx-auto px-6">
+<div class="flex justify-between items-end mb-16">
+<div class="space-y-4">
+<span class="text-label-caps text-xs font-bold text-primary">Intelligence</span>
+<h2 class="text-4xl font-semibold text-editorial-tight">Market Insights</h2>
+</div>
+<a class="text-primary font-bold text-sm border-b-2 border-primary/20 hover:border-primary pb-1 transition-all" href="#">View all articles</a>
+</div>
+<div class="grid md:grid-cols-3 gap-10">
+<!-- Article 1 -->
+<div class="group cursor-pointer">
+<div class="aspect-[4/3] rounded-3xl overflow-hidden mb-6 relative">
+<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" data-alt="Modern glass skyscraper reflection in Prague with dramatic architectural angles and bright clear blue sky" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD2hb4nvN-YhO8_DbnhHU7LNyEBINwlViJbJn0BzIpPQCLNV_HxstPWROUrg0_P5Pol_-saXz67AMpWYxfL9HBnd2fl5qlg8bsoThvn38FKmUZFlmPs-L_hJOfOQYeA6VmOhMn_M_XWq_PwxePbV9y_EhzhN0d2NLX9_emVier5iFvdJ7wNb4Zi7YyCyGHuw5K3wBkjUAxko53nxymye4ELNYzu26CSZlwQJraIS5VyExJTaE7ub7v9QV7SyHYoyHJlW9Ummtq30vy4"/>
+<div class="absolute top-4 left-4 bg-white/90 backdrop-blur px-3 py-1 rounded-full text-[10px] font-bold text-on-surface tracking-widest uppercase">Monetary Policy</div>
+</div>
+<h3 class="text-xl font-bold group-hover:text-primary transition-colors mb-3 leading-snug">ČNB Interest Rate Updates: What borrowers need to know.</h3>
+<p class="text-secondary text-sm leading-relaxed mb-4">An in-depth look at the central bank's recent decisions and their impact on long-term fixation rates in the Czech Republic.</p>
+<div class="flex items-center gap-2 text-xs font-bold text-on-surface/40">
+<span>Mar 12, 2024</span>
+<span class="w-1 h-1 bg-on-surface/20 rounded-full"></span>
+<span>8 min read</span>
+</div>
+</div>
+<!-- Article 2 -->
+<div class="group cursor-pointer">
+<div class="aspect-[4/3] rounded-3xl overflow-hidden mb-6 relative">
+<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" data-alt="Interior of a luxury modern apartment in Prague with high ceilings and warm morning light flooding through large windows" src="https://lh3.googleusercontent.com/aida-public/AB6AXuApV44R5EWyAROsIDWRrJ6oia8PmGQ44t5DZt4cadcZN5nr8MwDkEWdkffdYDO8F0PC_zxO94Vz4Sn451zRZTkzCQY-JLKWB49ipDvhLV7NaO067n2kBqAIB8hyAqPsW6pbJG9VCzJ1L4hj-LsKdOr9ULr4xu53zjkd_9Qp8qHJdyEj8c9vTlq3LS9-obSHSfTMAPizhPze4iZPVL2EV7p7K7gAPklQuqMXWjmcM6WnHv6PQ_sBVREOWNVPJZW8ewItrJWbAMnHkkEn"/>
+<div class="absolute top-4 left-4 bg-white/90 backdrop-blur px-3 py-1 rounded-full text-[10px] font-bold text-on-surface tracking-widest uppercase">Expert Guide</div>
+</div>
+<h3 class="text-xl font-bold group-hover:text-primary transition-colors mb-3 leading-snug">Mortgage Tips for 2024: Navigating the new landscape.</h3>
+<p class="text-secondary text-sm leading-relaxed mb-4">Strategic advice for first-time buyers and those looking to refinance in a fluctuating interest environment.</p>
+<div class="flex items-center gap-2 text-xs font-bold text-on-surface/40">
+<span>Feb 28, 2024</span>
+<span class="w-1 h-1 bg-on-surface/20 rounded-full"></span>
+<span>5 min read</span>
+</div>
+</div>
+<!-- Article 3 -->
+<div class="group cursor-pointer">
+<div class="aspect-[4/3] rounded-3xl overflow-hidden mb-6 relative">
+<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" data-alt="Financial data charts and heatmaps displayed on a sleek tablet screen with soft corporate lighting and minimal aesthetics" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBMVggFC2-YYD0xMciFbgRooTkTHAss8kNFEKvngTmvUyBaNO8_-H0QE7gNdqSp-gPskcV5xdYffl7kdOR-ONDyvLJIbq9RYb1DMJFK1BGH-v1u-MU4CFsZwYliD2x5MzZkUaspNph7Si03FYcJt6YZ-bdMbTaQYLhCeP6_8Hdnh45M_agrVBmQX5GByL6RlkqEuTOBKkZFJVM65Zd29XaeOO92VJKdzl4AgpThutmu5bxujuWk67pFIweVigLpXM4EhzTPTMKdUcsX"/>
+<div class="absolute top-4 left-4 bg-white/90 backdrop-blur px-3 py-1 rounded-full text-[10px] font-bold text-on-surface tracking-widest uppercase">Data Analysis</div>
+</div>
+<h3 class="text-xl font-bold group-hover:text-primary transition-colors mb-3 leading-snug">Market Price Estimator: Regional property value shifts.</h3>
+<p class="text-secondary text-sm leading-relaxed mb-4">Analyzing which districts in Brno and Prague are seeing the highest capital appreciation this quarter.</p>
+<div class="flex items-center gap-2 text-xs font-bold text-on-surface/40">
+<span>Feb 15, 2024</span>
+<span class="w-1 h-1 bg-on-surface/20 rounded-full"></span>
+<span>12 min read</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- CTA Section -->
+<section class="py-24 max-w-7xl mx-auto px-6">
+<div class="relative rounded-[40px] bg-on-surface text-white p-12 md:p-24 overflow-hidden shadow-2xl">
+<div class="absolute top-0 right-0 w-1/2 h-full opacity-10 pointer-events-none">
+<svg class="w-full h-full scale-150" viewbox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
+<path d="M42.7,-74.6C54.9,-67.7,64.2,-56.3,71.2,-43.8C78.2,-31.3,83,-17.7,82.4,-4C81.8,9.7,75.8,23.5,67.6,35.7C59.4,47.9,49.1,58.5,36.9,66C24.7,73.5,10.6,77.9,-3.4,83.1C-17.4,88.3,-31.4,94.3,-43.8,90.4C-56.2,86.5,-67.1,72.7,-74.4,58.4C-81.8,44.1,-85.5,29.3,-86,14.6C-86.5,-0.1,-83.8,-14.8,-77.9,-28.4C-72,-42.1,-62.8,-54.6,-50.7,-61.6C-38.6,-68.6,-23.5,-70.1,-8.9,-75.4C5.7,-80.7,21.5,-89.8,30.5,-81.4C39.5,-73,42.7,-74.6Z" fill="#b80049" transform="translate(200 200)"></path>
+</svg>
+</div>
+<div class="relative z-10 max-w-2xl">
+<h2 class="text-4xl md:text-6xl font-semibold mb-8 text-editorial-tight">Ready to build your <br/>financial future?</h2>
+<p class="text-surface/70 text-lg mb-12 leading-relaxed">Join over 10,000 Czech homeowners who simplified their mortgage search with Hugo AI. Personalized analysis is just a click away.</p>
+<div class="flex flex-col sm:flex-row gap-6">
+<button class="bg-primary hover:bg-primary-container text-white px-10 py-5 rounded-full text-lg font-bold transition-all shadow-xl shadow-primary/20 flex items-center justify-center gap-3">
+                            Start Free Consultation <span class="material-symbols-outlined">bolt</span>
+</button>
+<button class="bg-white/10 hover:bg-white/20 backdrop-blur-sm text-white px-10 py-5 rounded-full text-lg font-bold border border-white/20 transition-all flex items-center justify-center">
+                            Meet Hugo AI
+                        </button>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- Footer -->
+<footer class="bg-[#f9f9ff] dark:bg-[#000d21] w-full mt-20 border-t border-[#d8e2ff] dark:border-slate-800">
+<div class="max-w-7xl mx-auto py-12 px-6 flex flex-col md:flex-row justify-between items-center gap-8">
+<div class="space-y-4 text-center md:text-left">
+<div class="text-lg font-bold text-[#001a41] dark:text-white">Hypoteeka.cz</div>
+<p class="text-[#001a41]/70 dark:text-slate-500 body-md font-['Inter'] leading-relaxed max-w-sm">
+                    © 2024 Hypoteeka.cz. All rights reserved. Powered by Hugo AI. <br/>
+                    Licensed by the Czech National Bank as an independent intermediary.
+                </p>
+</div>
+<div class="flex gap-8">
+<a class="text-[#001a41]/70 dark:text-slate-500 hover:underline decoration-[#b80049] underline-offset-4 transition-opacity duration-200" href="#">Terms of Service</a>
+<a class="text-[#001a41]/70 dark:text-slate-500 hover:underline decoration-[#b80049] underline-offset-4 transition-opacity duration-200" href="#">Privacy Policy</a>
+<a class="text-[#001a41]/70 dark:text-slate-500 hover:underline decoration-[#b80049] underline-offset-4 transition-opacity duration-200" href="#">Cookie Settings</a>
+<a class="text-[#001a41]/70 dark:text-slate-500 hover:underline decoration-[#b80049] underline-offset-4 transition-opacity duration-200" href="#">Contact</a>
+</div>
+</div>
+</footer>
+</body></html>

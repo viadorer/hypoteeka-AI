@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import { AuthProvider } from "@/lib/auth/auth-context";
 import { StructuredData } from "./structured-data";
 import { getTenantConfig, getDefaultTenantId } from "@/lib/tenant/config";
+import { IS_INDEXABLE } from "@/lib/site-visibility";
 import { CookieConsent } from "@/components/layout/CookieConsent";
 import { ConsentAwareAnalytics } from "@/components/layout/ConsentAwareAnalytics";
 import "./globals.css";
@@ -37,17 +38,25 @@ export const metadata: Metadata = {
   authors: [{ name: tenant.name }],
   creator: tenant.name,
   publisher: tenant.name,
-  robots: {
-    index: true,
-    follow: true,
-    googleBot: {
-      index: true,
-      follow: true,
-      'max-video-preview': -1,
-      'max-image-preview': 'large',
-      'max-snippet': -1,
-    },
-  },
+  // Dev mód (viz CLAUDE.md 2.1): noindex, dokud SITE_INDEXABLE=true.
+  robots: IS_INDEXABLE
+    ? {
+        index: true,
+        follow: true,
+        googleBot: {
+          index: true,
+          follow: true,
+          'max-video-preview': -1,
+          'max-image-preview': 'large',
+          'max-snippet': -1,
+        },
+      }
+    : {
+        index: false,
+        follow: false,
+        nocache: true,
+        googleBot: { index: false, follow: false },
+      },
   alternates: {
     canonical: '/',
   },

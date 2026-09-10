@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, viewport-fit=cover" name="viewport"/>
+<title>Mortgage Offers | Hypoteeka AI</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "surface": "#f8f9ff",
+                    "tertiary-fixed": "#e0e3e5",
+                    "surface-container": "#e5eeff",
+                    "on-surface": "#0b1c30",
+                    "surface-tint": "#be0037",
+                    "surface-dim": "#cbdbf5",
+                    "secondary": "#565e74",
+                    "on-primary-container": "#fffaf9",
+                    "tertiary-container": "#717476",
+                    "on-secondary": "#ffffff",
+                    "inverse-surface": "#213145",
+                    "outline": "#906f70",
+                    "on-tertiary-fixed": "#191c1e",
+                    "surface-bright": "#f8f9ff",
+                    "surface-variant": "#d3e4fe",
+                    "background": "#f8f9ff",
+                    "on-error": "#ffffff",
+                    "inverse-on-surface": "#eaf1ff",
+                    "tertiary": "#585c5d",
+                    "inverse-primary": "#ffb3b6",
+                    "secondary-container": "#dae2fd",
+                    "primary-fixed": "#ffdada",
+                    "on-secondary-container": "#5c647a",
+                    "secondary-fixed": "#dae2fd",
+                    "on-primary-fixed": "#40000c",
+                    "primary-fixed-dim": "#ffb3b6",
+                    "surface-container-lowest": "#ffffff",
+                    "outline-variant": "#e5bdbe",
+                    "on-tertiary": "#ffffff",
+                    "on-primary-fixed-variant": "#920028",
+                    "primary-container": "#e11d48",
+                    "on-secondary-fixed-variant": "#3f465c",
+                    "tertiary-fixed-dim": "#c4c7c9",
+                    "on-primary": "#ffffff",
+                    "on-tertiary-container": "#f9fbfd",
+                    "error-container": "#ffdad6",
+                    "primary": "#b80035",
+                    "surface-container-highest": "#d3e4fe",
+                    "surface-container-high": "#dce9ff",
+                    "surface-container-low": "#eff4ff",
+                    "on-background": "#0b1c30",
+                    "error": "#ba1a1a",
+                    "on-error-container": "#93000a",
+                    "on-tertiary-fixed-variant": "#444749",
+                    "secondary-fixed-dim": "#bec6e0",
+                    "on-surface-variant": "#5c3f40",
+                    "on-secondary-fixed": "#131b2e"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "section-gap-mobile": "64px",
+                    "container-max": "1200px",
+                    "base": "8px",
+                    "section-gap-desktop": "120px",
+                    "gutter": "24px"
+            },
+            "fontFamily": {
+                    "label-md": ["Inter"],
+                    "display-xl-mobile": ["Inter"],
+                    "label-sm": ["Inter"],
+                    "headline-md": ["Inter"],
+                    "headline-lg-mobile": ["Inter"],
+                    "headline-lg": ["Inter"],
+                    "body-lg": ["Inter"],
+                    "body-md": ["Inter"],
+                    "display-xl": ["Inter"]
+            },
+            "fontSize": {
+                    "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "500"}],
+                    "display-xl-mobile": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "label-sm": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                    "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                    "headline-lg-mobile": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                    "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                    "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "display-xl": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body {
+            -webkit-tap-highlight-color: transparent;
+            font-family: 'Inter', sans-serif;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface text-on-surface min-h-screen pb-32">
+<!-- Top App Bar -->
+<header class="fixed top-0 w-full z-50 bg-surface dark:bg-on-surface shadow-sm">
+<div class="flex justify-between items-center px-4 h-16 w-full max-w-container-max mx-auto">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary dark:text-primary-fixed-dim" style="font-variation-settings: 'FILL' 1;">account_balance</span>
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile font-bold text-primary dark:text-primary-fixed-dim">Hypoteeka AI</h1>
+</div>
+<button class="active:scale-95 duration-200 hover:opacity-80 transition-opacity">
+<span class="material-symbols-outlined text-on-surface-variant dark:text-surface-variant">notifications</span>
+</button>
+</div>
+</header>
+<!-- Content Canvas -->
+<main class="pt-20 px-4 max-w-md mx-auto">
+<!-- Welcome & Summary Section -->
+<section class="mb-8 mt-4">
+<h2 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface mb-2">Mortgage Offers</h2>
+<p class="font-body-md text-body-md text-secondary">Based on your credit profile and $450k property value. Prices are indicative.</p>
+</section>
+<!-- Dynamic Filters (Fixation, Bank) -->
+<section class="mb-8">
+<div class="flex flex-col gap-4">
+<div class="flex items-center gap-2 overflow-x-auto no-scrollbar pb-2">
+<button class="bg-primary-container text-on-primary-container px-4 py-2 rounded-full font-label-md text-label-md whitespace-nowrap">3 Year Fix</button>
+<button class="bg-surface-container text-secondary px-4 py-2 rounded-full font-label-md text-label-md whitespace-nowrap">5 Year Fix</button>
+<button class="bg-surface-container text-secondary px-4 py-2 rounded-full font-label-md text-label-md whitespace-nowrap">Floating</button>
+<button class="bg-surface-container text-secondary px-4 py-2 rounded-full font-label-md text-label-md whitespace-nowrap">10 Year Fix</button>
+</div>
+<div class="flex items-center justify-between">
+<div class="flex -space-x-2">
+<div class="w-8 h-8 rounded-full border-2 border-surface overflow-hidden bg-white">
+<img class="w-full h-full object-cover" data-alt="A minimalist logo of a modern corporate bank featuring abstract geometric shapes in deep navy blue. The background is clean and professional, suited for a high-end financial mobile application interface." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCE03-rsNFZpqaOY_Kak3TTY_ZdQM3SB8MZ8gl-RAb6llPCSPBkmNXEJWP3ZvzcyQ7r7c1_pJvmZu5aXZ6kjHWaW9ooaZxVaL7bip7utwgSQF96HQbv7krnVxpTHYuJCaqg_hycuxqjyRAHc_FfPZ6ZY0k1cKsKuDfD9ZOQo8hvDPTAjqRvfS93B4fXBPq-b1UaQghTGvkZQWdbJW7EvVUkmCuf1fwCXhUnxATb4bGMXccQeyDZ3833Dq2vMwgefQjwXK3d4fSUGw"/>
+</div>
+<div class="w-8 h-8 rounded-full border-2 border-surface overflow-hidden bg-white">
+<img class="w-full h-full object-cover" data-alt="A sophisticated corporate logo for a global financial institution, emphasizing trust and stability with a bold gold and silver color palette. The design is contemporary and sleek for a mobile app environment." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAtBACd1370AJGXisia5Rpgf7W3Jg_DdKuCxOEq2rParxBSOAgafP8pd8rV-_O-1hgkktk3iyHKy0RuOtSG2IC9J7DB95bVugW6buADQOEfJONTRdaCeMhk6nEt-CsQ09N5bJrMdP0wPrxA_oDv2Fv_lFKuHjhlfIX9twXQW9luVb94xDQiEhz21x2UV8qOwYHkw8PdW_2S8iILD2gdP0oHUfqxMSHLNZXQUXN3HnDWNS7dnwSWDk181zh4eWT2JfhhNQICf_yR9w"/>
+</div>
+<div class="w-8 h-8 rounded-full border-2 border-surface overflow-hidden bg-white">
+<img class="w-full h-full object-cover" data-alt="Modern minimalist bank branding with a vibrant primary red accent color and clean typography. The image captures a professional yet approachable aesthetic for mortgage lending services." src="https://lh3.googleusercontent.com/aida-public/AB6AXuB1n4IMS1SUiau6us-RwRrnwD7cidhSCoPW8AV3EdjHKmfk_CqM6m0Og-5eRS5mDP92EfMytt0e70aoKOCTAEVRiS5WY3ophBpIrjWL9zVGuqHDW4AyG3rL88pys10tpFki81KZxImnpfzmO63S5yaaYJHA4uuRg1sxE5S_-mi2sxFS0ArZt6WfhV4AU0WmigcL9CUfve-sAMTm-3kdXcRXzs9qV_RC8PU-PxYbhdX5ocSCh6lpAnTDdEjkvYiYDQNJOFXS-rAWMw"/>
+</div>
+<div class="w-8 h-8 rounded-full border-2 border-surface flex items-center justify-center bg-surface-container-high text-[10px] font-bold text-secondary">+12</div>
+</div>
+<button class="flex items-center gap-1 text-primary font-label-md text-label-md">
+<span class="material-symbols-outlined text-[18px]">tune</span>
+                        Filter Banks
+                    </button>
+</div>
+</div>
+</section>
+<!-- Offers List -->
+<section class="space-y-4">
+<!-- Card 1: Premium Choice -->
+<div class="glass-card rounded-xl p-5 shadow-sm border-l-4 border-primary transition-all active:scale-[0.98]">
+<div class="flex justify-between items-start mb-6">
+<div class="flex items-center gap-3">
+<div class="w-12 h-12 rounded-lg bg-surface flex items-center justify-center p-2">
+<img class="w-full h-full object-contain" data-alt="A clean corporate logo of a top-tier bank displayed on a bright white background. The logo uses a palette of navy and vibrant crimson, embodying professionalism and expert financial services for a mobile UI." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBnVS_BOOE3dfXKILJlTvCNXfIMSoTEU4EeWOn5yC_oxdwoRYEKLH_THzCcm9A_P-liPsmEHUV68TBPcZE0uycRd6f6vXDjrn7zgdXJ7gc0SS-uzrSEsqo7nMawnl3MOUqRf3q43Mzz3R5qa0oXL1FV9EwIdH5sA_T15JDQmWdvN3Ki6HPRVfdyzunkV4xKuy-AkkSozMPRbf4WNkj2kOu6_S4qzlBWjnqj4hqprsHksOrLbbg-mWLtjXrHuTmUFEqYgn7yrYEubQ"/>
+</div>
+<div>
+<p class="font-label-md text-label-md text-on-surface">Standard Chartered</p>
+<span class="inline-block bg-primary-fixed text-on-primary-fixed px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider">Top Rated</span>
+</div>
+</div>
+<div class="text-right">
+<p class="font-headline-md text-headline-md text-primary">5.49%</p>
+<p class="font-label-sm text-label-sm text-secondary">Interest Rate</p>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-4 mb-6">
+<div class="p-3 bg-surface-container-low rounded-lg">
+<p class="font-label-sm text-label-sm text-secondary mb-1">Monthly Payment</p>
+<p class="font-headline-md text-headline-md text-on-surface">$2,410</p>
+</div>
+<div class="p-3 bg-surface-container-low rounded-lg">
+<p class="font-label-sm text-label-sm text-secondary mb-1">Repayment</p>
+<p class="font-headline-md text-headline-md text-on-surface">30 Years</p>
+</div>
+</div>
+<button class="w-full py-4 bg-primary text-on-primary rounded-xl font-headline-lg-mobile text-headline-lg-mobile hover:opacity-90 active:scale-95 transition-all shadow-md">
+                    I am interested
+                </button>
+</div>
+<!-- Card 2: Flexible Option -->
+<div class="glass-card rounded-xl p-5 shadow-sm border-l-4 border-secondary transition-all active:scale-[0.98]">
+<div class="flex justify-between items-start mb-6">
+<div class="flex items-center gap-3">
+<div class="w-12 h-12 rounded-lg bg-surface flex items-center justify-center p-2">
+<img class="w-full h-full object-contain" data-alt="Modern bank identity logo with sleek gray and blue tones, representing reliability and digital-first financial solutions. The visual style is minimal and high-contrast for readability." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBHlDaPm3e8NN1pSmpyqvyyLiY8OaU3T3xUZ38-Ik4OuJ9Zm-AfGa_6S18GTF1pd-PeVviOXlU_v4v_w3hHErQBnYM9CTv-ZdFvn_8MGc2bQXfrjrHDMlQatqjtkXg8WwZqN1FNJS65xGNGzp30ofSGiZZuIH2fwR-pE0WCfje9-64n3xi0qJjzWloIT4N3FTqveHzo21A9qBtqa0n0zrAzbeejMrpAV9vL0nzx5Lg4bINgo3EdBoYlA71Yj3LNr1SGVBnEYpN-AA"/>
+</div>
+<div>
+<p class="font-label-md text-label-md text-on-surface">Digital Trust Bank</p>
+<span class="inline-block bg-surface-container-highest text-secondary px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider">Fast Approval</span>
+</div>
+</div>
+<div class="text-right">
+<p class="font-headline-md text-headline-md text-secondary">5.65%</p>
+<p class="font-label-sm text-label-sm text-secondary">Interest Rate</p>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-4 mb-6">
+<div class="p-3 bg-surface-container-low rounded-lg">
+<p class="font-label-sm text-label-sm text-secondary mb-1">Monthly Payment</p>
+<p class="font-headline-md text-headline-md text-on-surface">$2,485</p>
+</div>
+<div class="p-3 bg-surface-container-low rounded-lg">
+<p class="font-label-sm text-label-sm text-secondary mb-1">Repayment</p>
+<p class="font-headline-md text-headline-md text-on-surface">30 Years</p>
+</div>
+</div>
+<button class="w-full py-4 bg-secondary text-on-secondary rounded-xl font-headline-lg-mobile text-headline-lg-mobile hover:opacity-90 active:scale-95 transition-all">
+                    I am interested
+                </button>
+</div>
+<!-- Card 3: AI-Matched -->
+<div class="relative overflow-hidden glass-card rounded-xl p-5 shadow-sm border-l-4 border-surface-tint transition-all active:scale-[0.98]">
+<!-- Hugo AI Badge -->
+<div class="absolute top-0 right-0">
+<div class="bg-primary-container text-on-primary-container text-[10px] font-bold px-3 py-1 rounded-bl-lg flex items-center gap-1">
+<span class="material-symbols-outlined text-[12px]" style="font-variation-settings: 'FILL' 1;">auto_awesome</span>
+                        HUGO MATCH
+                    </div>
+</div>
+<div class="flex justify-between items-start mb-6">
+<div class="flex items-center gap-3">
+<div class="w-12 h-12 rounded-lg bg-surface flex items-center justify-center p-2">
+<img class="w-full h-full object-contain" data-alt="Elegant corporate logo of an established mortgage lender featuring a combination of soft blues and deep grays. The design conveys a sense of friendly expertise and modern banking reliability." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBnBSxKCLTJA00e8Xd21Ozp3QZpe-FaqLh6jHP-2FoGAJVQT4eZbUQyPHHY2VvGn9NBLAsMPXFSFfYRuPrkDBwmXcj1VHp9O72PWksA-r_0N9kcpURvfZWl3CGcgqeM82Nz2rjCzIhAZvtlF_S0lZzGH37hHrGxFDxBZfyNkv93_fceWAR7cfc4BTb0clcI2IdeUGVCqX_L1NeJIIclbzGbXFwK6JIbuC9CRJ3NX8dhD0Qt0-Oc9C4is3vMkRBxLCfVOyl0fEW02g"/>
+</div>
+<div>
+<p class="font-label-md text-label-md text-on-surface">Alliance Mutual</p>
+<span class="inline-block bg-tertiary-fixed text-on-tertiary-fixed px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider">Low Fees</span>
+</div>
+</div>
+<div class="text-right">
+<p class="font-headline-md text-headline-md text-primary">5.38%</p>
+<p class="font-label-sm text-label-sm text-secondary">Interest Rate</p>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-4 mb-6">
+<div class="p-3 bg-primary-fixed text-on-primary-fixed-variant rounded-lg">
+<p class="font-label-sm text-label-sm mb-1 opacity-80">Monthly Payment</p>
+<p class="font-headline-md text-headline-md font-bold">$2,375</p>
+</div>
+<div class="p-3 bg-surface-container-low rounded-lg">
+<p class="font-label-sm text-label-sm text-secondary mb-1">Repayment</p>
+<p class="font-headline-md text-headline-md text-on-surface">30 Years</p>
+</div>
+</div>
+<button class="w-full py-4 bg-primary text-on-primary rounded-xl font-headline-lg-mobile text-headline-lg-mobile hover:opacity-90 active:scale-95 transition-all shadow-md">
+                    I am interested
+                </button>
+</div>
+</section>
+</main>
+<!-- Bottom Navigation Bar -->
+<nav class="fixed bottom-0 w-full z-50 rounded-t-xl bg-surface-container dark:bg-on-secondary-fixed shadow-lg">
+<div class="flex justify-around items-center w-full h-20 px-2 pb-safe">
+<a class="flex flex-col items-center justify-center text-secondary dark:text-secondary-fixed-dim hover:bg-surface-container-high dark:hover:bg-secondary-container transition-colors active:scale-90 duration-200" href="#">
+<span class="material-symbols-outlined">home</span>
+<span class="font-label-sm text-label-sm">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center text-secondary dark:text-secondary-fixed-dim hover:bg-surface-container-high dark:hover:bg-secondary-container transition-colors active:scale-90 duration-200" href="#">
+<span class="material-symbols-outlined">calculate</span>
+<span class="font-label-sm text-label-sm">Calculator</span>
+</a>
+<a class="flex flex-col items-center justify-center bg-primary-container dark:bg-primary text-on-primary-container dark:text-on-primary rounded-full px-4 py-1 active:scale-90 duration-200" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">local_offer</span>
+<span class="font-label-sm text-label-sm">Offers</span>
+</a>
+<a class="flex flex-col items-center justify-center text-secondary dark:text-secondary-fixed-dim hover:bg-surface-container-high dark:hover:bg-secondary-container transition-colors active:scale-90 duration-200" href="#">
+<span class="material-symbols-outlined">person</span>
+<span class="font-label-sm text-label-sm">Profile</span>
+</a>
+</div>
+</nav>
+<script>
+        // Simple Micro-interaction for buttons
+        document.querySelectorAll('button').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                const ripple = document.createElement('span');
+                ripple.classList.add('ripple');
+                this.appendChild(ripple);
+                setTimeout(() => ripple.remove(), 600);
+            });
+        });
+
+        // Add small atmospheric movement to the glass cards
+        document.querySelectorAll('.glass-card').forEach(card => {
+            card.addEventListener('mousemove', (e) => {
+                const rect = card.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                card.style.setProperty('--mouse-x', `${x}px`);
+                card.style.setProperty('--mouse-y', `${y}px`);
+            });
+        });
+    </script>
+</body></html>
