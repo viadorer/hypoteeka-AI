@@ -270,7 +270,7 @@ export function getDefaultBrokerFallback(): BrokerHandoffPayload {
       photoUrl: '/images/team/david-choc.png',
       roleLabel: 'Hypoteční specialista · Quadrum',
       shortDescription:
-        'Vázaný zástupce SAB servis pro spotřebitelské úvěry. Porovnám nabídky bank a vyjednám podmínky, které běžně nedostanete. Konzultace zdarma — odměnu hradí banka.',
+        'Vázaný zástupce SAB servis pro spotřebitelské úvěry. Porovnám nabídky 11 bank a vyjednám podmínky, které běžně nedostanete. Konzultace zdarma — odměnu hradí banka.',
       specializations: ['Hypotéky', 'Refinancování', 'Investice', 'OSVČ', 'Mladí do 36'],
       company: 'Quadrum',
       vazanyZastupceOf: 'SAB servis s.r.o.',

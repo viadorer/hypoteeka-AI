@@ -22,7 +22,7 @@ const DEFAULT_SPECIALISTS: Specialist[] = [
     phone: '+420 774 052 232',
     email: 'david.choc@quadrum.cz',
     description:
-      'Vázaný zástupce SAB servis pro spotřebitelské úvěry. Porovnám nabídky 8+ bank a vyjednám podmínky, které běžně nedostanete. Konzultace zdarma.',
+      'Vázaný zástupce SAB servis pro spotřebitelské úvěry. Porovnám nabídky 11 bank a vyjednám podmínky, které běžně nedostanete. Konzultace zdarma — odměnu hradí banka.',
     specialization: ['Hypotéky', 'Refinancování', 'Investice', 'OSVČ', 'Mladí do 36'],
   },
 ];

@@ -93,45 +93,33 @@ export function LandingPage({ onStartChat, logoUrl, title, isValuation }: Props)
         </div>
       </section>
 
-      {/* Trust Stats — jen ověřitelná tvrzení. Dřív tu byla nedoložená
-          čísla (1 000+ klientů, 4,9 hodnocení) bez zdroje; nahrazeno tím,
-          co obstojí (CLAUDE.md bod 8). */}
+      {/* Trust Stats — jen doložitelná tvrzení. Dřív tu byla nedoložená čísla
+          (1 000+ klientů, 4,9 hodnocení) bez zdroje (CLAUDE.md bod 8).
+          Hodnocení tu záměrně není: dokud není veřejný profil s recenzemi,
+          na který jde odkázat, žádné číslo neuvádíme. */}
       <section className="py-16 px-6 bg-surface-container-lowest">
-        <div className="max-w-[1200px] mx-auto grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-12">
-          {[
-            {
-              icon: 'verified_user',
-              label: 'Registrace ČNB',
-              href: 'https://www.cnb.cz/cs/dohled-financni-trh/seznamy/jerrs/',
-            },
-            { icon: 'gavel', label: 'Vázaný zástupce SAB servis' },
-            { icon: 'payments', label: 'Konzultace zdarma — platí banka' },
-            { icon: 'bolt', label: 'Odpověď do 4 pracovních hodin' },
-          ].map((stat) => {
-            const content = (
-              <>
-                <div className="w-12 h-12 bg-primary/5 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300">
-                  <span className="material-symbols-outlined filled text-primary">{stat.icon}</span>
-                </div>
-                <div className="text-label-md text-on-surface-variant">{stat.label}</div>
-              </>
-            );
-            return stat.href ? (
-              <a
-                key={stat.label}
-                href={stat.href}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-center group hover:opacity-80 transition-opacity"
-              >
-                {content}
-              </a>
-            ) : (
-              <div key={stat.label} className="text-center group">
-                {content}
-              </div>
-            );
-          })}
+        <div className="max-w-[1200px] mx-auto grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="col-span-2 md:col-span-1 bg-surface-container-low p-6 rounded-3xl border border-white shadow-soft">
+            <div className="text-display-xl-mobile text-primary font-bold">26 let</div>
+            <div className="text-label-md text-on-surface-variant uppercase tracking-wider mt-1">praxe v oboru</div>
+          </div>
+          <div className="bg-surface-container-low p-6 rounded-3xl border border-white shadow-soft">
+            <div className="text-display-xl-mobile text-primary font-bold">11 bank</div>
+            <div className="text-label-md text-on-surface-variant uppercase tracking-wider mt-1">a další instituce</div>
+          </div>
+          <a
+            href="https://www.cnb.cz/cs/dohled-financni-trh/seznamy/jerrs/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="bg-on-surface text-surface p-6 rounded-3xl flex flex-col justify-between hover:opacity-90 transition-opacity"
+          >
+            <span className="material-symbols-outlined filled text-primary-fixed" style={{ fontSize: 28 }}>verified_user</span>
+            <span className="text-label-md mt-3">Registrace ČNB (JERRS)</span>
+          </a>
+          <div className="bg-surface-container-high p-6 rounded-3xl flex flex-col justify-between">
+            <span className="material-symbols-outlined filled text-primary" style={{ fontSize: 28 }}>payments</span>
+            <span className="text-label-md text-on-surface mt-3">Konzultace zdarma — odměnu hradí banka</span>
+          </div>
         </div>
       </section>
 

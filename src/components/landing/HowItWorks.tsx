@@ -21,7 +21,7 @@ const STEPS_MORTGAGE = [
   {
     icon: UserCheck,
     title: 'Spojíme vás s poradcem',
-    desc: 'Certifikovaný specialista porovná nabídky 8+ bank a vyjedná nejlepší podmínky.',
+    desc: 'Specialista porovná nabídky 11 bank a vyjedná podmínky na míru vaší situaci.',
   },
 ];
 

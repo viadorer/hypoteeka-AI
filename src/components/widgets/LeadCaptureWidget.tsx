@@ -133,7 +133,7 @@ export function LeadCaptureWidget({ context, prefilledName, prefilledEmail, pref
         Spojte se s hypotečním specialistou
       </p>
       <p className="text-sm text-on-surface/60 mb-3">
-        Porovnáme nabídky bank a vyjednáme podmínky, které běžně nedostanete. Služba je pro vás zdarma — odměnu hradí banka.
+        Porovnáme nabídky 11 bank a vyjednáme podmínky, které běžně nedostanete. Služba je pro vás zdarma — odměnu hradí banka.
       </p>
 
       <div className="flex items-center gap-1.5 mb-4">
