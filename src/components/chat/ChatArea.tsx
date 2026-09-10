@@ -312,6 +312,54 @@ export function ChatArea({ initialSessionId = null, onOpenSidebar }: ChatAreaPro
     ));
   }, [messages]);
 
+  // --- Stav pro nabídku dalších kroků (NextStepsBar) ---
+  // Dřív se nabídka vykreslovala pod každým widgetem se statickým CTA na
+  // specialistu, takže se v konverzaci se čtyřmi výpočty nabídla konzultace
+  // čtyřikrát a staré nabídky zůstávaly klikací v historii.
+  const toolNameOf = (p: { type: string; toolName?: string }) =>
+    p.toolName ?? (typeof p.type === 'string' ? p.type.replace(/^tool-/, '') : '');
+
+  /** Widgety, které klient v konverzaci už viděl — nenabízíme je znovu. */
+  const seenWidgets = useMemo(() => {
+    const names = new Set<string>();
+    for (const m of messages) {
+      if (m.role !== 'assistant') continue;
+      for (const p of m.parts ?? []) {
+        const name = toolNameOf(p as { type: string; toolName?: string });
+        if (name.startsWith('show_') || name === 'request_valuation') names.add(name);
+      }
+    }
+    return Array.from(names);
+  }, [messages]);
+
+  /**
+   * Id poslední zprávy, která nesla widget — jen pod ní zůstává nabídka
+   * klikací. Ne „poslední zpráva" obecně: když Hugo odpoví jen textem,
+   * nabídka u posledního výpočtu má zůstat dostupná.
+   */
+  const lastWidgetMessageId = useMemo(() => {
+    for (let i = messages.length - 1; i >= 0; i--) {
+      const m = messages[i];
+      if (m.role !== 'assistant') continue;
+      const hasWidget = (m.parts ?? []).some(p => {
+        const name = toolNameOf(p as { type: string; toolName?: string });
+        return name.startsWith('show_') || name === 'request_valuation';
+      });
+      if (hasWidget) return m.id;
+    }
+    return null;
+  }, [messages]);
+
+  /**
+   * Konzultace se nabízí až když má co navazovat (2+ výpočty) a klient
+   * kontakt ještě nenechal. Aktivní nabídku řeší Hugo v textu (max 2×
+   * za konverzaci); tohle je pasivní cesta, vždy jen na jednom místě.
+   */
+  const showSpecialistStep = useMemo(() => {
+    const calcWidgets = seenWidgets.filter(w => w.startsWith('show_') && w !== 'show_quick_replies' && w !== 'show_specialists');
+    return calcWidgets.length >= 2 && !hasConverted;
+  }, [seenWidgets, hasConverted]);
+
   const idleSentRef = useRef(false);
   useEffect(() => {
     if (idleSentRef.current || !hasSeenWidget || hasConverted || isLoading) return;
@@ -426,6 +474,9 @@ export function ChatArea({ initialSessionId = null, onOpenSidebar }: ChatAreaPro
                             toolInvocation={{ toolName, state: p.state, args: (p.input ?? {}) as Record<string, unknown>, output: p.output }}
                             sessionId={sessionId}
                             onSend={useBadge}
+                            isLatest={message.id === lastWidgetMessageId}
+                            seenWidgets={seenWidgets}
+                            showSpecialist={showSpecialistStep}
                           />
                         </div>
                       );

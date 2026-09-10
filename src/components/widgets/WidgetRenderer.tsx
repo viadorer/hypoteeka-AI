@@ -71,8 +71,28 @@ function WidgetSkeleton({ toolName }: { toolName: string }) {
   );
 }
 
-export function WidgetRenderer({ toolInvocation, sessionId, onSend }: { toolInvocation: ToolInvocation; sessionId?: string; onSend?: (text: string) => void }) {
+export function WidgetRenderer({
+  toolInvocation,
+  sessionId,
+  onSend,
+  isLatest = true,
+  seenWidgets = [],
+  showSpecialist = false,
+}: {
+  toolInvocation: ToolInvocation;
+  sessionId?: string;
+  onSend?: (text: string) => void;
+  /** Nabídka dalších kroků patří jen k poslední zprávě (viz NextStepsBar). */
+  isLatest?: boolean;
+  /** Widgety, které klient v konverzaci už viděl. */
+  seenWidgets?: string[];
+  /** Přidat konzultaci do nabídky jako pasivní cestu. */
+  showSpecialist?: boolean;
+}) {
   const { toolName, args, state } = toolInvocation;
+  const nextSteps = onSend
+    ? <NextStepsBar toolName={toolName} onSend={onSend} isLatest={isLatest} seenWidgets={seenWidgets} showSpecialist={showSpecialist} />
+    : null;
   const trackedRef = useRef(false);
   useEffect(() => {
     if (state !== 'input-streaming' && !trackedRef.current) {
@@ -102,7 +122,7 @@ export function WidgetRenderer({ toolInvocation, sessionId, onSend }: { toolInvo
             propertyType={args.propertyType as string | undefined}
             location={args.location as string | undefined}
           />
-          {onSend && <NextStepsBar toolName={toolName} onSend={onSend} />}
+          {nextSteps}
         </>
       );
     case 'show_payment': {
@@ -119,7 +139,7 @@ export function WidgetRenderer({ toolInvocation, sessionId, onSend }: { toolInvo
             saving={out?.saving as number | undefined}
             monthlySaving={out?.monthlySaving as number | undefined}
           />
-          {onSend && <NextStepsBar toolName={toolName} onSend={onSend} />}
+          {nextSteps}
         </>
       );
     }
@@ -132,7 +152,7 @@ export function WidgetRenderer({ toolInvocation, sessionId, onSend }: { toolInvo
             monthlyIncome={args.monthlyIncome as number}
             isYoung={args.isYoung as boolean | undefined}
           />
-          {onSend && <NextStepsBar toolName={toolName} onSend={onSend} />}
+          {nextSteps}
         </>
       );
     case 'show_rent_vs_buy':
@@ -143,7 +163,7 @@ export function WidgetRenderer({ toolInvocation, sessionId, onSend }: { toolInvo
             equity={args.equity as number}
             monthlyRent={args.monthlyRent as number}
           />
-          {onSend && <NextStepsBar toolName={toolName} onSend={onSend} />}
+          {nextSteps}
         </>
       );
     case 'show_investment':
@@ -155,7 +175,7 @@ export function WidgetRenderer({ toolInvocation, sessionId, onSend }: { toolInvo
             monthlyRentalIncome={args.monthlyRentalIncome as number}
             monthlyExpenses={args.monthlyExpenses as number | undefined}
           />
-          {onSend && <NextStepsBar toolName={toolName} onSend={onSend} />}
+          {nextSteps}
         </>
       );
     case 'show_affordability':
@@ -166,7 +186,7 @@ export function WidgetRenderer({ toolInvocation, sessionId, onSend }: { toolInvo
             equity={args.equity as number}
             isYoung={args.isYoung as boolean | undefined}
           />
-          {onSend && <NextStepsBar toolName={toolName} onSend={onSend} />}
+          {nextSteps}
         </>
       );
     case 'show_refinance':
@@ -178,7 +198,7 @@ export function WidgetRenderer({ toolInvocation, sessionId, onSend }: { toolInvo
             newRate={args.newRate as number | undefined}
             remainingYears={args.remainingYears as number}
           />
-          {onSend && <NextStepsBar toolName={toolName} onSend={onSend} />}
+          {nextSteps}
         </>
       );
     case 'show_amortization':
@@ -189,7 +209,7 @@ export function WidgetRenderer({ toolInvocation, sessionId, onSend }: { toolInvo
             rate={args.rate as number | undefined}
             years={args.years as number | undefined}
           />
-          {onSend && <NextStepsBar toolName={toolName} onSend={onSend} />}
+          {nextSteps}
         </>
       );
     case 'show_stress_test':
@@ -200,7 +220,7 @@ export function WidgetRenderer({ toolInvocation, sessionId, onSend }: { toolInvo
             rate={args.rate as number | undefined}
             years={args.years as number | undefined}
           />
-          {onSend && <NextStepsBar toolName={toolName} onSend={onSend} />}
+          {nextSteps}
         </>
       );
     case 'request_valuation': {
@@ -227,7 +247,7 @@ export function WidgetRenderer({ toolInvocation, sessionId, onSend }: { toolInvo
             emailSent={out.emailSent as boolean | undefined}
             contactEmail={out.contactEmail as string | undefined}
           />
-          {onSend && <NextStepsBar toolName={toolName} onSend={onSend} />}
+          {nextSteps}
         </>
       );
     }
@@ -245,7 +265,7 @@ export function WidgetRenderer({ toolInvocation, sessionId, onSend }: { toolInvo
           <ValuationWidget
             context={args.context as string | undefined}
           />
-          {onSend && <NextStepsBar toolName={toolName} onSend={onSend} />}
+          {nextSteps}
         </>
       );
     case 'show_rate_comparison': {
@@ -263,7 +283,7 @@ export function WidgetRenderer({ toolInvocation, sessionId, onSend }: { toolInvo
             worstMonthly={out.worstMonthly as number}
             totalDifference={out.totalDifference as number}
           />
-          {onSend && <NextStepsBar toolName={toolName} onSend={onSend} />}
+          {nextSteps}
         </>
       );
     }
@@ -274,7 +294,7 @@ export function WidgetRenderer({ toolInvocation, sessionId, onSend }: { toolInvo
             type={(args.type as 'koupe' | 'prodej' | 'refinancovani') ?? 'koupe'}
             currentStep={args.currentStep as number | undefined}
           />
-          {onSend && <NextStepsBar toolName={toolName} onSend={onSend} />}
+          {nextSteps}
         </>
       );
     case 'show_checklist':
@@ -283,7 +303,7 @@ export function WidgetRenderer({ toolInvocation, sessionId, onSend }: { toolInvo
           <ChecklistWidget
             type={(args.type as 'koupe' | 'prodej' | 'refinancovani') ?? 'koupe'}
           />
-          {onSend && <NextStepsBar toolName={toolName} onSend={onSend} />}
+          {nextSteps}
         </>
       );
     case 'show_appointment':
@@ -293,7 +313,7 @@ export function WidgetRenderer({ toolInvocation, sessionId, onSend }: { toolInvo
             specialistName={args.specialistName as string | undefined}
             context={args.context as string | undefined}
           />
-          {onSend && <NextStepsBar toolName={toolName} onSend={onSend} />}
+          {nextSteps}
         </>
       );
     case 'show_quick_replies': {
