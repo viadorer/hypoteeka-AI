@@ -12,9 +12,12 @@ interface Props {
   tenantTitle: string;
   logoUrl: string;
   initialRate: number; // ČNB rate in % (e.g. 4.5)
-  rpsn: number;
-  ratesDate: string;
 }
+
+/** Orientační výpočet je označen jako orientační (CLAUDE.md 4.4) —
+ *  zaokrouhlení na desetitisíce zabrání falešné přesnosti u částky,
+ *  která se sčítá přes 15–30 let. */
+const roundToTen = (n: number) => Math.round(n / 10_000) * 10_000;
 
 const TERMS: Array<{ value: number; label: string }> = [
   { value: 15, label: '15 let' },
@@ -22,7 +25,7 @@ const TERMS: Array<{ value: number; label: string }> = [
   { value: 30, label: '30 let' },
 ];
 
-export function CalculatorClient({ tenantTitle, logoUrl, initialRate, rpsn, ratesDate }: Props) {
+export function CalculatorClient({ tenantTitle, logoUrl, initialRate }: Props) {
   const [price, setPrice] = useState(5_000_000);
   const [equityPct, setEquityPct] = useState(20);
   const [years, setYears] = useState(30);
@@ -67,9 +70,12 @@ export function CalculatorClient({ tenantTitle, logoUrl, initialRate, rpsn, rate
     if (years === 30 && income > 80_000) {
       return 'Při vašem příjmu by 20letá splatnost znamenala vyšší splátku, ale o ~30 % nižší úroky celkem.';
     }
+    // "Splňujete všechny limity ČNB" byl tvrzení o regulaci, které pro
+    // DSTI/DTI neplatí (oba deaktivovány, viz CLAUDE.md 3.2) — LTV je jediný
+    // závazný limit, zbytek je orientační hranice bank.
     return calc.allOk
-      ? 'Splňujete všechny limity ČNB. Můžeme rovnou připravit nabídku 8+ bank.'
-      : 'Procházíme limity. Vše vyřešíme společně s Davidem.';
+      ? 'Orientačně jste v pásmu, které banky obvykle akceptují. Specialista připraví konkrétní nabídky.'
+      : 'Procházíme hranice bank. Vše vyřešíme společně s Davidem.';
   }, [calc, equityPct, isYoung, years, income]);
 
   const handleContinue = () => {
@@ -116,7 +122,7 @@ export function CalculatorClient({ tenantTitle, logoUrl, initialRate, rpsn, rate
             Spočítejte si splátku za 2 minuty
           </h1>
           <p className="text-body-md text-on-surface-variant">
-            Aktuální sazba {initialRate}% (5-letá fixace, ČNB ARAD · {ratesDate})
+            Aktuální sazba {formatPercent(initialRate / 100)} (5letá fixace, ČNB ARAD — poslední dostupný průměr)
           </p>
         </div>
 
@@ -220,16 +226,22 @@ export function CalculatorClient({ tenantTitle, logoUrl, initialRate, rpsn, rate
             <div className={`text-headline-md font-semibold ${calc.dstiOk ? 'text-emerald-700' : 'text-red-700'}`}>
               {formatPercent(calc.dsti)}
             </div>
-            <div className="text-label-sm text-on-surface-variant/60 normal-case tracking-normal">limit 45 %</div>
+            <div className="text-label-sm text-on-surface-variant/60 normal-case tracking-normal">orientační hranice 45 %</div>
           </div>
           <div className={`p-4 rounded-2xl ${calc.dtiOk ? 'bg-emerald-50' : 'bg-red-50'}`}>
             <div className="text-label-sm font-bold uppercase tracking-wider text-on-surface-variant/70 mb-1">DTI</div>
             <div className={`text-headline-md font-semibold ${calc.dtiOk ? 'text-emerald-700' : 'text-red-700'}`}>
-              {calc.dti.toFixed(1)}×
+              {calc.dti.toFixed(1).replace('.', ',')}×
             </div>
-            <div className="text-label-sm text-on-surface-variant/60 normal-case tracking-normal">limit 9,5×</div>
+            <div className="text-label-sm text-on-surface-variant/60 normal-case tracking-normal">orientační hranice 9,5×</div>
           </div>
         </div>
+        {/* DSTI/DTI regulatorní limit ČNB je od 2023/2024 deaktivován — jde
+            jen o hranice, které si obvykle drží banky (CLAUDE.md 3.2). LTV
+            výše zůstává jediný závazný limit. */}
+        <p className="text-label-sm text-on-surface-variant/50 text-center mt-2 normal-case tracking-normal">
+          LTV je závazný limit ČNB. DSTI a DTI jsou dnes jen orientační hranice bank — regulatorní limit ČNB je deaktivován.
+        </p>
 
         {/* Big result */}
         <div className="mt-8 bg-on-surface text-white p-6 md:p-8 rounded-3xl shadow-premium relative overflow-hidden">
@@ -244,16 +256,23 @@ export function CalculatorClient({ tenantTitle, logoUrl, initialRate, rpsn, rate
             </div>
             <div className="grid grid-cols-2 gap-3 mb-6 text-label-md">
               <div>
-                <p className="text-surface-variant/70 mb-1">Vyše úvěru</p>
+                <p className="text-surface-variant/70 mb-1">Výše úvěru</p>
                 <p className="font-semibold tabular-nums">{formatCZK(Math.round(calc.loan))}</p>
               </div>
               <div>
                 <p className="text-surface-variant/70 mb-1">Celkem na úrocích</p>
-                <p className="font-semibold tabular-nums">{formatCZK(Math.round(calc.totalInterest))}</p>
+                {/* Zaokrouhleno na desetitisíce — u orientačního výpočtu za
+                    15–30 let by přesnost na korunu byla falešná (CLAUDE.md 4.4). */}
+                <p className="font-semibold tabular-nums">≈ {formatCZK(roundToTen(calc.totalInterest))}</p>
               </div>
             </div>
             <p className="text-label-sm text-surface-variant/70 mb-5 normal-case tracking-normal">
-              Sazba {initialRate}% · RPSN {rpsn}% · Pro přesný odhad zahrne David daně a pojištění.
+              Sazba {formatPercent(initialRate / 100)} · orientační výpočet bez daní a pojištění. RPSN a přesné poplatky
+              najdete u konkrétní nabídky — viz{' '}
+              <Link href="/nabidky#reprezentativni-priklad" className="underline hover:text-white">
+                reprezentativní příklad
+              </Link>
+              .
             </p>
             <button
               onClick={handleContinue}
@@ -267,7 +286,7 @@ export function CalculatorClient({ tenantTitle, logoUrl, initialRate, rpsn, rate
 
         {/* Disclaimer */}
         <p className="text-label-sm text-on-surface-variant/60 text-center mt-8 normal-case tracking-normal max-w-md mx-auto">
-          Výpočet je orientační. Skutečnou nabídku připraví David Choc — specialista Quadrum a vázaný zástupce SAB servis pro spotřebitelské úvěry dle § 257/2016 Sb.
+          Výpočet je orientační. Skutečnou nabídku připraví David Choc — specialista Quadrum a vázaný zástupce SAB servis pro spotřebitelské úvěry dle zákona č. 257/2016 Sb.
         </p>
       </main>
       </div>

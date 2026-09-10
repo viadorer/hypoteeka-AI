@@ -11,7 +11,7 @@ export const metadata: Metadata = {
   alternates: { canonical: 'https://www.hypoteeka.cz/kalkulacka' },
 };
 
-async function fetchRates(): Promise<{ avgRate: number; rateFix5y: number; rateFix10y: number; rpsn: number; date: string } | null> {
+async function fetchRates(): Promise<{ avgRate: number; rateFix5y: number; rateFix10y: number } | null> {
   try {
     const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.hypoteeka.cz';
     const res = await fetch(`${baseUrl}/api/rates`, { next: { revalidate: 3600 } });
@@ -21,8 +21,6 @@ async function fetchRates(): Promise<{ avgRate: number; rateFix5y: number; rateF
       avgRate: data.mortgage?.avgRate ?? 4.5,
       rateFix5y: data.mortgage?.rateFix5y ?? 4.5,
       rateFix10y: data.mortgage?.rateFix10y ?? 4.2,
-      rpsn: data.mortgage?.rpsn ?? 4.7,
-      date: data.date ?? new Date().toISOString().slice(0, 10),
     };
   } catch {
     return null;
@@ -40,8 +38,6 @@ export default async function CalculatorPage() {
         tenantTitle={tenant.branding.title}
         logoUrl={tenant.branding.logoUrl ?? '/logo.png'}
         initialRate={rates?.rateFix5y ?? 4.5}
-        rpsn={rates?.rpsn ?? 4.7}
-        ratesDate={rates?.date ?? ''}
       />
       <LegalFooter />
     </div>

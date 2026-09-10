@@ -86,23 +86,45 @@ export function LandingPage({ onStartChat, logoUrl, title, isValuation }: Props)
         </div>
       </section>
 
-      {/* Trust Stats */}
+      {/* Trust Stats — jen ověřitelná tvrzení. Dřív tu byla nedoložená
+          čísla (1 000+ klientů, 4,9 hodnocení) bez zdroje; nahrazeno tím,
+          co obstojí (CLAUDE.md bod 8). */}
       <section className="py-16 px-6 bg-surface-container-lowest">
         <div className="max-w-[1200px] mx-auto grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-12">
           {[
-            { icon: 'groups', value: '1 000+', label: 'spokojených klientů' },
-            { icon: 'account_balance', value: '8+', label: 'partnerských bank' },
-            { icon: 'verified', value: '100 %', label: 'certifikovaní poradci' },
-            { icon: 'grade', value: '4,9', label: 'hodnocení klientů' },
-          ].map((stat) => (
-            <div key={stat.label} className="text-center group">
-              <div className="w-12 h-12 bg-primary/5 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300">
-                <span className="material-symbols-outlined filled text-primary">{stat.icon}</span>
+            {
+              icon: 'verified_user',
+              label: 'Registrace ČNB',
+              href: 'https://www.cnb.cz/cs/dohled-financni-trh/seznamy/jerrs/',
+            },
+            { icon: 'gavel', label: 'Vázaný zástupce SAB servis' },
+            { icon: 'payments', label: 'Konzultace zdarma — platí banka' },
+            { icon: 'bolt', label: 'Odpověď do 24 hodin' },
+          ].map((stat) => {
+            const content = (
+              <>
+                <div className="w-12 h-12 bg-primary/5 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300">
+                  <span className="material-symbols-outlined filled text-primary">{stat.icon}</span>
+                </div>
+                <div className="text-label-md text-on-surface-variant">{stat.label}</div>
+              </>
+            );
+            return stat.href ? (
+              <a
+                key={stat.label}
+                href={stat.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-center group hover:opacity-80 transition-opacity"
+              >
+                {content}
+              </a>
+            ) : (
+              <div key={stat.label} className="text-center group">
+                {content}
               </div>
-              <div className="text-display-xl-mobile text-on-surface mb-1">{stat.value}</div>
-              <div className="text-label-md text-on-surface-variant">{stat.label}</div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </section>
 
@@ -132,13 +154,13 @@ export function LandingPage({ onStartChat, logoUrl, title, isValuation }: Props)
             </div>
             <div className="lg:w-1/2 relative">
               <div className="absolute -inset-4 bg-primary/10 rounded-[40px] blur-2xl -z-10" />
-              <Image
-                src="/images/redesign/hugo-portrait.png"
-                alt="Hugo — AI hypoteční specialista"
-                width={400}
-                height={400}
-                className="w-full h-auto rounded-[32px] shadow-premium object-cover aspect-square max-w-[400px] mx-auto"
-              />
+              {/* Hugo je záměrně stroj, ne tvář — žádná antropomorfní ilustrace.
+                  Skutečné fotografie na webu patří výhradně poradcům, viz /poradce. */}
+              <div className="w-full aspect-square max-w-[400px] mx-auto rounded-[32px] shadow-premium bg-surface-container-lowest border border-outline-variant/15 flex items-center justify-center">
+                <span className="material-symbols-outlined text-primary" style={{ fontSize: 120, fontVariationSettings: "'FILL' 1" }}>
+                  smart_toy
+                </span>
+              </div>
               <div className="absolute -bottom-6 -right-6 bg-white p-4 rounded-2xl shadow-lg hidden md:block">
                 <div className="flex items-center gap-3">
                   <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse" />
@@ -161,7 +183,7 @@ export function LandingPage({ onStartChat, logoUrl, title, isValuation }: Props)
             {[
               { icon: 'chat_bubble', step: '1.', title: 'Řekněte nám o nemovitosti', text: 'Hugo se vás zeptá na cenu, vlastní zdroje a příjem. Konverzace, ne formulář.' },
               { icon: 'calculate', step: '2.', title: 'Spočítáme všechno', text: 'Splátka, bonita ČNB, porovnání sazeb bank. Vše na jednom místě.' },
-              { icon: 'person_pin', step: '3.', title: 'Spojíme vás s poradcem', text: 'Certifikovaný specialista (David Choc) porovná nabídky 8+ bank a vyjedná nejlepší podmínky.' },
+              { icon: 'person_pin', step: '3.', title: 'Spojíme vás s poradcem', text: 'Specialista (David Choc a tým) porovná nabídky bank a vyjedná podmínky na míru vaší situaci.' },
             ].map((s) => (
               <div key={s.step} className="bg-surface-container-low p-8 rounded-3xl text-center border border-white hover:border-primary/20 transition-all shadow-soft group">
                 <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-sm group-hover:bg-primary group-hover:text-white transition-all duration-300">
@@ -176,40 +198,42 @@ export function LandingPage({ onStartChat, logoUrl, title, isValuation }: Props)
         </section>
       )}
 
-      {/* Testimonials */}
+      {/* Nejde jen o výpočet — most na existující obsah (podnět kolegyně,
+          9/2026). Odkazuje jen na skutečné, existující stránky. */}
       {!isValuation && (
-        <section className="py-16 md:py-24 bg-surface-container-low/50 px-6">
-          <div className="max-w-[1200px] mx-auto">
-            <div className="text-center mb-16">
-              <span className="text-label-md text-on-surface-variant uppercase tracking-widest block mb-4">
-                Co říkají klienti
-              </span>
-              <h2 className="text-headline-lg-mobile md:text-headline-lg text-on-surface">
-                Přečtěte si zkušenosti ostatních
-              </h2>
-            </div>
-            <div className="grid md:grid-cols-3 gap-6">
-              {[
-                { name: 'Martina K.', city: 'Praha', text: 'Hugo mi pomohl zorientovat se v nabídkách bank. Díky poradci jsem ušetřila přes 200 tisíc na úrocích.' },
-                { name: 'Tomáš P.', city: 'Brno', text: 'Konečně někdo, kdo vysvětlí hypotéku srozumitelně. Za 5 minut jsem věděl, na co dosáhnu.' },
-                { name: 'Lucie M.', city: 'Ostrava', text: 'Refinancování jsem řešila měsíce. Tady mi poradce vyřídil vše za týden. Sazba klesla o 1,5 %.' },
-              ].map((t) => (
-                <div key={t.name} className="bg-white p-8 rounded-3xl shadow-soft flex flex-col justify-between hover:shadow-premium transition-shadow">
-                  <div>
-                    <div className="flex gap-1 mb-6">
-                      {Array.from({ length: 5 }).map((_, i) => (
-                        <span key={i} className="material-symbols-outlined filled text-primary" style={{ fontSize: 18 }}>star</span>
-                      ))}
-                    </div>
-                    <p className="text-body-md text-on-surface-variant italic mb-8">&ldquo;{t.text}&rdquo;</p>
-                  </div>
-                  <div>
-                    <div className="font-bold text-on-surface">{t.name}</div>
-                    <div className="text-label-md text-on-surface-variant">{t.city}</div>
-                  </div>
-                </div>
-              ))}
-            </div>
+        <section className="py-16 md:py-24 px-6 max-w-[1200px] mx-auto">
+          <div className="mb-10">
+            <span className="text-label-md text-on-surface-variant uppercase tracking-widest block mb-4">
+              Nejde jen o výpočet
+            </span>
+            <h2 className="text-headline-lg-mobile md:text-headline-lg text-on-surface mb-3">
+              Sazba je jen začátek
+            </h2>
+            <p className="text-body-lg text-on-surface-variant max-w-2xl">
+              Rozhoduje fixace, doložitelnost příjmu i to, jestli vůbec kupovat.
+            </p>
+          </div>
+          <div className="grid sm:grid-cols-2 gap-5">
+            <Link
+              href="/nabidky"
+              className="group bg-surface-container-low p-7 rounded-3xl border border-white hover:border-primary/20 transition-all shadow-soft"
+            >
+              <span className="material-symbols-outlined text-primary mb-3 block" style={{ fontSize: 32 }}>trending_up</span>
+              <h3 className="text-headline-md text-on-surface mb-2">Jakou sazbu reálně dostanete</h3>
+              <p className="text-body-md text-on-surface-variant">
+                Kde se pohybuje trh podle ČNB a pět faktorů, které rozhodují o vaší konkrétní nabídce.
+              </p>
+            </Link>
+            <Link
+              href="/clanky"
+              className="group bg-surface-container-low p-7 rounded-3xl border border-white hover:border-primary/20 transition-all shadow-soft"
+            >
+              <span className="material-symbols-outlined text-primary mb-3 block" style={{ fontSize: 32 }}>menu_book</span>
+              <h3 className="text-headline-md text-on-surface mb-2">Poradna a návody</h3>
+              <p className="text-body-md text-on-surface-variant">
+                Praktické články o nastavení hypotéky — bez balastu, s odkazem na kalkulačku nebo Huga.
+              </p>
+            </Link>
           </div>
         </section>
       )}
@@ -291,6 +315,12 @@ export function LandingPage({ onStartChat, logoUrl, title, isValuation }: Props)
           )}
           <div className="w-full h-px bg-outline-variant/10" />
           <div className="flex flex-wrap justify-center gap-x-6 gap-y-2 text-label-md text-on-surface-variant">
+            {!isValuation && (
+              <>
+                <Link href="/poradce" className="hover:text-primary underline transition-colors">Naši poradci</Link>
+                <Link href="/nabidky#reprezentativni-priklad" className="hover:text-primary underline transition-colors">Reprezentativní příklad</Link>
+              </>
+            )}
             <Link href="/podminky" className="hover:text-primary underline transition-colors">Podmínky a GDPR</Link>
             <Link href="/podminky/odvolat" className="hover:text-primary underline transition-colors">Odvolat souhlas</Link>
             <Link href="/clanky" className="hover:text-primary underline transition-colors">Články</Link>

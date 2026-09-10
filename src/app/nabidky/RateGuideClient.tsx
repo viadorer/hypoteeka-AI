@@ -108,8 +108,9 @@ export function RateGuideClient({ avgRate, referencePeriod }: Props) {
         </p>
       </section>
 
-      {/* 2. Reprezentativní příklad — § 92 z. 257/2016 Sb. */}
-      <section className="rounded-2xl border border-outline-variant/30 p-6 md:p-8 mb-10">
+      {/* 2. Reprezentativní příklad — § 92 z. 257/2016 Sb. Trvale přístupné,
+          proto má vlastní kotvu — kalkulačka i patička na ni odkazují. */}
+      <section id="reprezentativni-priklad" className="scroll-mt-20 rounded-2xl border border-outline-variant/30 p-6 md:p-8 mb-10">
         <h2 className="text-lg font-semibold text-on-surface mb-4">
           Reprezentativní příklad
         </h2>
