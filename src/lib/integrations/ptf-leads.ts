@@ -35,6 +35,46 @@ const PTF_CASE_TYPE = 'hypoteka';
  *  timeline případu má zůstat čitelná. */
 const TRANSCRIPT_MAX_CHARS = 20_000;
 
+/** Počet pokusů o zápis doplňků do PTF (síťový blip nesmí zahodit přepis). */
+const ENRICH_ATTEMPTS = 3;
+
+type PtfOpResult<T> = { data?: T | null; error: { message: string } | null };
+
+interface PtfLeadRow {
+  tenant_id: string;
+  contact_id: string | null;
+  property_id: string | null;
+}
+
+/**
+ * Zopakuje operaci nad PTF DB při selhání. Bez toho stačil jeden výpadek
+ * sítě a přepis konverzace se k případu nedostal — zůstala po něm jen
+ * řádka v logu, kterou nikdo nečte.
+ */
+async function withRetry<T>(
+  label: string,
+  op: () => PromiseLike<PtfOpResult<T>>
+): Promise<{ ok: boolean; data?: T | null }> {
+  for (let attempt = 1; attempt <= ENRICH_ATTEMPTS; attempt++) {
+    let message: string;
+    try {
+      const { data, error } = await op();
+      if (!error) return { ok: true, data };
+      message = error.message;
+    } catch (err) {
+      message = err instanceof Error ? err.message : String(err);
+    }
+
+    if (attempt === ENRICH_ATTEMPTS) {
+      console.error(`[PTF] ${label} selhalo po ${ENRICH_ATTEMPTS} pokusech: ${message}`);
+      return { ok: false };
+    }
+    console.warn(`[PTF] ${label} selhalo (pokus ${attempt}/${ENRICH_ATTEMPTS}): ${message}`);
+    await new Promise(resolve => setTimeout(resolve, 400 * attempt));
+  }
+  return { ok: false };
+}
+
 export interface PtfLeadResult {
   success: boolean;
   ptfLeadId?: string;
@@ -52,7 +92,7 @@ function splitName(name: string): { first: string; last: string } {
 }
 
 /**
- * Doplní čerstvě založený případ v PTF o to, co veřejné API neumí:
+ * Doplní případ v PTF o to, co veřejné API neumí:
  *
  *  1. `case_type = 'hypoteka'` — admin pak případ ukáže se štítkem „Hypotéka"
  *  2. aktivitu typu `note` s přepisem konverzace, zjištěnými údaji
@@ -60,29 +100,32 @@ function splitName(name: string): { first: string; last: string } {
  *
  * Zapisuje service klíčem přímo do PTF `public` schématu (data, ne struktura) —
  * pro aktivity PTF veřejné API nemá a admin API je za přihlášením.
+ *
+ * `deduped` = PTF našel existující případ (vrací jeho id, viz
+ * backend/src/modules/leads/leads.routes.ts). Přepis se připojí i tehdy —
+ * jinak by druhá konverzace téhož klienta nebyla nikde vidět. `case_type`
+ * se u něj ale nepřepisuje: existující případ může být realitní a štítek
+ * „Hypotéka" by ho přeznačil.
  */
-async function enrichPtfCase(ptfLeadId: string, sessionId: string): Promise<void> {
+async function enrichPtfCase(
+  ptfLeadId: string,
+  sessionId: string,
+  { deduped }: { deduped: boolean }
+): Promise<void> {
   const db = getPtfPublicDb();
   if (!db) return;
 
   // tenant_id je na aktivitě povinný; contact_id doplňuje trigger PTF
-  const { data: leadRow, error: readError } = await db
-    .from('leads')
-    .select('tenant_id, contact_id, property_id')
-    .eq('id', ptfLeadId)
-    .single();
+  const read = await withRetry<PtfLeadRow>(`Načtení případu ${ptfLeadId}`, () =>
+    db.from('leads').select('tenant_id, contact_id, property_id').eq('id', ptfLeadId).single()
+  );
+  const leadRow = read.data;
+  if (!read.ok || !leadRow) return;
 
-  if (readError || !leadRow) {
-    console.error(`[PTF] Případ ${ptfLeadId} se nepodařilo načíst: ${readError?.message ?? 'nenalezen'}`);
-    return;
-  }
-
-  const { error: caseTypeError } = await db
-    .from('leads')
-    .update({ case_type: PTF_CASE_TYPE })
-    .eq('id', ptfLeadId);
-  if (caseTypeError) {
-    console.error(`[PTF] Nastavení case_type selhalo: ${caseTypeError.message}`);
+  if (!deduped) {
+    await withRetry('Nastavení case_type', () =>
+      db.from('leads').update({ case_type: PTF_CASE_TYPE }).eq('id', ptfLeadId)
+    );
   }
 
   const transcript = await buildSessionTranscript(sessionId);
@@ -95,32 +138,40 @@ async function enrichPtfCase(ptfLeadId: string, sessionId: string): Promise<void
     ? `${transcript.text.slice(0, TRANSCRIPT_MAX_CHARS)}\n\n[…zkráceno, celý přepis je v hypoteeka.sessions, session ${sessionId}]`
     : transcript.text;
 
-  const { error: activityError } = await db.from('activities').insert({
-    tenant_id: leadRow.tenant_id,
-    lead_id: ptfLeadId,
-    contact_id: leadRow.contact_id ?? null,
-    property_id: leadRow.property_id ?? null,
-    activity_type: 'note',
-    subject: `Konverzace s Hugem na hypoteeka.cz (${transcript.data.messageCount} zpráv, ${transcript.data.calculators.length} kalkulaček)`,
-    description,
-    metadata: {
-      origin: 'hypoteeka',
-      session_id: sessionId,
-      lead_score: transcript.data.leadScore,
-      phase: transcript.data.phase,
-      persona: transcript.data.persona,
-      calculators: transcript.data.calculators,
-      profile: transcript.data.profile,
-    },
-    performed_by: null,
-    is_system: true,
-    is_ai_generated: true,
-  });
+  const subjectPrefix = deduped
+    ? 'Další konverzace s Hugem na hypoteeka.cz'
+    : 'Konverzace s Hugem na hypoteeka.cz';
 
-  if (activityError) {
-    console.error(`[PTF] Zápis přepisu do timeline selhal: ${activityError.message}`);
-  } else {
+  const written = await withRetry('Zápis přepisu do timeline', () =>
+    db.from('activities').insert({
+      tenant_id: leadRow.tenant_id,
+      lead_id: ptfLeadId,
+      contact_id: leadRow.contact_id ?? null,
+      property_id: leadRow.property_id ?? null,
+      activity_type: 'note',
+      subject: `${subjectPrefix} (${transcript.data.messageCount} zpráv, ${transcript.data.calculators.length} kalkulaček)`,
+      description,
+      metadata: {
+        origin: 'hypoteeka',
+        session_id: sessionId,
+        deduped,
+        lead_score: transcript.data.leadScore,
+        phase: transcript.data.phase,
+        persona: transcript.data.persona,
+        calculators: transcript.data.calculators,
+        profile: transcript.data.profile,
+      },
+      performed_by: null,
+      is_system: true,
+      is_ai_generated: true,
+    })
+  );
+
+  if (written.ok) {
     console.log(`[PTF] Přepis připojen k případu ${ptfLeadId} (${transcript.data.calculators.length} kalkulaček)`);
+  } else {
+    // Session zůstává v hypoteeka.sessions — přepis jde k případu dopsat ručně.
+    console.error(`[PTF] Případ ${ptfLeadId} zůstal bez přepisu, session ${sessionId}`);
   }
 }
 
@@ -198,10 +249,12 @@ export async function submitLeadToPtf(lead: LeadRecord): Promise<PtfLeadResult> 
     const data = (await res.json().catch(() => ({}))) as { id?: string; deduped?: boolean };
     console.log(`[PTF] Lead předán do PTF CRM: ${lead.name} (${lead.email}) → ${data.id ?? 'ok'}`);
 
-    // Doplnění případu (typ + přepis konverzace). Selhání nesmí shodit
-    // předání leadu — lead v CRM už je, doplňky jsou navíc.
-    if (data.id && !data.deduped) {
-      await enrichPtfCase(data.id, lead.sessionId).catch(err =>
+    // Doplnění případu (typ + přepis konverzace). Běží i pro dedup —
+    // tam PTF přeskakuje welcome email, workflow i demand, takže bez
+    // tohohle by po druhé konverzaci klienta v případu nebylo nic.
+    // Selhání nesmí shodit předání leadu — lead v CRM už je.
+    if (data.id) {
+      await enrichPtfCase(data.id, lead.sessionId, { deduped: !!data.deduped }).catch(err =>
         console.error('[PTF] Doplnění případu selhalo:', err instanceof Error ? err.message : err)
       );
     }

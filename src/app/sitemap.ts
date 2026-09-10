@@ -1,9 +1,13 @@
 import type { MetadataRoute } from 'next';
 import { storage } from '@/lib/storage';
 import { getDefaultTenantId } from '@/lib/tenant/config';
+import { IS_INDEXABLE } from '@/lib/site-visibility';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://hypoteeka.cz';
+
+  // Dev mód (viz CLAUDE.md 2.1): sitemapu negenerovat, dokud projekt neběží ostře.
+  if (!IS_INDEXABLE) return [];
 
   const entries: MetadataRoute.Sitemap = [
     {

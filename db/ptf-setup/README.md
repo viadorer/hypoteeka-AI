@@ -88,6 +88,19 @@ zachová, markdown ani HTML se nevykreslí (proto prostý text).
 Strukturovaná data (kalkulačky, profil) jdou navíc do
 `activities.metadata`. Pozor: admin API `metadata` u aktivit nevrací,
 takže v UI vidět nejsou — jsou tam pro dotazy nad DB a pro budoucí use.
+Proto do `description` patří celý profil po skupinách (záměr, nemovitost,
+ocenění, příjmy, financování, investice, preference), ne jen výběr polí —
+co není v textu, poradce nevidí ([session-transcript.ts](../../src/lib/integrations/session-transcript.ts)).
+
+**Opakovaný lead (dedup):** když PTF pozná známý kontakt, vrátí
+`{ deduped: true, id }` a přeskočí welcome email, workflow i demand.
+Přepis konverzace se k případu připojí i tak — jinak by druhá konverzace
+téhož klienta nebyla nikde vidět. `case_type` se u dedupu **nepřepisuje**:
+existující případ může být realitní a štítek „Hypotéka" by ho přeznačil.
+
+Zápisy doplňků se při selhání opakují (3 pokusy, backoff). Když neprojdou
+ani tak, zůstane v logu `[PTF] Případ … zůstal bez přepisu, session …` —
+přepis je pořád v `hypoteeka.sessions` a dá se dopsat ručně.
 
 **Zápis mimo API:** `case_type` a aktivity veřejné API PTF nastavit
 neumí (admin API je za přihlášením), proto je zapisujeme service klíčem
@@ -124,6 +137,11 @@ data do existujících tabulek — žádný sloupec, enum ani trigger.
 
 - PTF endpoint `/api/leads` vyžaduje e-mail — lead jen s telefonem se do PTF
   nepředá (zůstává v `hypoteeka.leads` a v Realvisoru, zaloguje se warn).
+  Podmínka je na straně PTF backendu (`backend/src/modules/leads/leads.routes.ts`,
+  validace `!first_name || !last_name || !email || !gdpr_consent`); opravit to
+  zevnitř hypoteeky nejde — vymyšlená adresa by spustila welcome email na
+  neexistující schránku. Fix patří do PTF: přijmout e-mail **nebo** telefon
+  (a ošetřit dedup a `contacts`, které dnes na e-mail spoléhají).
 - PTF endpoint má rate limit 3 požadavky / 10 min / IP — při běžném objemu
   leadů nevadí, hromadný import přes něj nedělat.
 - Data ze starého (pauznutého) Supabase projektu hypoteeky tímto **nejsou**
