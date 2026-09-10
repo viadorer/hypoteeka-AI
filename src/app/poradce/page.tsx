@@ -32,10 +32,11 @@ export default async function AdvisorsPage() {
           Kdo pro vás sazbu vyjedná
         </h1>
         <p className="text-on-surface-variant leading-relaxed mb-10">
-          Hugo připraví podklady — vaše čísla, orientační bonitu a přepis toho, co
-          řešíte. Náš specialista na ně naváže: porovná skutečné nabídky bank,
-          vyjedná podmínky a provede vás schválením až po čerpání. Ozve se do 24
-          hodin; konzultace je zdarma a k ničemu nezavazuje — odměnu hradí banka.
+          Hugo vás podle situace spojí se specialistou přesně na ni. Všichni jsou
+          vázaní zástupci SAB servis s.r.o. s registrací ověřitelnou v seznamu ČNB.
+          Specialista porovná skutečné nabídky bank, vyjedná podmínky a provede vás
+          schválením až po čerpání — ozve se do 4 pracovních hodin; konzultace je
+          zdarma a k ničemu nezavazuje, odměnu hradí banka.
         </p>
 
         {featured && (

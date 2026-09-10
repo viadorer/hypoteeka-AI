@@ -55,10 +55,10 @@ export function LandingPage({ onStartChat, logoUrl, title, isValuation }: Props)
         <div className="max-w-[1200px] mx-auto text-center relative z-10">
           <div className="inline-flex items-center gap-2 bg-white/80 backdrop-blur px-4 py-2 rounded-full mb-8 shadow-soft">
             <span className="material-symbols-outlined filled text-primary-container" style={{ fontSize: 20 }}>
-              smart_toy
+              auto_awesome
             </span>
             <span className="text-label-md text-on-surface-variant uppercase tracking-wider">
-              {isValuation ? 'Seznamte se s Otto' : 'Seznamte se s Hugem'}
+              {isValuation ? 'AI průvodce oceněním' : 'AI průvodce hypotékou'}
             </span>
           </div>
           <h1 className="text-display-xl-mobile md:text-display-xl text-on-surface max-w-4xl mx-auto mb-6">
@@ -69,7 +69,7 @@ export function LandingPage({ onStartChat, logoUrl, title, isValuation }: Props)
           <p className="text-body-lg text-on-surface-variant max-w-2xl mx-auto mb-10">
             {isValuation
               ? 'AI asistent vám orientačně ocení byt, dům nebo pozemek na základě reálných dat z trhu. Zdarma a bez závazků.'
-              : 'AI poradce Hugo vám spočítá splátku, ověří bonitu a spojí vás s hypotečním specialistou. Zdarma a bez závazků.'}
+              : 'AI průvodce Hugo vám spočítá splátku, ověří bonitu a spojí vás se specialistou přesně na vaši situaci. Zdarma a bez závazků.'}
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
             <button
@@ -81,8 +81,15 @@ export function LandingPage({ onStartChat, logoUrl, title, isValuation }: Props)
                 arrow_forward
               </span>
             </button>
-            <p className="text-on-surface-variant text-label-md">Žádná registrace, žádné závazky</p>
+            {!isValuation && (
+              <button onClick={() => handleCTA('hero-secondary')} className="text-primary font-semibold text-label-md hover:underline px-2">
+                Zeptat se Huga →
+              </button>
+            )}
           </div>
+          <p className="text-on-surface-variant text-label-md mt-4">
+            {isValuation ? 'Žádná registrace, žádné závazky' : 'Žádná registrace. Výsledek hned, kontakt jen když sami chcete.'}
+          </p>
         </div>
       </section>
 
@@ -99,7 +106,7 @@ export function LandingPage({ onStartChat, logoUrl, title, isValuation }: Props)
             },
             { icon: 'gavel', label: 'Vázaný zástupce SAB servis' },
             { icon: 'payments', label: 'Konzultace zdarma — platí banka' },
-            { icon: 'bolt', label: 'Odpověď do 24 hodin' },
+            { icon: 'bolt', label: 'Odpověď do 4 pracovních hodin' },
           ].map((stat) => {
             const content = (
               <>
@@ -131,42 +138,48 @@ export function LandingPage({ onStartChat, logoUrl, title, isValuation }: Props)
       {/* Hugo Intro + How it Works */}
       {!isValuation && (
         <section id="jak-to-funguje" className="py-16 md:py-24 px-6 max-w-[1200px] mx-auto">
-          <div className="flex flex-col lg:flex-row items-center gap-16 mb-20">
-            <div className="lg:w-1/2">
-              <span className="text-label-md text-on-surface-variant uppercase tracking-widest block mb-4">
-                Osobní přístup s AI
-              </span>
-              <h2 className="text-headline-lg-mobile md:text-headline-lg text-on-surface mb-6">
-                Seznamte se s Hugem, vaším AI specialistou
-              </h2>
-              <p className="text-body-lg text-on-surface-variant mb-8">
-                Hugo není jen obyčejný kalkulátor. Je to pokročilá AI, která rozumí světu hypoték
-                a mluví lidskou řečí. Provede vás procesem hladce, rychle a s maximální přesností.
-              </p>
-              <div className="flex items-center gap-4 p-4 bg-primary-container/5 rounded-2xl border border-primary-container/10">
-                <div className="w-12 h-12 bg-primary-container rounded-full flex items-center justify-center text-white shrink-0">
-                  <span className="material-symbols-outlined">bolt</span>
-                </div>
-                <p className="text-label-md text-on-surface-variant">
-                  Analýza vašeho případu zabere Hugovi méně než 120 vteřin.
-                </p>
-              </div>
-            </div>
-            <div className="lg:w-1/2 relative">
-              <div className="absolute -inset-4 bg-primary/10 rounded-[40px] blur-2xl -z-10" />
-              {/* Hugo je záměrně stroj, ne tvář — žádná antropomorfní ilustrace.
-                  Skutečné fotografie na webu patří výhradně poradcům, viz /poradce. */}
-              <div className="w-full aspect-square max-w-[400px] mx-auto rounded-[32px] shadow-premium bg-surface-container-lowest border border-outline-variant/15 flex items-center justify-center">
-                <span className="material-symbols-outlined text-primary" style={{ fontSize: 120, fontVariationSettings: "'FILL' 1" }}>
+          {/* Hugo a tým — dvě rovnocenné karty. Hugo je záměrně stroj (ikona),
+              tváře na webu patří výhradně skutečným poradcům (CLAUDE.md bod 9). */}
+          <div className="grid md:grid-cols-2 gap-6 mb-20">
+            <div className="bg-surface-container-lowest border border-outline-variant/15 rounded-3xl p-8 shadow-soft">
+              <div className="w-12 h-12 rounded-full bg-primary/5 flex items-center justify-center mb-4">
+                <span className="material-symbols-outlined text-primary" style={{ fontSize: 26, fontVariationSettings: "'FILL' 1" }}>
                   smart_toy
                 </span>
               </div>
-              <div className="absolute -bottom-6 -right-6 bg-white p-4 rounded-2xl shadow-lg hidden md:block">
-                <div className="flex items-center gap-3">
-                  <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse" />
-                  <span className="text-label-md font-bold">Hugo je online</span>
+              <h2 className="text-headline-md text-on-surface mb-3">Hugo je stroj. A je to tak správně.</h2>
+              <p className="text-body-md text-on-surface-variant mb-5">
+                Hugo počítá splátky, bonitu i srovnání nájmu s hypotékou — vždy ověřenou matematikou,
+                nikdy odhadem. Neradí a nic neslibuje: individuální poradenství patří výhradně
+                licencovaným specialistům.
+              </p>
+              <button onClick={() => handleCTA('hugo-card')} className="text-primary text-label-md font-semibold hover:underline">
+                Vyzkoušet konverzaci →
+              </button>
+            </div>
+
+            <div className="bg-surface-container-lowest border border-outline-variant/15 rounded-3xl p-8 shadow-soft">
+              <div className="flex items-center gap-4 mb-4">
+                <Image
+                  src="/images/team/david-choc.png"
+                  alt="David Choc"
+                  width={56}
+                  height={56}
+                  className="w-14 h-14 rounded-full object-cover border-2 border-white shadow-sm shrink-0"
+                />
+                <div>
+                  <h2 className="text-headline-md text-on-surface leading-tight">David Choc a tým</h2>
+                  <span className="text-label-md text-on-surface-variant">hypoteční specialisté</span>
                 </div>
               </div>
+              <p className="text-body-md text-on-surface-variant mb-5">
+                Každý výpočet od Huga končí u skutečného člověka. Podle vaší situace — bydlení,
+                investice, refinancování — se vám ozve specialista přesně na ni,{' '}
+                <strong className="text-on-surface">do 4 pracovních hodin</strong>.
+              </p>
+              <Link href="/poradce" className="text-primary text-label-md font-semibold hover:underline">
+                Poznat celý tým →
+              </Link>
             </div>
           </div>
 
@@ -181,9 +194,9 @@ export function LandingPage({ onStartChat, logoUrl, title, isValuation }: Props)
           <div className="grid md:grid-cols-3 gap-8 relative">
             <div className="hidden md:block absolute top-1/3 left-1/4 right-1/4 h-0.5 bg-outline-variant/30 -z-10" />
             {[
-              { icon: 'chat_bubble', step: '1.', title: 'Řekněte nám o nemovitosti', text: 'Hugo se vás zeptá na cenu, vlastní zdroje a příjem. Konverzace, ne formulář.' },
-              { icon: 'calculate', step: '2.', title: 'Spočítáme všechno', text: 'Splátka, bonita ČNB, porovnání sazeb bank. Vše na jednom místě.' },
-              { icon: 'person_pin', step: '3.', title: 'Spojíme vás s poradcem', text: 'Specialista (David Choc a tým) porovná nabídky bank a vyjedná podmínky na míru vaší situaci.' },
+              { icon: 'edit_note', step: '1.', title: 'Řeknete Hugovi o nemovitosti', text: 'Cena, vlastní zdroje, příjem — konverzace nebo kalkulačka, jak je vám příjemnější.' },
+              { icon: 'psychology', step: '2.', title: 'Hned vidíte výsledek', text: 'Splátka, orientační bonita a co s vaší sazbou pohne. Bez registrace, bez kontaktu.' },
+              { icon: 'assignment_turned_in', step: '3.', title: 'Předání specialistovi', text: 'Kontakt necháte, jen pokud chcete nabídku na míru. Specialista volá do 4 pracovních hodin.' },
             ].map((s) => (
               <div key={s.step} className="bg-surface-container-low p-8 rounded-3xl text-center border border-white hover:border-primary/20 transition-all shadow-soft group">
                 <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-sm group-hover:bg-primary group-hover:text-white transition-all duration-300">
@@ -213,27 +226,43 @@ export function LandingPage({ onStartChat, logoUrl, title, isValuation }: Props)
               Rozhoduje fixace, doložitelnost příjmu i to, jestli vůbec kupovat.
             </p>
           </div>
-          <div className="grid sm:grid-cols-2 gap-5">
-            <Link
-              href="/nabidky"
-              className="group bg-surface-container-low p-7 rounded-3xl border border-white hover:border-primary/20 transition-all shadow-soft"
-            >
-              <span className="material-symbols-outlined text-primary mb-3 block" style={{ fontSize: 32 }}>trending_up</span>
-              <h3 className="text-headline-md text-on-surface mb-2">Jakou sazbu reálně dostanete</h3>
-              <p className="text-body-md text-on-surface-variant">
-                Kde se pohybuje trh podle ČNB a pět faktorů, které rozhodují o vaší konkrétní nabídce.
-              </p>
-            </Link>
-            <Link
-              href="/clanky"
-              className="group bg-surface-container-low p-7 rounded-3xl border border-white hover:border-primary/20 transition-all shadow-soft"
-            >
-              <span className="material-symbols-outlined text-primary mb-3 block" style={{ fontSize: 32 }}>menu_book</span>
-              <h3 className="text-headline-md text-on-surface mb-2">Poradna a návody</h3>
-              <p className="text-body-md text-on-surface-variant">
-                Praktické články o nastavení hypotéky — bez balastu, s odkazem na kalkulačku nebo Huga.
-              </p>
-            </Link>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
+            {[
+              {
+                href: '/nabidky',
+                icon: 'trending_up',
+                title: 'Co s vaší sazbou pohne',
+                text: 'LTV, fixace, typ příjmu — pět faktorů, které rozhodují o vaší konkrétní nabídce.',
+              },
+              {
+                href: '/clanky/jak-dlouhou-fixaci-zvolit-2026',
+                icon: 'event_repeat',
+                title: 'Jak dlouhou fixaci zvolit',
+                text: 'Rok 2026 přeje kratším fixacím. Kdy se to vyplatí a kdy si radši připlatit za jistotu.',
+              },
+              {
+                href: '/clanky/najem-nebo-hypoteka',
+                icon: 'compare_arrows',
+                title: 'Nájem, nebo hypotéka?',
+                text: 'Srovnání, které počítá i s růstem nájmů, náklady vlastnictví a cenou příležitosti.',
+              },
+              {
+                href: '/clanky/hypoteka-pro-osvc',
+                icon: 'badge',
+                title: 'Hypotéka pro OSVČ',
+                text: 'Jak banky počítají příjem podnikatele a co si připravit k doložení.',
+              },
+            ].map((card) => (
+              <Link
+                key={card.href}
+                href={card.href}
+                className="group bg-surface-container-low p-7 rounded-3xl border border-white hover:border-primary/20 transition-all shadow-soft"
+              >
+                <span className="material-symbols-outlined text-primary mb-3 block" style={{ fontSize: 32 }}>{card.icon}</span>
+                <h3 className="text-headline-md text-on-surface mb-2">{card.title}</h3>
+                <p className="text-body-md text-on-surface-variant">{card.text}</p>
+              </Link>
+            ))}
           </div>
         </section>
       )}
@@ -258,14 +287,14 @@ export function LandingPage({ onStartChat, logoUrl, title, isValuation }: Props)
             <p className="text-body-lg text-on-primary/90 max-w-xl mb-10 relative z-10">
               {isValuation
                 ? 'Začněte konverzaci a získejte odhad ceny vaší nemovitosti za 2 minuty.'
-                : 'Začněte konverzaci s Hugem a zjistěte, na co dosáhnete. Je to zdarma a nezávazné. Jako tihle spokojení novomanželé.'}
+                : 'Dvě minuty s Hugem, žádné závazky — a když budete chtít, váš specialista se ozve do 4 pracovních hodin.'}
             </p>
             <div className="relative z-10">
               <button
                 onClick={() => handleCTA('bottom')}
                 className="bg-white text-primary px-10 py-5 rounded-full font-bold text-xl hover:bg-surface-bright active:scale-95 transition-all shadow-lg flex items-center gap-2 group/btn"
               >
-                Začít zdarma
+                {isValuation ? 'Začít zdarma' : 'Začít konverzaci'}
                 <span className="material-symbols-outlined group-hover/btn:translate-x-1 transition-transform">bolt</span>
               </button>
             </div>

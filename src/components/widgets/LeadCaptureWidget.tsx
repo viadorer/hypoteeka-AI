@@ -104,7 +104,7 @@ export function LeadCaptureWidget({ context, prefilledName, prefilledEmail, pref
                 <Phone className="w-3 h-3 text-primary" />
               </div>
               <div>
-                <p className="text-sm font-medium text-on-surface/80">Ozve se vám do 24 hodin</p>
+                <p className="text-sm font-medium text-on-surface/80">Ozve se vám do 4 pracovních hodin</p>
                 <p className="text-xs text-on-surface/40">Telefonicky nebo emailem, jak vám vyhovuje.</p>
               </div>
             </div>
@@ -133,12 +133,12 @@ export function LeadCaptureWidget({ context, prefilledName, prefilledEmail, pref
         Spojte se s hypotečním specialistou
       </p>
       <p className="text-sm text-on-surface/60 mb-3">
-        Porovnáme nabídky 8+ bank a vyjednáme podmínky, které běžně nedostanete. Služba je zcela zdarma.
+        Porovnáme nabídky bank a vyjednáme podmínky, které běžně nedostanete. Služba je pro vás zdarma — odměnu hradí banka.
       </p>
 
       <div className="flex items-center gap-1.5 mb-4">
         <Clock className="w-3.5 h-3.5 text-primary" />
-        <span className="text-xs text-on-surface/60">Odpověď do 24 hodin</span>
+        <span className="text-xs text-on-surface/60">Odpověď do 4 pracovních hodin</span>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-3">

@@ -210,43 +210,13 @@ export function CalculatorClient({ tenantTitle, logoUrl, initialRate }: Props) {
           </div>
         </div>
 
-        {/* Eligibility indicators */}
-        <div className="mt-6 grid grid-cols-3 gap-3">
-          <div className={`p-4 rounded-2xl ${calc.ltvOk ? 'bg-emerald-50' : 'bg-red-50'}`}>
-            <div className="text-label-sm font-bold uppercase tracking-wider text-on-surface-variant/70 mb-1">LTV</div>
-            <div className={`text-headline-md font-semibold ${calc.ltvOk ? 'text-emerald-700' : 'text-red-700'}`}>
-              {formatPercent(calc.ltv)}
-            </div>
-            <div className="text-label-sm text-on-surface-variant/60 normal-case tracking-normal">
-              limit {formatPercent(calc.ltvLimit)}
-            </div>
-          </div>
-          <div className={`p-4 rounded-2xl ${calc.dstiOk ? 'bg-emerald-50' : 'bg-red-50'}`}>
-            <div className="text-label-sm font-bold uppercase tracking-wider text-on-surface-variant/70 mb-1">DSTI</div>
-            <div className={`text-headline-md font-semibold ${calc.dstiOk ? 'text-emerald-700' : 'text-red-700'}`}>
-              {formatPercent(calc.dsti)}
-            </div>
-            <div className="text-label-sm text-on-surface-variant/60 normal-case tracking-normal">orientační hranice 45 %</div>
-          </div>
-          <div className={`p-4 rounded-2xl ${calc.dtiOk ? 'bg-emerald-50' : 'bg-red-50'}`}>
-            <div className="text-label-sm font-bold uppercase tracking-wider text-on-surface-variant/70 mb-1">DTI</div>
-            <div className={`text-headline-md font-semibold ${calc.dtiOk ? 'text-emerald-700' : 'text-red-700'}`}>
-              {calc.dti.toFixed(1).replace('.', ',')}×
-            </div>
-            <div className="text-label-sm text-on-surface-variant/60 normal-case tracking-normal">orientační hranice 9,5×</div>
-          </div>
-        </div>
-        {/* DSTI/DTI regulatorní limit ČNB je od 2023/2024 deaktivován — jde
-            jen o hranice, které si obvykle drží banky (CLAUDE.md 3.2). LTV
-            výše zůstává jediný závazný limit. */}
-        <p className="text-label-sm text-on-surface-variant/50 text-center mt-2 normal-case tracking-normal">
-          LTV je závazný limit ČNB. DSTI a DTI jsou dnes jen orientační hranice bank — regulatorní limit ČNB je deaktivován.
-        </p>
-
-        {/* Big result */}
+        {/* Výsledek — jeden tmavý panel: splátka, rozpad a orientační bonita
+            jako proužky. LTV je jediný závazný limit ČNB; DSTI a DTI jsou dnes
+            jen hranice, které si drží banky (CLAUDE.md 3.2). */}
         <div className="mt-8 bg-on-surface text-white p-6 md:p-8 rounded-3xl shadow-premium relative overflow-hidden">
           <div className="absolute top-0 right-0 w-48 h-48 bg-primary/30 rounded-full -mr-24 -mt-24 blur-3xl" />
           <div className="relative z-10">
+            <p className="text-label-sm uppercase tracking-wider text-surface-variant/60 mb-3">Orientační výsledek</p>
             <p className="text-label-md text-surface-variant mb-2">Měsíční splátka</p>
             <div className="flex items-baseline gap-2 mb-4">
               <span className="text-[40px] md:text-[48px] font-bold leading-none tracking-tight tabular-nums">
@@ -254,7 +224,7 @@ export function CalculatorClient({ tenantTitle, logoUrl, initialRate }: Props) {
               </span>
               <span className="text-label-md text-surface-variant">/měsíc</span>
             </div>
-            <div className="grid grid-cols-2 gap-3 mb-6 text-label-md">
+            <div className="grid grid-cols-2 gap-3 mb-6 text-label-md border-t border-white/10 pt-4">
               <div>
                 <p className="text-surface-variant/70 mb-1">Výše úvěru</p>
                 <p className="font-semibold tabular-nums">{formatCZK(Math.round(calc.loan))}</p>
@@ -266,6 +236,52 @@ export function CalculatorClient({ tenantTitle, logoUrl, initialRate }: Props) {
                 <p className="font-semibold tabular-nums">≈ {formatCZK(roundToTen(calc.totalInterest))}</p>
               </div>
             </div>
+
+            <div className="space-y-4 mb-6">
+              {[
+                {
+                  label: 'LTV',
+                  note: '(limit ČNB)',
+                  value: formatPercent(calc.ltv),
+                  ratio: calc.ltv / (calc.ltvLimit * 1.35),
+                  ok: calc.ltvOk,
+                  caption: `Závazný limit ČNB: ${formatPercent(calc.ltvLimit)}${isYoung ? ' (do 36 let)' : ''}`,
+                },
+                {
+                  label: 'DSTI',
+                  note: '(orientační hranice bank)',
+                  value: formatPercent(calc.dsti),
+                  ratio: calc.dsti / (DEFAULTS.dstiLimit * 1.35),
+                  ok: calc.dstiOk,
+                  caption: 'Regulatorní limit ČNB je deaktivován; banky obvykle chtějí do 45 %.',
+                },
+                {
+                  label: 'DTI',
+                  note: '(orientační hranice bank)',
+                  value: `${calc.dti.toFixed(1).replace('.', ',')}×`,
+                  ratio: calc.dti / (DEFAULTS.dtiLimit * 1.35),
+                  ok: calc.dtiOk,
+                  caption: 'Regulatorní limit ČNB je deaktivován; banky obvykle chtějí do 8,5×.',
+                },
+              ].map((m) => (
+                <div key={m.label}>
+                  <div className="flex justify-between items-baseline text-label-sm mb-1.5 normal-case tracking-normal">
+                    <span className="text-surface-variant/70">
+                      {m.label} <span className="opacity-60">{m.note}</span>
+                    </span>
+                    <b className="tabular-nums font-semibold">{m.value}</b>
+                  </div>
+                  <div className="h-1.5 bg-white/15 rounded-full overflow-hidden">
+                    <span
+                      className={`block h-full rounded-full transition-all ${m.ok ? 'bg-primary-fixed' : 'bg-primary-fixed-dim'}`}
+                      style={{ width: `${Math.min(Math.max(m.ratio, 0), 1) * 100}%` }}
+                    />
+                  </div>
+                  <p className="text-label-sm text-surface-variant/50 mt-1 normal-case tracking-normal">{m.caption}</p>
+                </div>
+              ))}
+            </div>
+
             <p className="text-label-sm text-surface-variant/70 mb-5 normal-case tracking-normal">
               Sazba {formatPercent(initialRate / 100)} · orientační výpočet bez daní a pojištění. RPSN a přesné poplatky
               najdete u konkrétní nabídky — viz{' '}
@@ -278,7 +294,7 @@ export function CalculatorClient({ tenantTitle, logoUrl, initialRate }: Props) {
               onClick={handleContinue}
               className="w-full bg-primary-container text-on-primary-container py-4 rounded-2xl text-headline-md font-bold active:scale-95 transition-transform shadow-lg hover:shadow-xl flex items-center justify-center gap-2"
             >
-              Pokračovat s Hugem
+              Probrat výsledek s Hugem
               <span className="material-symbols-outlined">arrow_forward</span>
             </button>
           </div>

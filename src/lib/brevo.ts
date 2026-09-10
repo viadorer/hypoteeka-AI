@@ -107,7 +107,7 @@ export function buildLeadConfirmationEmailHtml(data: {
           <span style="font-size:12px;font-weight:700;color:#E91E63;">2</span>
         </div>
         <div>
-          <p style="font-size:14px;font-weight:600;color:#111827;margin:0 0 2px;">Ozve se vám do 24 hodin</p>
+          <p style="font-size:14px;font-weight:600;color:#111827;margin:0 0 2px;">Ozve se vám do 4 pracovních hodin</p>
           <p style="font-size:12px;color:#9ca3af;margin:0;">Telefonicky nebo emailem, jak vám vyhovuje.</p>
         </div>
       </div>
