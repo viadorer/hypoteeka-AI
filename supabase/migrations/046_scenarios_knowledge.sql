@@ -6,6 +6,11 @@
 -- kromě zákonných sazeb/lhůt). Idempotentní přes WHERE NOT EXISTS.
 --
 -- Navíc: David dostává vertical_tag 'prodej' (routing prodávajících napřímo).
+--
+-- ⚠️ POŘADÍ SPUŠTĚNÍ: vyžaduje sloupec brokers.vertical_tags, který v
+-- produkci reálně přidává až 047_broker_schema_reconciliation.sql (042
+-- na existující tabulku "brokers" nikdy neaplikovala své ALTER, viz 047).
+-- Spustit 047 PŘED touto migrací, i když má vyšší číslo souboru.
 -- ============================================================
 
 -- David: tag 'prodej' pro přímý routing prodávajících
