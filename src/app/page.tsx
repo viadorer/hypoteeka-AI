@@ -32,9 +32,14 @@ export default function Home() {
     if (authLoading || autoRestoreDone.current) return;
     autoRestoreDone.current = true;
 
-    const urlSession = new URLSearchParams(window.location.search).get('session');
+    const params = new URLSearchParams(window.location.search);
+    const urlSession = params.get('session');
     if (urlSession) {
       setActiveSessionId(urlSession);
+      setView('chat');
+      setSessionKey(k => k + 1);
+    } else if (params.get('prefill')) {
+      // Prefill z kalkulačky — rovnou do chatu, ChatArea zprávu odešle sám.
       setView('chat');
       setSessionKey(k => k + 1);
     }

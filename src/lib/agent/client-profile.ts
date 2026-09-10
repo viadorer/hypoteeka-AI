@@ -22,7 +22,7 @@ export interface ClientProfile {
   propertyType?: 'byt' | 'dum' | 'pozemek' | 'rekonstrukce';
   propertySize?: string; // dispozice: 1+kk, 2+kk, 3+1, atd.
   location?: string;
-  purpose?: 'vlastni_bydleni' | 'investice' | 'refinancovani' | 'refixace';
+  purpose?: 'vlastni_bydleni' | 'investice' | 'refinancovani' | 'refixace' | 'prodej';
 
   // Záměr / handoff signály
   targetLoanAmount?: number; // požadovaná výše úvěru (pro refi = remainingBalance)
@@ -154,12 +154,16 @@ export function profileSummary(profile: ClientProfile): string {
   }
   if (profile.equity !== undefined && profile.equity !== null) parts.push(`Vlastní zdroje: ${fmt(profile.equity)} Kč`);
   if (profile.monthlyIncome) parts.push(`Měsíční příjem: ${fmt(profile.monthlyIncome)} Kč`);
+  if (profile.employmentType) parts.push(`Typ příjmu: ${profile.employmentType === 'osvc' ? 'OSVČ (podnikatel)' : profile.employmentType === 'kombinace' ? 'kombinace zaměstnání + podnikání' : 'zaměstnanec'}`);
   if (profile.partnerIncome) parts.push(`Příjem partnera: ${fmt(profile.partnerIncome)} Kč`);
   if (profile.totalMonthlyIncome) parts.push(`Celkový příjem: ${fmt(profile.totalMonthlyIncome)} Kč`);
   if (profile.age) parts.push(`Věk: ${profile.age} let`);
   if (profile.isYoung !== undefined) parts.push(`Mladý (do 36): ${profile.isYoung ? 'ano' : 'ne'}`);
   if (profile.currentRent) parts.push(`Současný nájem: ${fmt(profile.currentRent)} Kč`);
   if (profile.existingLoans) parts.push(`Stávající závazky: ${fmt(profile.existingLoans)} Kč`);
+  if (profile.existingMortgageBalance) parts.push(`Zůstatek stávající hypotéky: ${fmt(profile.existingMortgageBalance)} Kč`);
+  if (profile.existingMortgageRate) parts.push(`Sazba stávající hypotéky: ${(profile.existingMortgageRate * 100).toFixed(2).replace('.', ',')} %`);
+  if (profile.existingMortgageYears) parts.push(`Zbývající splatnost: ${profile.existingMortgageYears} let`);
   if (profile.targetLoanAmount) parts.push(`Požadovaná výše úvěru: ${fmt(profile.targetLoanAmount)} Kč`);
   if (profile.horizonMonths !== undefined) parts.push(`Časový horizont: ${profile.horizonMonths === 0 ? 'hned' : `do ${profile.horizonMonths} měsíců`}`);
   if (profile.expectedRentalIncome) parts.push(`Očekávaný nájem: ${fmt(profile.expectedRentalIncome)} Kč`);

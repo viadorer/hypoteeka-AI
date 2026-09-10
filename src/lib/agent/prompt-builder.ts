@@ -61,18 +61,67 @@ export async function buildAgentPrompt(
     }
   }
 
-  // Checklist chybějících dat - Hugo musí aktivně sbírat
-  const allFields: Array<{ key: keyof ClientProfile; label: string; priority: 'high' | 'medium' | 'low' }> = [
-    { key: 'propertyPrice', label: 'Cena nemovitosti', priority: 'high' },
-    { key: 'equity', label: 'Vlastní zdroje', priority: 'high' },
-    { key: 'monthlyIncome', label: 'Měsíční příjem', priority: 'high' },
-    { key: 'purpose', label: 'Účel (vlastní bydlení / investice / refinancování)', priority: 'high' },
-    { key: 'propertyType', label: 'Typ nemovitosti (byt / dům / pozemek)', priority: 'high' },
-    { key: 'propertySize', label: 'Dispozice (1+kk, 2+kk, 3+1...)', priority: 'high' },
-    { key: 'location', label: 'Lokalita / město', priority: 'high' },
-    { key: 'age', label: 'Věk (důležité pro LTV limit)', priority: 'medium' },
-    { key: 'name', label: 'Jméno', priority: 'low' },
-  ];
+  // OSVČ modifikátor — OSVČ není samostatný funnel, ale mění tón a otázku
+  // na příjem v KAŽDÉM scénáři. detectPersona dává přednost investice/refi,
+  // takže complex_case instrukce přidáváme navíc, ne místo persony.
+  const isOsvc = profile.employmentType === 'osvc' || profile.employmentType === 'kombinace';
+  if (isOsvc && state.persona !== 'complex_case') {
+    const osvcPrompt = await getPersonaPrompt('complex_case', tenantId);
+    if (osvcPrompt) {
+      parts.push('\nMODIFIKÁTOR OSVČ (klient podniká — platí NAVÍC k persona instrukcím výše):\n' + osvcPrompt);
+    }
+  }
+
+  // Checklist chybějících dat - Hugo musí aktivně sbírat.
+  // Seznam se liší podle intentu: refi nemá cenu/equity, prodej nemá příjem.
+  type ChecklistField = { key: keyof ClientProfile; label: string; priority: 'high' | 'medium' | 'low' };
+  const isRefiIntent = profile.purpose === 'refinancovani' || profile.purpose === 'refixace';
+  const isSellerIntent = profile.purpose === 'prodej';
+  const isInvestIntent = profile.purpose === 'investice';
+
+  let allFields: ChecklistField[];
+  if (isRefiIntent) {
+    allFields = [
+      { key: 'existingMortgageBalance', label: 'Zůstatek stávající hypotéky', priority: 'high' },
+      { key: 'existingMortgageRate', label: 'Současná úroková sazba', priority: 'high' },
+      { key: 'existingMortgageYears', label: 'Zbývající roky splatnosti', priority: 'high' },
+      { key: 'monthlyIncome', label: 'Měsíční příjem (pásmo stačí)', priority: 'medium' },
+      { key: 'horizonMonths', label: 'Kdy končí fixace / kdy chce řešit', priority: 'medium' },
+      { key: 'name', label: 'Jméno', priority: 'low' },
+    ];
+  } else if (isSellerIntent) {
+    allFields = [
+      { key: 'propertyType', label: 'Typ nemovitosti (byt / dům / pozemek)', priority: 'high' },
+      { key: 'propertyAddress', label: 'Adresa (přes našeptávač geocode_address)', priority: 'high' },
+      { key: 'floorArea', label: 'Užitná plocha', priority: 'high' },
+      { key: 'propertyRating', label: 'Stav nemovitosti', priority: 'high' },
+      { key: 'existingMortgageBalance', label: 'Zbývá na nemovitosti hypotéka? (zůstatek)', priority: 'medium' },
+      { key: 'horizonMonths', label: 'Kdy chce prodávat', priority: 'medium' },
+      { key: 'name', label: 'Jméno', priority: 'low' },
+    ];
+  } else if (isInvestIntent) {
+    allFields = [
+      { key: 'propertyPrice', label: 'Kupní cena', priority: 'high' },
+      { key: 'equity', label: 'Vlastní zdroje', priority: 'high' },
+      { key: 'expectedRentalIncome', label: 'Očekávaný nájem (ideálně z ocenění kind=lease, ne odhad z hlavy)', priority: 'high' },
+      { key: 'investmentExperience', label: 'Zkušenost s investicemi (žádná / jedna / portfolio)', priority: 'high' },
+      { key: 'monthlyIncome', label: 'Měsíční příjem', priority: 'medium' },
+      { key: 'location', label: 'Lokalita', priority: 'medium' },
+      { key: 'name', label: 'Jméno', priority: 'low' },
+    ];
+  } else {
+    allFields = [
+      { key: 'propertyPrice', label: 'Cena nemovitosti', priority: 'high' },
+      { key: 'equity', label: 'Vlastní zdroje', priority: 'high' },
+      { key: 'monthlyIncome', label: 'Měsíční příjem (pásmo stačí — přesné číslo až u poradce)', priority: 'high' },
+      { key: 'purpose', label: 'Účel (vlastní bydlení / investice / refinancování / prodej)', priority: 'high' },
+      { key: 'propertyType', label: 'Typ nemovitosti (byt / dům / pozemek)', priority: 'high' },
+      { key: 'propertySize', label: 'Dispozice (1+kk, 2+kk, 3+1...)', priority: 'high' },
+      { key: 'location', label: 'Lokalita / město', priority: 'high' },
+      { key: 'age', label: 'Věk (důležité pro LTV limit)', priority: 'medium' },
+      { key: 'name', label: 'Jméno', priority: 'low' },
+    ];
+  }
   const missing = allFields.filter(f => {
     const val = profile[f.key];
     return val === undefined || val === null;
@@ -111,8 +160,10 @@ export async function buildAgentPrompt(
 
   // Detekce zda klient chce ocenění
   // Pro valuation-primary tenants (odhad.online): ocenění je VŽDY aktivní
-  // Pro mortgage-primary tenants (hypoteeka.cz): jen když klient SÁM zmíní ocenění
-  const wantsValuation = isValuationPrimary || geocodeShown || hasValidatedAddress || state.widgetsShown.includes('show_valuation');
+  // Pro mortgage-primary tenants (hypoteeka.cz): když klient SÁM zmíní ocenění,
+  // NEBO prodává nemovitost — pro prodávajícího je ocenění hodnota #1.
+  const wantsValuation = isValuationPrimary || geocodeShown || hasValidatedAddress
+    || state.widgetsShown.includes('show_valuation') || isSellerIntent;
 
   // === SCÉNÁŘ OCENĚNÍ -- z DB (slug: valuation_scenario) ===
   if (!valuationDone && wantsValuation) {
@@ -197,6 +248,10 @@ ${avgDist !== undefined ? `- Vzdálenost srovnatelných: ${avgDist > 1000 ? (avg
     if (hasEmail) parts.push(`\nKontakt: email ${profile.email}`);
     if (hasPhone) parts.push(`Kontakt: telefon ${profile.phone}`);
   }
+
+  // Tvrdý strop na nabídky kontaktu (výzkum fáze B: max 2 nabídky za konverzaci,
+  // odmítnutí != konec — pokračuj v hodnotě a nech pasivní cestu otevřenou)
+  parts.push('\nPRAVIDLO KONTAKTU: Za celou konverzaci nabídni kontakt/specialistu MAXIMÁLNĚ DVAKRÁT (jednou e-mail jako mikrokonverzi, jednou konzultaci). Po odmítnutí POKRAČUJ v pomoci a už nenabízej — klient ví, že může kdykoli napsat "kontakt" nebo kliknout na Expert.');
 
   // Kontextové triggery pro CTA (místo mechanického počítání widgetů)
   if (ctaIntensity === 'low') {

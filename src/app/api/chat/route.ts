@@ -53,17 +53,23 @@ function reconstructProfileFromMessages(messages: Array<{ role: string; parts?: 
         if (input.isYoung !== undefined) profile.isYoung = input.isYoung as boolean;
       }
       if (toolName === 'show_investment') {
-        if (input.propertyPrice !== undefined) profile.propertyPrice = input.propertyPrice as number;
-        if (input.expectedRentalIncome !== undefined) profile.expectedRentalIncome = input.expectedRentalIncome as number;
+        // Tool schema posílá purchasePrice/monthlyRentalIncome; starší zprávy mohou nést legacy názvy
+        const price = input.purchasePrice ?? input.propertyPrice;
+        const rent = input.monthlyRentalIncome ?? input.expectedRentalIncome;
+        if (price !== undefined) profile.propertyPrice = price as number;
+        if (rent !== undefined) profile.expectedRentalIncome = rent as number;
         if (!profile.purpose) profile.purpose = 'investice';
       }
       if (toolName === 'show_rent_vs_buy') {
+        const rent = input.monthlyRent ?? input.currentRent;
         if (input.propertyPrice !== undefined) profile.propertyPrice = input.propertyPrice as number;
-        if (input.currentRent !== undefined) profile.currentRent = input.currentRent as number;
+        if (rent !== undefined) profile.currentRent = rent as number;
       }
       if (toolName === 'show_refinance') {
-        if (input.currentBalance !== undefined) profile.existingMortgageBalance = input.currentBalance as number;
+        const balance = input.remainingBalance ?? input.currentBalance;
+        if (balance !== undefined) profile.existingMortgageBalance = balance as number;
         if (input.currentRate !== undefined) profile.existingMortgageRate = input.currentRate as number;
+        if (input.remainingYears !== undefined) profile.existingMortgageYears = input.remainingYears as number;
         if (!profile.purpose) profile.purpose = 'refinancovani';
       }
       if (toolName === 'send_email_summary' && input.email !== undefined) {
@@ -186,8 +192,13 @@ export async function POST(req: Request) {
     }
 
     // Extract last user message for knowledge base matching
+    // (AI SDK v6 UIMessage nemá .content — text žije v parts)
     const msgArray = Array.isArray(messages) ? messages : [];
-    const lastUserMessage = [...msgArray].reverse().find((m: { role: string }) => m.role === 'user')?.content as string | undefined;
+    const lastUserMsgObj = [...msgArray].reverse().find((m: { role: string }) => m.role === 'user') as { parts?: AnyPart[]; content?: unknown } | undefined;
+    const lastUserMessage = lastUserMsgObj
+      ? (lastUserMsgObj.parts?.filter((p: AnyPart) => p.type === 'text').map((p: AnyPart) => p.text).join('')
+          || (typeof lastUserMsgObj.content === 'string' ? lastUserMsgObj.content : undefined))
+      : undefined;
 
     // Build dynamic prompt (async - fetches live rates from ČNB API + knowledge base)
     let systemPrompt = await buildAgentPrompt(profile, state, leadScore, tenantId, lastUserMessage, ctaIntensity);
@@ -702,20 +713,26 @@ JAK POUŽÍT:
             }
 
             // Auto-capture from other show_ widgets
-            if (toolName === 'show_rent_vs_buy' && input.currentRent !== undefined) {
-              profile.currentRent = input.currentRent as number;
+            // (názvy polí odpovídají tool schématům v ai-tools.ts; legacy názvy jako fallback)
+            if (toolName === 'show_rent_vs_buy') {
+              const rent = input.monthlyRent ?? input.currentRent;
+              if (rent !== undefined) profile.currentRent = rent as number;
               if (input.propertyPrice !== undefined) profile.propertyPrice = input.propertyPrice as number;
               console.log(`[Profile] Auto-captured from show_rent_vs_buy: currentRent`);
             }
             if (toolName === 'show_investment') {
-              if (input.propertyPrice !== undefined) profile.propertyPrice = input.propertyPrice as number;
-              if (input.expectedRentalIncome !== undefined) profile.expectedRentalIncome = input.expectedRentalIncome as number;
+              const price = input.purchasePrice ?? input.propertyPrice;
+              const rent = input.monthlyRentalIncome ?? input.expectedRentalIncome;
+              if (price !== undefined) profile.propertyPrice = price as number;
+              if (rent !== undefined) profile.expectedRentalIncome = rent as number;
               if (!profile.purpose) profile.purpose = 'investice';
               console.log(`[Profile] Auto-captured from show_investment: purpose=investice`);
             }
             if (toolName === 'show_refinance') {
-              if (input.currentBalance !== undefined) profile.existingMortgageBalance = input.currentBalance as number;
+              const balance = input.remainingBalance ?? input.currentBalance;
+              if (balance !== undefined) profile.existingMortgageBalance = balance as number;
               if (input.currentRate !== undefined) profile.existingMortgageRate = input.currentRate as number;
+              if (input.remainingYears !== undefined) profile.existingMortgageYears = input.remainingYears as number;
               if (!profile.purpose) profile.purpose = 'refinancovani';
               console.log(`[Profile] Auto-captured from show_refinance: purpose=refinancovani`);
             }

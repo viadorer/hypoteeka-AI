@@ -130,8 +130,13 @@ export async function getBasePromptParts(tenantId: string = getDefaultTenantId()
  */
 export async function getPhaseInstruction(phase: ConversationPhase, tenantId: string = getDefaultTenantId()): Promise<string> {
   const templates = await getPromptTemplates(tenantId);
-  const phaseTemplate = templates.find(t => t.phase === phase && t.category === 'phase_instruction');
-  if (phaseTemplate) return phaseTemplate.content;
+  // Spoj VŠECHNY šablony pro danou fázi (dřívější .find() bral jen první podle
+  // sort_order — broker_handoff_template tak přebíjel phase_conversion a
+  // intent_routing_protocol s category=base_prompt se nenačítal vůbec).
+  const matching = templates
+    .filter(t => t.phase === phase && (t.category === 'phase_instruction' || t.category === 'base_prompt'))
+    .sort((a, b) => a.sortOrder - b.sortOrder);
+  if (matching.length > 0) return matching.map(t => t.content).join('\n\n');
 
   console.error('[PromptService] Phase instruction not found in DB:', phase);
   return '';

@@ -19,7 +19,7 @@ import { supabase, isSupabaseConfigured } from './supabase/client';
 import type { ClientProfile } from './agent/client-profile';
 import { classifyVerticalForRouting } from './agent/lead-scoring';
 
-export type BrokerVertical = 'bydleni' | 'investice' | 'refi' | 'unknown';
+export type BrokerVertical = 'bydleni' | 'investice' | 'refi' | 'prodej' | 'unknown';
 
 export interface BrokerHandoffPayload {
   broker: {
@@ -53,6 +53,7 @@ export type MatchResult = MatchSuccess | MatchFailure;
 
 interface BrokerRow {
   id: string;
+  slug: string;
   first_name: string;
   last_name: string;
   display_name: string;
@@ -84,9 +85,32 @@ function toBrokerVertical(profile: ClientProfile): BrokerVertical {
       return 'investice';
     case 'bydleni':
       return 'bydleni';
+    case 'prodej':
+      return 'prodej';
     default:
       return 'unknown';
   }
+}
+
+/** Slug majitele byznysu — prodejní leady jdou vždy jemu, mimo round-robin. */
+const OWNER_BROKER_SLUG = 'david-choc';
+
+function toBrokerPayload(b: BrokerRow): BrokerHandoffPayload['broker'] {
+  return {
+    id: b.id,
+    displayName: b.display_name,
+    fullName: `${b.first_name} ${b.last_name}`,
+    email: b.email,
+    phone: b.phone,
+    whatsappPhone: b.whatsapp_phone,
+    photoUrl: b.photo_url,
+    roleLabel: b.role_label,
+    shortDescription: b.short_description,
+    specializations: b.specializations,
+    company: b.company,
+    vazanyZastupceOf: b.vazany_zastupce_of,
+    legalDisclosure: b.legal_disclosure,
+  };
 }
 
 /**
@@ -116,6 +140,23 @@ export async function matchBroker(
   }
 
   const brokers = brokerRows as BrokerRow[];
+
+  // PRODEJ: nejcennější vertikála — jde vždy přímo na majitele (David),
+  // ne round-robin. Fallback: broker s tagem 'prodej', pak kdokoliv aktivní.
+  if (vertical === 'prodej') {
+    const owner = brokers.find((b) => b.slug === OWNER_BROKER_SLUG)
+      ?? brokers.find((b) => b.vertical_tags.includes('prodej'))
+      ?? brokers[0];
+    return {
+      ok: true,
+      payload: {
+        broker: toBrokerPayload(owner),
+        vertical,
+        fallback: owner.slug !== OWNER_BROKER_SLUG,
+        assignmentId: '',
+      },
+    };
+  }
 
   // Filtruj na ty s relevantním vertical tagem (pokud vertical = 'unknown', vrať všechny)
   const matchingByVertical =
@@ -154,21 +195,7 @@ export async function matchBroker(
   return {
     ok: true,
     payload: {
-      broker: {
-        id: winner.id,
-        displayName: winner.display_name,
-        fullName: `${winner.first_name} ${winner.last_name}`,
-        email: winner.email,
-        phone: winner.phone,
-        whatsappPhone: winner.whatsapp_phone,
-        photoUrl: winner.photo_url,
-        roleLabel: winner.role_label,
-        shortDescription: winner.short_description,
-        specializations: winner.specializations,
-        company: winner.company,
-        vazanyZastupceOf: winner.vazany_zastupce_of,
-        legalDisclosure: winner.legal_disclosure,
-      },
+      broker: toBrokerPayload(winner),
       vertical,
       fallback: isFallback,
       assignmentId: '',  // doplní assignLeadToBroker()

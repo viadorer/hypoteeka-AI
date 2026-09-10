@@ -24,6 +24,8 @@ const QUICK_ACTIONS_MORTGAGE = [
   { label: 'Ověřit bonitu', icon: ShieldCheck, materialIcon: 'verified_user', prompt: 'Chci si ověřit, jestli dosáhnu na hypotéku.' },
   { label: 'Kolik si mohu půjčit?', icon: TrendingUp, materialIcon: 'trending_up', prompt: 'Kolik si mohu maximálně půjčit na hypotéku?' },
   { label: 'Refinancování', icon: RefreshCw, materialIcon: 'refresh', prompt: 'Chci refinancovat hypotéku, jaké jsou aktuální podmínky?' },
+  { label: 'Investiční nemovitost', icon: PiggyBank, materialIcon: 'savings', prompt: 'Zvažuji koupi investiční nemovitosti na pronájem.' },
+  { label: 'Prodávám nemovitost', icon: Search, materialIcon: 'sell', prompt: 'Prodávám nemovitost a chci zjistit její tržní cenu.' },
 ];
 
 const QUICK_ACTIONS_VALUATION = [
@@ -179,6 +181,22 @@ export function ChatArea({ initialSessionId = null, onOpenSidebar }: ChatAreaPro
         // No history available — static greeting stays visible, fine.
       });
   }, [sessionId, historyLoaded, setMessages, authorId, user?.id, isValuation, tenant.agentName]);
+
+  // Prefill z kalkulačky (?prefill=...) — nejteplejší vstup: klient už zadal
+  // čísla, pošleme je Hugovi jako první zprávu, ať nezačíná od nuly.
+  const prefillSentRef = useRef(false);
+  useEffect(() => {
+    if (prefillSentRef.current || !historyLoaded) return;
+    const prefill = new URLSearchParams(window.location.search).get('prefill');
+    if (!prefill || !prefill.trim()) return;
+    prefillSentRef.current = true;
+    // Vyčisti URL, aby refresh neposlal zprávu znovu
+    const url = new URL(window.location.href);
+    url.searchParams.delete('prefill');
+    window.history.replaceState({}, '', url.toString());
+    trackEvent('first_message', { source: 'calculator_prefill' });
+    sendMessage({ text: prefill.trim() }).catch(() => {});
+  }, [historyLoaded, sendMessage]);
 
   useEffect(() => {
     if (visitorName) return;

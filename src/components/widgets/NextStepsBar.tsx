@@ -126,6 +126,18 @@ const NEXT_STEPS: Record<string, { title: string; steps: NextStep[] }> = {
       { icon: FileCheck, label: 'Potřebné dokumenty', desc: 'Co si připravit na schůzku.', message: 'Jaké dokumenty si mám připravit na schůzku?' },
     ],
   },
+  // Po reálném ocenění (RealVisor) — dřív tu nebylo nic a konverzace pro
+  // prodávajícího končila slepou uličkou. Kroky míří na prodejní scénář.
+  request_valuation: {
+    title: 'Co mohu udělat dál',
+    steps: [
+      { icon: RefreshCw, label: 'Prodej s hypotékou', desc: 'Jak probíhá prodej, když na nemovitosti ještě vázne hypotéka.', message: 'Na nemovitosti mám ještě hypotéku — jak probíhá prodej s hypotékou?' },
+      { icon: Clock, label: 'Jak prodej probíhá', desc: 'Časová osa prodeje od ocenění po předání.', message: 'Jak probíhá proces prodeje nemovitosti?' },
+      { icon: FileCheck, label: 'Dokumenty k prodeji', desc: 'Co si připravit — list vlastnictví, PENB a další.', message: 'Jaké dokumenty potřebuji k prodeji nemovitosti?' },
+      { icon: Calculator, label: 'Hypotéka na další bydlení', desc: 'Splátka nové hypotéky s využitím peněz z prodeje.', message: 'Chci spočítat hypotéku na další bydlení s penězi z prodeje.' },
+      { icon: Users, label: 'Konzultace se specialistou', desc: 'Bezplatné spojení se specialistou na prodej.', message: 'Chci se spojit se specialistou ohledně prodeje nemovitosti.' },
+    ],
+  },
 };
 
 interface Props {

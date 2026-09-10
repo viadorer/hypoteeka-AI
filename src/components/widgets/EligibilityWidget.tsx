@@ -25,10 +25,10 @@ export function EligibilityWidget({ propertyPrice, equity, monthlyIncome, isYoun
       <div className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-[13px] font-medium mb-4 ${
         result.allOk
           ? 'bg-emerald-50 border border-emerald-200 text-emerald-700'
-          : 'bg-red-50 border border-red-200 text-red-700'
+          : 'bg-amber-50 border border-amber-200 text-amber-700'
       }`}>
         <StatusDot ok={result.allOk} />
-        {result.allOk ? 'Splňujete limity ČNB' : 'Nesplňujete limity ČNB'}
+        {result.allOk ? 'Orientačně v limitech' : 'Mimo standardní limity — existují cesty'}
       </div>
 
       <div className="space-y-2.5">

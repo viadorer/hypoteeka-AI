@@ -28,39 +28,59 @@ interface ScoringRule {
   condition: (profile: ClientProfile, state: ConversationState) => boolean;
 }
 
+// Intent helpery — refi a prodej mají jinou definici "kompletních dat".
+// Bez nich refi/prodej klient ztrácel 35 bodů za pole, která pro jeho
+// situaci nedávají smysl, a prakticky nikdy nedosáhl prahu 61 (pre-match brokera).
+const isRefi = (p: ClientProfile) => p.purpose === 'refinancovani' || p.purpose === 'refixace' || (!p.purpose && !!p.existingMortgageBalance);
+const isSeller = (p: ClientProfile) => p.purpose === 'prodej';
+
 const SCORING_RULES: ScoringRule[] = [
-  // Data completeness (max 40 bodů)
-  { name: 'Má cenu nemovitosti', points: 10, condition: (p) => !!p.propertyPrice },
-  { name: 'Má vlastní zdroje', points: 10, condition: (p) => p.equity !== undefined && p.equity !== null },
-  { name: 'Má příjem', points: 10, condition: (p) => !!(p.monthlyIncome || p.totalMonthlyIncome) },
-  { name: 'Má typ nemovitosti', points: 5, condition: (p) => !!p.propertyType },
-  { name: 'Má lokalitu', points: 5, condition: (p) => !!p.location },
+  // Data completeness (max 40 bodů) — ekvivalenty per intent
+  { name: 'Má cenu / zůstatek / ocenění', points: 10, condition: (p) =>
+    !!p.propertyPrice || !!p.existingMortgageBalance || !!p.valuationAvgPrice },
+  { name: 'Má vlastní zdroje (u refi sazbu, u prodeje adresu)', points: 10, condition: (p) => {
+    if (isRefi(p)) return !!p.existingMortgageRate;
+    if (isSeller(p)) return !!(p.propertyAddress || p.valuationAvgPrice);
+    return p.equity !== undefined && p.equity !== null;
+  }},
+  { name: 'Má příjem (u prodeje neaplikováno)', points: 10, condition: (p) =>
+    isSeller(p) ? !!p.valuationAvgPrice : !!(p.monthlyIncome || p.totalMonthlyIncome) },
+  { name: 'Má typ nemovitosti', points: 5, condition: (p) => !!p.propertyType || isRefi(p) },
+  { name: 'Má lokalitu', points: 5, condition: (p) => !!p.location || isRefi(p) },
 
   // Engagement (max 25 bodů)
   { name: 'Více než 3 zprávy', points: 5, condition: (_, s) => s.turnCount > 3 },
   { name: 'Více než 6 zpráv', points: 5, condition: (_, s) => s.turnCount > 6 },
-  { name: 'Viděl widget splátky', points: 5, condition: (_, s) => s.widgetsShown.includes('show_payment') },
-  { name: 'Viděl widget bonity', points: 5, condition: (_, s) => s.widgetsShown.includes('show_eligibility') },
+  { name: 'Viděl klíčový widget', points: 5, condition: (_, s) =>
+    s.widgetsShown.includes('show_payment') || s.widgetsShown.includes('show_refinance') || s.widgetsShown.includes('request_valuation') },
+  { name: 'Viděl widget bonity / stress test', points: 5, condition: (_, s) =>
+    s.widgetsShown.includes('show_eligibility') || s.widgetsShown.includes('show_stress_test') },
   { name: 'Viděl více widgetů', points: 5, condition: (_, s) => s.widgetsShown.length >= 3 },
 
   // Kvalita leadu (max 35 bodů)
-  { name: 'Splňuje LTV', points: 10, condition: (p) => {
+  { name: 'Splňuje LTV (u refi/prodeje neaplikováno)', points: 10, condition: (p) => {
+    if (isRefi(p)) return !!p.existingMortgageBalance; // banka už úvěr poskytla
+    if (isSeller(p)) return !!p.valuationAvgPrice;
     if (!p.propertyPrice || p.equity === undefined || p.equity === null) return false;
     const ltv = (p.propertyPrice - p.equity) / p.propertyPrice;
     const limit = p.isYoung ? 0.9 : 0.8;
     return ltv <= limit;
   }},
-  { name: 'Splňuje DSTI', points: 10, condition: (p) => {
-    if (!p.propertyPrice || (p.equity === undefined || p.equity === null) || !p.monthlyIncome) return false;
-    const loan = p.propertyPrice - p.equity;
+  { name: 'Splňuje DSTI (u prodeje neaplikováno)', points: 10, condition: (p) => {
+    if (isSeller(p)) return !!p.valuationAvgPrice;
+    const income = p.monthlyIncome ?? p.totalMonthlyIncome;
+    if (!income) return false;
+    const loan = isRefi(p) ? p.existingMortgageBalance : (p.propertyPrice && p.equity != null ? p.propertyPrice - p.equity : undefined);
+    if (!loan) return false;
     const r = 0.045 / 12;
     const n = 360;
     const payment = loan * (r * Math.pow(1 + r, n)) / (Math.pow(1 + r, n) - 1);
-    return (payment / p.monthlyIncome) <= 0.45;
+    return (payment / income) <= 0.45;
   }},
-  { name: 'Realistická cena (1-20M)', points: 5, condition: (p) => {
-    if (!p.propertyPrice) return false;
-    return p.propertyPrice >= 1_000_000 && p.propertyPrice <= 20_000_000;
+  { name: 'Realistická částka (1-20M)', points: 5, condition: (p) => {
+    const amount = p.propertyPrice ?? p.existingMortgageBalance ?? p.valuationAvgPrice;
+    if (!amount) return false;
+    return amount >= (p.existingMortgageBalance && !p.propertyPrice ? 200_000 : 1_000_000) && amount <= 20_000_000;
   }},
   { name: 'Má kontaktní údaje', points: 10, condition: (p) => !!(p.name || p.email || p.phone) },
 ];
@@ -87,10 +107,18 @@ export function calculateLeadScore(profile: ClientProfile, state: ConversationSt
   else if (score >= 31) temperature = 'warm';
   else temperature = 'cold';
 
-  // What's missing for qualification
-  if (!profile.propertyPrice) missingForQualification.push('cena nemovitosti');
-  if (profile.equity === undefined || profile.equity === null) missingForQualification.push('vlastni zdroje');
-  if (!profile.monthlyIncome && !profile.totalMonthlyIncome) missingForQualification.push('mesicni prijem');
+  // What's missing for qualification — per intent
+  if (isSeller(profile)) {
+    if (!profile.valuationAvgPrice) missingForQualification.push('oceneni nemovitosti');
+  } else if (isRefi(profile)) {
+    if (!profile.existingMortgageBalance) missingForQualification.push('zustatek hypoteky');
+    if (!profile.existingMortgageRate) missingForQualification.push('soucasna sazba');
+    if (!profile.monthlyIncome && !profile.totalMonthlyIncome) missingForQualification.push('mesicni prijem');
+  } else {
+    if (!profile.propertyPrice) missingForQualification.push('cena nemovitosti');
+    if (profile.equity === undefined || profile.equity === null) missingForQualification.push('vlastni zdroje');
+    if (!profile.monthlyIncome && !profile.totalMonthlyIncome) missingForQualification.push('mesicni prijem');
+  }
   if (score < 61 && state.widgetsShown.length < 2) missingForQualification.push('zobrazit vice vypoctu');
 
   return {
@@ -139,9 +167,15 @@ export interface HandoffQualification {
  * Záměrně zjednodušené z předchozích 8 vertikál; jemnější granularita
  * je v `brokers.specializations` jako tagy, ne v routing typu.
  */
-export type RoutingVertical = 'bydleni' | 'investice' | 'refi' | 'unknown';
+export type RoutingVertical = 'bydleni' | 'investice' | 'refi' | 'prodej' | 'unknown';
 
 export function classifyVerticalForRouting(profile: ClientProfile): RoutingVertical {
+  // Prodej má nejvyšší prioritu — explicitní purpose, jde přímo na Davida
+  // (nejcennější typ leadu pro realitní byznys, mimo round-robin).
+  if (profile.purpose === 'prodej') {
+    return 'prodej';
+  }
+
   // Refi / refix má prioritu (explicitní signál klienta)
   if (profile.purpose === 'refinancovani' || profile.purpose === 'refixace') {
     return 'refi';

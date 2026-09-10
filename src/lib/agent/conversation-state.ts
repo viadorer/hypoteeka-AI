@@ -25,6 +25,7 @@ export type ClientPersona =
   | 'investor'               // legacy — zachováno pro zpětnou kompatibilitu prompts
   | 'investor_first'         // 038: první investiční nemovitost
   | 'investor_portfolio'     // 038: 2+ nemovitostí, zkušený
+  | 'seller'                 // 045: prodávající nemovitost — most na realitní byznys
   | 'complex_case';
 
 /**
@@ -97,18 +98,30 @@ export function determinePhase(state: ConversationState, collectedFields: string
   // Pokud už máme lead, jsme ve followup
   if (state.leadCaptured) return 'followup';
 
-  // Pokud máme cenu + equity + příjem -> qualification
-  if (has('propertyPrice') && has('equity') && (has('monthlyIncome') || has('totalMonthlyIncome'))) {
+  // Datová kompletnost podle intentu — refi a prodej nemají cenu+equity+příjem,
+  // jejich "kompletní data" vypadají jinak (audit fáze B: bez těchto větví
+  // se refi/prodej nikdy nedostaly za discovery).
+  const purchaseComplete =
+    has('propertyPrice') && has('equity') && (has('monthlyIncome') || has('totalMonthlyIncome'));
+  const refiComplete =
+    has('existingMortgageBalance') && has('existingMortgageRate') && (has('monthlyIncome') || has('totalMonthlyIncome'));
+  const sellerComplete = has('valuationAvgPrice');
+
+  if (purchaseComplete || refiComplete || sellerComplete) {
+    // Conversion: data kompletní A klient už viděl výsledky (>= 2 widgety).
+    // Bez této větve byla fáze conversion nedosažitelná a handoff protokol
+    // se nikdy neaktivoval.
+    if (state.widgetsShown.length >= 2) return 'conversion';
     return 'qualification';
   }
 
-  // Pokud máme cenu + equity -> analysis
-  if (has('propertyPrice') && has('equity')) {
+  // Částečná data -> analysis
+  if ((has('propertyPrice') && has('equity')) || (has('existingMortgageBalance') && has('existingMortgageRate'))) {
     return 'analysis';
   }
 
-  // Pokud máme alespoň cenu nebo příjem -> discovery
-  if (has('propertyPrice') || has('monthlyIncome') || has('equity')) {
+  // Pokud máme alespoň cenu, příjem nebo zůstatek -> discovery
+  if (has('propertyPrice') || has('monthlyIncome') || has('equity') || has('existingMortgageBalance')) {
     return 'discovery';
   }
 
@@ -209,6 +222,11 @@ export function detectPersona(profile: {
   investmentExperience?: 'none' | 'one' | 'portfolio';
   legalForm?: 'fyzicka_osoba' | 'sro' | 'kombinace';
 }): ClientPersona {
+  // Prodávající — explicitní purpose, nejvyšší priorita (most na realitní byznys)
+  if (profile.purpose === 'prodej') {
+    return 'seller';
+  }
+
   // Investice = investor — rozlišit first vs portfolio podle zkušenosti / formy
   if (profile.purpose === 'investice' || profile.expectedRentalIncome) {
     // Portfolio signály: 2+ nemovitostí nebo s.r.o./kombinace forma
