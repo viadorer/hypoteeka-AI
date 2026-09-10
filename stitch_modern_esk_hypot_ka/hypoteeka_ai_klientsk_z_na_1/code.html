@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<title>Hypoteeka AI - Client Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "surface": "#f8f9ff",
+            "tertiary-fixed": "#e0e3e5",
+            "surface-container": "#e5eeff",
+            "on-surface": "#0b1c30",
+            "surface-tint": "#be0037",
+            "surface-dim": "#cbdbf5",
+            "secondary": "#565e74",
+            "on-primary-container": "#fffaf9",
+            "tertiary-container": "#717476",
+            "on-secondary": "#ffffff",
+            "inverse-surface": "#213145",
+            "outline": "#906f70",
+            "on-tertiary-fixed": "#191c1e",
+            "surface-bright": "#f8f9ff",
+            "surface-variant": "#d3e4fe",
+            "background": "#f8f9ff",
+            "on-error": "#ffffff",
+            "inverse-on-surface": "#eaf1ff",
+            "tertiary": "#585c5d",
+            "inverse-primary": "#ffb3b6",
+            "secondary-container": "#dae2fd",
+            "primary-fixed": "#ffdada",
+            "on-secondary-container": "#5c647a",
+            "secondary-fixed": "#dae2fd",
+            "on-primary-fixed": "#40000c",
+            "primary-fixed-dim": "#ffb3b6",
+            "surface-container-lowest": "#ffffff",
+            "outline-variant": "#e5bdbe",
+            "on-tertiary": "#ffffff",
+            "on-primary-fixed-variant": "#920028",
+            "primary-container": "#e11d48",
+            "on-secondary-fixed-variant": "#3f465c",
+            "tertiary-fixed-dim": "#c4c7c9",
+            "on-primary": "#ffffff",
+            "on-tertiary-container": "#f9fbfd",
+            "error-container": "#ffdad6",
+            "primary": "#b80035",
+            "surface-container-highest": "#d3e4fe",
+            "surface-container-high": "#dce9ff",
+            "surface-container-low": "#eff4ff",
+            "on-background": "#0b1c30",
+            "error": "#ba1a1a",
+            "on-error-container": "#93000a",
+            "on-tertiary-fixed-variant": "#444749",
+            "secondary-fixed-dim": "#bec6e0",
+            "on-surface-variant": "#5c3f40",
+            "on-secondary-fixed": "#131b2e"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "full": "9999px"
+          },
+          "spacing": {
+            "section-gap-mobile": "64px",
+            "container-max": "1200px",
+            "base": "8px",
+            "section-gap-desktop": "120px",
+            "gutter": "24px"
+          },
+          "fontFamily": {
+            "label-md": ["Inter"],
+            "display-xl-mobile": ["Inter"],
+            "label-sm": ["Inter"],
+            "headline-md": ["Inter"],
+            "headline-lg-mobile": ["Inter"],
+            "headline-lg": ["Inter"],
+            "body-lg": ["Inter"],
+            "body-md": ["Inter"],
+            "display-xl": ["Inter"]
+          },
+          "fontSize": {
+            "label-md": ["14px", { "lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "500" }],
+            "display-xl-mobile": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+            "label-sm": ["12px", { "lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600" }],
+            "headline-md": ["24px", { "lineHeight": "32px", "fontWeight": "600" }],
+            "headline-lg-mobile": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+            "headline-lg": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+            "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+            "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+            "display-xl": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700" }]
+          }
+        },
+      },
+    }
+  </script>
+<style>
+    body {
+      -webkit-tap-highlight-color: transparent;
+      scroll-behavior: smooth;
+    }
+    .stepper-line {
+      width: 2px;
+      background: #e0e3e5;
+    }
+    .stepper-line-active {
+      background: #b80035;
+    }
+    .glass-effect {
+      backdrop-filter: blur(8px);
+      background: rgba(255, 255, 255, 0.8);
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface text-on-surface font-body-md">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-50 bg-surface shadow-sm">
+<div class="flex justify-between items-center px-4 h-16 w-full max-w-container-max mx-auto">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">account_balance</span>
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile font-bold text-primary">Hypoteeka AI</h1>
+</div>
+<div class="flex items-center gap-4">
+<button class="relative hover:opacity-80 transition-opacity active:scale-95 duration-200">
+<span class="material-symbols-outlined text-secondary">notifications</span>
+<span class="absolute top-0 right-0 w-2 h-2 bg-primary rounded-full"></span>
+</button>
+</div>
+</div>
+</header>
+<main class="pt-20 pb-32 px-4 max-w-md mx-auto">
+<!-- Welcome Section -->
+<section class="mb-8">
+<h2 class="font-headline-lg-mobile text-headline-lg-mobile mb-2">Hello, Sarah!</h2>
+<p class="text-secondary font-body-md">Your application is progressing smoothly through the final checks.</p>
+</section>
+<!-- Application Progress (Vertical Stepper) -->
+<section class="bg-surface-container-lowest rounded-xl p-6 shadow-sm mb-8">
+<h3 class="font-headline-md text-headline-md mb-6">Mortgage Status</h3>
+<div class="space-y-0">
+<!-- Step 1: Completed -->
+<div class="flex gap-4">
+<div class="flex flex-col items-center">
+<div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white">
+<span class="material-symbols-outlined text-[20px]">check</span>
+</div>
+<div class="stepper-line h-10 stepper-line-active"></div>
+</div>
+<div class="pb-6">
+<h4 class="font-label-md text-label-md text-primary">Application Sent</h4>
+<p class="text-secondary font-label-sm">Completed on Oct 12</p>
+</div>
+</div>
+<!-- Step 2: Completed -->
+<div class="flex gap-4">
+<div class="flex flex-col items-center">
+<div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white">
+<span class="material-symbols-outlined text-[20px]">check</span>
+</div>
+<div class="stepper-line h-10 stepper-line-active"></div>
+</div>
+<div class="pb-6">
+<h4 class="font-label-md text-label-md text-primary">Documents Verified</h4>
+<p class="text-secondary font-label-sm">Completed on Oct 14</p>
+</div>
+</div>
+<!-- Step 3: Current -->
+<div class="flex gap-4">
+<div class="flex flex-col items-center">
+<div class="w-8 h-8 rounded-full border-2 border-primary bg-surface flex items-center justify-center text-primary relative">
+<div class="absolute inset-0 rounded-full bg-primary opacity-10 animate-ping"></div>
+<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">hourglass_top</span>
+</div>
+<div class="stepper-line h-10"></div>
+</div>
+<div class="pb-6">
+<h4 class="font-label-md text-label-md font-bold">Bank Review</h4>
+<p class="text-on-surface font-label-sm">Currently under final review</p>
+</div>
+</div>
+<!-- Step 4: Future -->
+<div class="flex gap-4">
+<div class="flex flex-col items-center">
+<div class="w-8 h-8 rounded-full bg-tertiary-fixed flex items-center justify-center text-secondary">
+<span class="material-symbols-outlined text-[20px]">check_circle</span>
+</div>
+</div>
+<div>
+<h4 class="font-label-md text-label-md text-secondary">Approved</h4>
+<p class="text-secondary font-label-sm">Estimated Oct 20</p>
+</div>
+</div>
+</div>
+</section>
+<!-- Next Steps Bento Section -->
+<section class="mb-8">
+<h3 class="font-headline-md text-headline-md mb-4">Next Steps</h3>
+<div class="grid grid-cols-2 gap-4">
+<div class="col-span-2 bg-secondary-container p-4 rounded-xl flex items-center gap-4 active:scale-95 transition-transform duration-200">
+<div class="w-12 h-12 rounded-lg bg-white flex items-center justify-center shadow-sm">
+<span class="material-symbols-outlined text-on-secondary-container">description</span>
+</div>
+<div>
+<p class="font-label-md text-on-secondary-container">Sign Disclosure</p>
+<p class="text-secondary font-label-sm">Electronic signature required</p>
+</div>
+<span class="material-symbols-outlined ml-auto text-secondary">chevron_right</span>
+</div>
+<div class="bg-surface-container-high p-4 rounded-xl flex flex-col gap-2">
+<span class="material-symbols-outlined text-primary">account_balance_wallet</span>
+<p class="font-label-md">Down Payment</p>
+<p class="text-secondary text-[11px] leading-tight">Verify source of funds for final approval.</p>
+</div>
+<div class="bg-surface-container-high p-4 rounded-xl flex flex-col gap-2">
+<span class="material-symbols-outlined text-primary">home_work</span>
+<p class="font-label-md">Appraisal</p>
+<p class="text-secondary text-[11px] leading-tight">Scheduled for Monday, Oct 18.</p>
+</div>
+</div>
+</section>
+<!-- Advisor "Hugo" Section -->
+<section class="bg-surface-container rounded-xl overflow-hidden shadow-sm relative">
+<!-- AI Glow Effect -->
+<div class="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full blur-3xl -mr-16 -mt-16"></div>
+<div class="p-6 relative z-10">
+<div class="flex items-center gap-4 mb-4">
+<div class="relative">
+<img alt="Advisor Hugo" class="w-16 h-16 rounded-full object-cover border-2 border-white shadow-md" data-alt="A professional, friendly male advisor in his 40s with a warm smile, wearing a modern business-casual outfit. He is photographed in a high-end, brightly lit office environment with soft bokeh background and minimalist decor. The lighting is soft and even, highlighting a clean and expert persona consistent with the modern corporate banking aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuA7pZfeblsItN4TqMR4yI6pxv3X-m4nmXM_uwe23WU0YS3KkDLYrKxMR1FdybJJQWwcEXmtdC8tzXwfgJK5tDxfERU3Q5CGyG-SEZoq0YIIcM6V83Asn-329gGo3aN8eX0wLg_ZLL78JdfhRaL4sZf1z_HgarPj4H6s0FabJsPrTUtklu434hZyae0qhr9S2Kd965wknt2Fwe1V4Fm8KCOnWaBb3laCY79Qtg1zYzj1q3BAypQp9BmbG0HPaV0utvygEecF87t0Ww"/>
+<div class="absolute bottom-0 right-0 w-4 h-4 bg-green-500 border-2 border-white rounded-full"></div>
+</div>
+<div>
+<div class="flex items-center gap-1">
+<h4 class="font-headline-md text-headline-md text-on-surface">Hugo</h4>
+<span class="bg-primary text-white text-[10px] px-1.5 py-0.5 rounded-full font-bold">AI EXPERT</span>
+</div>
+<p class="text-secondary font-label-sm">Mortgage Specialist &amp; Advisor</p>
+</div>
+</div>
+<p class="text-on-surface-variant font-body-md mb-6 italic">"I've double-checked the bank's requirements for you. Everything looks solid for the review phase!"</p>
+<div class="flex gap-3">
+<button class="flex-1 bg-primary text-on-primary py-3 rounded-xl font-label-md flex items-center justify-center gap-2 active:scale-95 transition-all shadow-md">
+<span class="material-symbols-outlined text-[20px]">chat</span>
+            Message
+          </button>
+<button class="flex-1 bg-white border border-outline-variant text-on-surface py-3 rounded-xl font-label-md flex items-center justify-center gap-2 active:scale-95 transition-all shadow-sm">
+<span class="material-symbols-outlined text-[20px]">call</span>
+            Schedule
+          </button>
+</div>
+</div>
+</section>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 w-full z-50 rounded-t-xl bg-surface-container shadow-lg">
+<div class="flex justify-around items-center w-full h-20 px-2 pb-safe">
+<a class="flex flex-col items-center justify-center text-secondary hover:bg-surface-container-high transition-colors active:scale-90 duration-200" href="#">
+<span class="material-symbols-outlined">home</span>
+<span class="font-label-sm text-label-sm">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center text-secondary hover:bg-surface-container-high transition-colors active:scale-90 duration-200" href="#">
+<span class="material-symbols-outlined">calculate</span>
+<span class="font-label-sm text-label-sm">Calculator</span>
+</a>
+<a class="flex flex-col items-center justify-center text-secondary hover:bg-surface-container-high transition-colors active:scale-90 duration-200" href="#">
+<span class="material-symbols-outlined">local_offer</span>
+<span class="font-label-sm text-label-sm">Offers</span>
+</a>
+<a class="flex flex-col items-center justify-center bg-primary-container text-on-primary-container rounded-full px-4 py-1 active:scale-90 duration-200" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">person</span>
+<span class="font-label-sm text-label-sm">Profile</span>
+</a>
+</div>
+</nav>
+<script>
+    // Micro-interactions and subtle effects
+    document.addEventListener('DOMContentLoaded', () => {
+      const observerOptions = {
+        threshold: 0.1
+      };
+
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('opacity-100', 'translate-y-0');
+            entry.target.classList.remove('opacity-0', 'translate-y-4');
+          }
+        });
+      }, observerOptions);
+
+      // Simple reveal animation for sections
+      document.querySelectorAll('section').forEach(section => {
+        section.classList.add('transition-all', 'duration-700', 'opacity-0', 'translate-y-4');
+        observer.observe(section);
+      });
+    });
+  </script>
+</body></html>

@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<title>Hypoteeka AI - Mortgage Calculator</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+                  "surface": "#f8f9ff",
+                  "tertiary-fixed": "#e0e3e5",
+                  "surface-container": "#e5eeff",
+                  "on-surface": "#0b1c30",
+                  "surface-tint": "#be0037",
+                  "surface-dim": "#cbdbf5",
+                  "secondary": "#565e74",
+                  "on-primary-container": "#fffaf9",
+                  "tertiary-container": "#717476",
+                  "on-secondary": "#ffffff",
+                  "inverse-surface": "#213145",
+                  "outline": "#906f70",
+                  "on-tertiary-fixed": "#191c1e",
+                  "surface-bright": "#f8f9ff",
+                  "surface-variant": "#d3e4fe",
+                  "background": "#f8f9ff",
+                  "on-error": "#ffffff",
+                  "inverse-on-surface": "#eaf1ff",
+                  "tertiary": "#585c5d",
+                  "inverse-primary": "#ffb3b6",
+                  "secondary-container": "#dae2fd",
+                  "primary-fixed": "#ffdada",
+                  "on-secondary-container": "#5c647a",
+                  "secondary-fixed": "#dae2fd",
+                  "on-primary-fixed": "#40000c",
+                  "primary-fixed-dim": "#ffb3b6",
+                  "surface-container-lowest": "#ffffff",
+                  "outline-variant": "#e5bdbe",
+                  "on-tertiary": "#ffffff",
+                  "on-primary-fixed-variant": "#920028",
+                  "primary-container": "#e11d48",
+                  "on-secondary-fixed-variant": "#3f465c",
+                  "tertiary-fixed-dim": "#c4c7c9",
+                  "on-primary": "#ffffff",
+                  "on-tertiary-container": "#f9fbfd",
+                  "error-container": "#ffdad6",
+                  "primary": "#b80035",
+                  "surface-container-highest": "#d3e4fe",
+                  "surface-container-high": "#dce9ff",
+                  "surface-container-low": "#eff4ff",
+                  "on-background": "#0b1c30",
+                  "error": "#ba1a1a",
+                  "on-error-container": "#93000a",
+                  "on-tertiary-fixed-variant": "#444749",
+                  "secondary-fixed-dim": "#bec6e0",
+                  "on-surface-variant": "#5c3f40",
+                  "on-secondary-fixed": "#131b2e"
+          },
+          "borderRadius": {
+                  "DEFAULT": "0.25rem",
+                  "lg": "0.5rem",
+                  "xl": "0.75rem",
+                  "full": "9999px"
+          },
+          "spacing": {
+                  "section-gap-mobile": "64px",
+                  "container-max": "1200px",
+                  "base": "8px",
+                  "section-gap-desktop": "120px",
+                  "gutter": "24px"
+          },
+          "fontFamily": {
+                  "label-md": ["Inter"],
+                  "display-xl-mobile": ["Inter"],
+                  "label-sm": ["Inter"],
+                  "headline-md": ["Inter"],
+                  "headline-lg-mobile": ["Inter"],
+                  "headline-lg": ["Inter"],
+                  "body-lg": ["Inter"],
+                  "body-md": ["Inter"],
+                  "display-xl": ["Inter"]
+          },
+          "fontSize": {
+                  "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "500"}],
+                  "display-xl-mobile": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                  "label-sm": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                  "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                  "headline-lg-mobile": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                  "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                  "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                  "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                  "display-xl": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}]
+          }
+        },
+      },
+    }
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+    input[type="range"] {
+      -webkit-appearance: none;
+      width: 100%;
+      background: transparent;
+    }
+    input[type="range"]::-webkit-slider-runnable-track {
+      width: 100%;
+      height: 6px;
+      background: #d3e4fe;
+      border-radius: 3px;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      height: 24px;
+      width: 24px;
+      border-radius: 50%;
+      background: #b80035;
+      cursor: pointer;
+      margin-top: -9px;
+      box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+      border: 2px solid white;
+    }
+    .custom-scroll-hide::-webkit-scrollbar {
+      display: none;
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface text-on-surface font-body-md min-h-screen pb-20">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-50 bg-surface dark:bg-on-surface shadow-sm">
+<div class="flex justify-between items-center px-4 h-16 w-full max-w-container-max mx-auto">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary dark:text-primary-fixed-dim" style="font-size: 28px;">account_balance</span>
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile font-bold text-primary dark:text-primary-fixed-dim">Hypoteeka AI</h1>
+</div>
+<button class="material-symbols-outlined text-on-surface-variant dark:text-surface-variant hover:opacity-80 transition-opacity active:scale-95 duration-200">notifications</button>
+</div>
+</header>
+<!-- Main Canvas -->
+<main class="pt-20 px-4 max-w-md mx-auto">
+<!-- Progress Indicator Section -->
+<div class="mt-4 mb-8">
+<div class="flex justify-between items-end mb-3">
+<div>
+<h2 class="font-headline-md text-headline-md text-on-surface">Loan Details</h2>
+<p class="font-label-md text-label-md text-secondary">Step 1 of 3</p>
+</div>
+<div class="flex items-center gap-1">
+<div class="w-8 h-2 rounded-full bg-primary"></div>
+<div class="w-8 h-2 rounded-full bg-surface-variant"></div>
+<div class="w-8 h-2 rounded-full bg-surface-variant"></div>
+</div>
+</div>
+</div>
+<!-- Calculator Card -->
+<div class="bg-surface-container-lowest rounded-xl shadow-sm p-6 space-y-8 border border-surface-variant">
+<!-- Property Price Input -->
+<div class="space-y-4">
+<div class="flex justify-between items-center">
+<label class="font-label-md text-label-md text-on-surface-variant">Property Price</label>
+<span class="font-headline-md text-headline-md text-primary">$<span id="price-display">450,000</span></span>
+</div>
+<input class="accent-primary" id="price-slider" max="2000000" min="50000" step="10000" type="range" value="450000"/>
+<div class="flex justify-between font-label-sm text-label-sm text-secondary">
+<span>$50k</span>
+<span>$2M</span>
+</div>
+</div>
+<!-- Down Payment Input -->
+<div class="space-y-4">
+<div class="flex justify-between items-center">
+<label class="font-label-md text-label-md text-on-surface-variant">Down Payment</label>
+<div class="text-right">
+<span class="block font-headline-md text-headline-md text-primary">$<span id="down-display">90,000</span></span>
+<span class="font-label-sm text-label-sm text-secondary"><span id="percent-display">20</span>% of total</span>
+</div>
+</div>
+<input class="accent-primary" id="down-slider" max="50" min="5" step="1" type="range" value="20"/>
+<div class="flex justify-between font-label-sm text-label-sm text-secondary">
+<span>5%</span>
+<span>50%</span>
+</div>
+</div>
+<!-- Loan Term Input -->
+<div class="space-y-4">
+<label class="font-label-md text-label-md text-on-surface-variant block">Loan Term</label>
+<div class="grid grid-cols-3 gap-3">
+<button class="py-3 px-4 rounded-lg border-2 border-surface-variant font-label-md text-label-md hover:border-primary transition-colors text-on-surface-variant" id="term-15" onclick="updateTerm(15)">15 Years</button>
+<button class="py-3 px-4 rounded-lg border-2 border-surface-variant font-label-md text-label-md hover:border-primary transition-colors text-on-surface-variant" id="term-20" onclick="updateTerm(20)">20 Years</button>
+<button class="py-3 px-4 rounded-lg border-2 border-primary bg-primary-fixed text-primary font-label-md text-label-md transition-colors" id="term-30" onclick="updateTerm(30)">30 Years</button>
+</div>
+</div>
+</div>
+<!-- AI Hugo Recommendation Message -->
+<div class="mt-8 flex gap-4 items-start p-4 bg-surface-container-high rounded-xl border-l-4 border-primary shadow-sm">
+<div class="w-10 h-10 rounded-full bg-primary flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-white" style="font-variation-settings: 'FILL' 1;">smart_toy</span>
+</div>
+<div class="space-y-1">
+<p class="font-label-sm text-label-sm text-primary uppercase tracking-wider">Hugo AI Tip</p>
+<p class="font-body-md text-body-md text-on-surface-variant">Increasing your down payment to 25% could unlock a lower interest rate tier with our partner banks.</p>
+</div>
+</div>
+<!-- Sticky Bottom Result Area (Before Footer Nav) -->
+<div class="mt-12 mb-12 bg-on-surface p-6 rounded-2xl shadow-xl text-white relative overflow-hidden">
+<div class="absolute top-0 right-0 w-32 h-32 bg-primary/20 rounded-full -mr-16 -mt-16 blur-3xl"></div>
+<div class="relative z-10">
+<p class="font-label-md text-label-md text-surface-variant mb-2">Estimated Monthly Payment</p>
+<div class="flex items-baseline gap-2">
+<h3 class="text-[40px] font-bold leading-none tracking-tight">$<span id="monthly-payment">2,156</span></h3>
+<span class="font-label-md text-label-md text-surface-variant">/mo</span>
+</div>
+<p class="mt-4 font-label-sm text-label-sm text-tertiary-fixed">Based on 6.5% interest rate. Includes taxes and insurance.</p>
+<button class="w-full mt-6 bg-primary-container text-on-primary-container py-4 rounded-xl font-headline-md text-headline-md active:scale-95 transition-transform shadow-lg">
+          Continue to Step 2
+        </button>
+</div>
+</div>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 w-full z-50 rounded-t-xl bg-surface-container dark:bg-on-secondary-fixed shadow-lg">
+<div class="flex justify-around items-center w-full h-20 px-2 pb-safe">
+<button class="flex flex-col items-center justify-center text-secondary dark:text-secondary-fixed-dim hover:bg-surface-container-high dark:hover:bg-secondary-container transition-colors active:scale-90 duration-200">
+<span class="material-symbols-outlined">home</span>
+<span class="font-label-sm text-label-sm">Home</span>
+</button>
+<button class="flex flex-col items-center justify-center bg-primary-container dark:bg-primary text-on-primary-container dark:text-on-primary rounded-full px-4 py-1 active:scale-90 duration-200">
+<span class="material-symbols-outlined">calculate</span>
+<span class="font-label-sm text-label-sm">Calculator</span>
+</button>
+<button class="flex flex-col items-center justify-center text-secondary dark:text-secondary-fixed-dim hover:bg-surface-container-high dark:hover:bg-secondary-container transition-colors active:scale-90 duration-200">
+<span class="material-symbols-outlined">local_offer</span>
+<span class="font-label-sm text-label-sm">Offers</span>
+</button>
+<button class="flex flex-col items-center justify-center text-secondary dark:text-secondary-fixed-dim hover:bg-surface-container-high dark:hover:bg-secondary-container transition-colors active:scale-90 duration-200">
+<span class="material-symbols-outlined">person</span>
+<span class="font-label-sm text-label-sm">Profile</span>
+</button>
+</div>
+</nav>
+<script>
+    const priceSlider = document.getElementById('price-slider');
+    const downSlider = document.getElementById('down-slider');
+    const priceDisplay = document.getElementById('price-display');
+    const downDisplay = document.getElementById('down-display');
+    const percentDisplay = document.getElementById('percent-display');
+    const monthlyDisplay = document.getElementById('monthly-payment');
+
+    let currentTerm = 30;
+    const interestRate = 0.065 / 12;
+
+    function calculatePayment() {
+      const price = parseInt(priceSlider.value);
+      const downPercent = parseInt(downSlider.value);
+      const downAmount = price * (downPercent / 100);
+      const loanAmount = price - downAmount;
+      const numberOfPayments = currentTerm * 12;
+
+      priceDisplay.innerText = price.toLocaleString();
+      downDisplay.innerText = Math.round(downAmount).toLocaleString();
+      percentDisplay.innerText = downPercent;
+
+      // Formula: P * (r * (1 + r)^n) / ((1 + r)^n - 1)
+      const x = Math.pow(1 + interestRate, numberOfPayments);
+      const monthly = (loanAmount * x * interestRate) / (x - 1);
+      
+      // Adding simulated taxes and insurance
+      const totalMonthly = monthly + (price * 0.0012); 
+      
+      monthlyDisplay.innerText = Math.round(totalMonthly).toLocaleString();
+    }
+
+    function updateTerm(years) {
+      currentTerm = years;
+      [15, 20, 30].forEach(t => {
+        const btn = document.getElementById(`term-${t}`);
+        if (t === years) {
+          btn.className = "py-3 px-4 rounded-lg border-2 border-primary bg-primary-fixed text-primary font-label-md text-label-md transition-colors";
+        } else {
+          btn.className = "py-3 px-4 rounded-lg border-2 border-surface-variant font-label-md text-label-md hover:border-primary transition-colors text-on-surface-variant";
+        }
+      });
+      calculatePayment();
+    }
+
+    priceSlider.addEventListener('input', calculatePayment);
+    downSlider.addEventListener('input', calculatePayment);
+
+    // Initial calculation
+    calculatePayment();
+  </script>
+</body></html>

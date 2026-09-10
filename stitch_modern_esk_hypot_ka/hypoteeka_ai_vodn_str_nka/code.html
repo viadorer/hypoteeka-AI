@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+
+<html class="light" lang="cs"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Hypoteeka AI - Váš průvodce světem hypoték</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "surface": "#f8f9ff",
+                    "tertiary-fixed": "#e0e3e5",
+                    "surface-container": "#e5eeff",
+                    "on-surface": "#0b1c30",
+                    "surface-tint": "#be0037",
+                    "surface-dim": "#cbdbf5",
+                    "secondary": "#565e74",
+                    "on-primary-container": "#fffaf9",
+                    "tertiary-container": "#717476",
+                    "on-secondary": "#ffffff",
+                    "inverse-surface": "#213145",
+                    "outline": "#906f70",
+                    "on-tertiary-fixed": "#191c1e",
+                    "surface-bright": "#f8f9ff",
+                    "surface-variant": "#d3e4fe",
+                    "background": "#f8f9ff",
+                    "on-error": "#ffffff",
+                    "inverse-on-surface": "#eaf1ff",
+                    "tertiary": "#585c5d",
+                    "inverse-primary": "#ffb3b6",
+                    "secondary-container": "#dae2fd",
+                    "primary-fixed": "#ffdada",
+                    "on-secondary-container": "#5c647a",
+                    "secondary-fixed": "#dae2fd",
+                    "on-primary-fixed": "#40000c",
+                    "primary-fixed-dim": "#ffb3b6",
+                    "surface-container-lowest": "#ffffff",
+                    "outline-variant": "#e5bdbe",
+                    "on-tertiary": "#ffffff",
+                    "on-primary-fixed-variant": "#920028",
+                    "primary-container": "#e11d48",
+                    "on-secondary-fixed-variant": "#3f465c",
+                    "tertiary-fixed-dim": "#c4c7c9",
+                    "on-primary": "#ffffff",
+                    "on-tertiary-container": "#f9fbfd",
+                    "error-container": "#ffdad6",
+                    "primary": "#b80035",
+                    "surface-container-highest": "#d3e4fe",
+                    "surface-container-high": "#dce9ff",
+                    "surface-container-low": "#eff4ff",
+                    "on-background": "#0b1c30",
+                    "error": "#ba1a1a",
+                    "on-error-container": "#93000a",
+                    "on-tertiary-fixed-variant": "#444749",
+                    "secondary-fixed-dim": "#bec6e0",
+                    "on-surface-variant": "#5c3f40",
+                    "on-secondary-fixed": "#131b2e"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "section-gap-mobile": "64px",
+                    "container-max": "1200px",
+                    "base": "8px",
+                    "section-gap-desktop": "120px",
+                    "gutter": "24px"
+            },
+            "fontFamily": {
+                    "label-md": ["Inter"],
+                    "display-xl-mobile": ["Inter"],
+                    "label-sm": ["Inter"],
+                    "headline-md": ["Inter"],
+                    "headline-lg-mobile": ["Inter"],
+                    "headline-lg": ["Inter"],
+                    "body-lg": ["Inter"],
+                    "body-md": ["Inter"],
+                    "display-xl": ["Inter"]
+            },
+            "fontSize": {
+                    "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "500"}],
+                    "display-xl-mobile": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "label-sm": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                    "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                    "headline-lg-mobile": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                    "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                    "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "display-xl": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            display: inline-block;
+            vertical-align: middle;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        .hero-gradient {
+            background: radial-gradient(circle at top right, rgba(184, 0, 53, 0.08), transparent 40%),
+                        radial-gradient(circle at bottom left, rgba(11, 28, 48, 0.05), transparent 40%);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface text-on-surface">
+<!-- TopAppBar Shell -->
+<header class="fixed top-0 w-full z-50 bg-surface shadow-sm">
+<div class="flex justify-between items-center px-4 h-16 w-full max-w-container-max mx-auto">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary font-headline-lg-mobile text-headline-lg-mobile" data-icon="account_balance">account_balance</span>
+<span class="font-headline-lg-mobile text-headline-lg-mobile font-bold text-primary">Hypoteeka AI</span>
+</div>
+<button class="hover:opacity-80 transition-opacity active:scale-95 duration-200">
+<span class="material-symbols-outlined text-on-surface-variant" data-icon="notifications">notifications</span>
+</button>
+</div>
+</header>
+<main class="pt-16 pb-24 overflow-x-hidden">
+<!-- Hero Section -->
+<section class="hero-gradient px-4 py-12 md:py-24 flex flex-col items-center text-center">
+<div class="inline-flex items-center gap-2 bg-primary-fixed text-on-primary-fixed px-3 py-1 rounded-full mb-6 animate-fade-in">
+<span class="material-symbols-outlined text-[16px]" data-icon="auto_awesome" style="font-variation-settings: 'FILL' 1;">auto_awesome</span>
+<span class="font-label-sm text-label-sm">AI-POWĚRED HYPOTÉKA</span>
+</div>
+<h1 class="font-display-xl-mobile text-display-xl-mobile text-on-surface mb-6 max-w-[320px] mx-auto leading-tight">
+                Zjistěte na jakou hypotéku dosáhnete
+            </h1>
+<p class="font-body-md text-body-md text-secondary mb-10 max-w-[280px] mx-auto">
+                Inteligentní analýza vašich možností během pár sekund. Bez závazků a zbytečných schůzek.
+            </p>
+<button class="w-full max-w-[280px] bg-primary-container text-on-primary-container h-14 rounded-xl font-label-md text-label-md shadow-lg shadow-primary/20 flex items-center justify-center gap-2 hover:opacity-90 active:scale-95 transition-all duration-200">
+<span>Spočítat hypotéku</span>
+<span class="material-symbols-outlined" data-icon="arrow_forward">arrow_forward</span>
+</button>
+<!-- Floating Image / Graphic Placeholder -->
+<div class="mt-12 w-full max-w-[340px] relative">
+<div class="aspect-square rounded-3xl overflow-hidden shadow-2xl relative z-10">
+<img class="w-full h-full object-cover" data-alt="A clean, minimalist high-key photograph of a modern residential building exterior with large glass windows and elegant architectural lines. The lighting is soft and natural, reflecting a bright and professional light-mode aesthetic. The composition is balanced and serene, using a sophisticated color palette of whites and soft blues that aligns with a high-end financial services brand. The mood is aspirational and trustworthy." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBYrC2TITamKAWedHZ98fNPVxEAII0VzDfETuVIRGmdYrtb7rQF0SWOY6NXIl-hXiDXSWPiLzJYV8anX5bCtl_ytaCGaeXucCSmbeJ68CxRdn-dWMX4VM0T_NiluNREvwSIRE_E-eYuFv803LXOTsFchRva-UH7_7z3R_7FG9a8dg1QGsGs-BGgNiNTleNfclkeOUG4yImR18dJMYxkZ4j0FhNyPOS8v-FTrhAyoqkQTRb6h_NAiMkIt5HhLYmkiXOaXyy64T93hQ"/>
+</div>
+<!-- Decorative elements -->
+<div class="absolute -top-4 -right-4 w-24 h-24 bg-surface-container rounded-2xl -z-0"></div>
+<div class="absolute -bottom-6 -left-6 w-32 h-32 border-2 border-primary/10 rounded-full -z-0"></div>
+</div>
+</section>
+<!-- Stats Section (Bento Lite) -->
+<section class="px-4 py-8">
+<div class="grid grid-cols-2 gap-4">
+<div class="col-span-2 glass-card p-6 rounded-2xl flex items-center justify-between">
+<div>
+<div class="font-display-xl-mobile text-display-xl-mobile text-primary">1000+</div>
+<div class="font-label-sm text-label-sm text-secondary uppercase tracking-wider">Spokojených klientů</div>
+</div>
+<div class="flex -space-x-3">
+<div class="w-10 h-10 rounded-full border-2 border-surface bg-slate-200 overflow-hidden">
+<img alt="user" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBsLekCF_7FqSMQR_10AqFpXV0wlJyJ0QuTDXM4fM2uLJnQT2e9E47NJbpGPyPCOi5puXAUAY6RaLQTM4GmAs-uDlppfj7D5AcD757DCGSTZKvsDKQMlyb2zf7_w4F5i70MWGekW9yVZjXy-c09YRf_RJXJiwuhzWV2cyj6zres7z5jPTP03WKuN3VyKRb1YVd-csP5FADBDas8apajTyrnvFCSsHrqIapRpksWGHkwmsoFUPwSq4mk-c2dfs77LiEfasPchMgGEw"/>
+</div>
+<div class="w-10 h-10 rounded-full border-2 border-surface bg-slate-200 overflow-hidden">
+<img alt="user" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA0VLe83ddMYLtaCHiRTRnE8LCrRj4TT1SXKLlN7ANmKoM5wBux84nI1qMQUfWxZFR4PMH27w2dETDcLbYSUpKn-sOn9GGe14vx04uadSpspspBE4eg8S6wyQFG1gEkyo0m6TUvJWYNKnfZuAIeIijoFYltueyOtw6WET_Y9hORwg5UiMSI41FfAti9jFqixoazz1_6lj9-EsgSWLcDJ5PuCzVgNLv1jQszQC9FELIO3xXPrGuX3ruRcfcZ_Kx3wCvLhwGl-6IiOw"/>
+</div>
+<div class="w-10 h-10 rounded-full border-2 border-surface bg-primary text-white flex items-center justify-center font-label-sm text-[10px]">
+                            +99
+                        </div>
+</div>
+</div>
+<div class="bg-on-surface p-5 rounded-2xl flex flex-col justify-between h-32">
+<span class="material-symbols-outlined text-surface-variant text-[32px]" data-icon="verified_user">verified_user</span>
+<span class="text-surface font-label-md text-label-md">100% Bezpečné</span>
+</div>
+<div class="bg-surface-container-high p-5 rounded-2xl flex flex-col justify-between h-32">
+<span class="material-symbols-outlined text-primary text-[32px]" data-icon="speed">speed</span>
+<span class="text-on-surface font-label-md text-label-md">Výsledek ihned</span>
+</div>
+</div>
+</section>
+<!-- How It Works Section -->
+<section class="px-4 py-12">
+<h2 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface mb-10 text-center">Jak to funguje</h2>
+<div class="space-y-12">
+<!-- Step 1 -->
+<div class="flex items-start gap-4">
+<div class="w-12 h-12 shrink-0 bg-primary/5 rounded-full flex items-center justify-center">
+<span class="material-symbols-outlined text-primary text-[28px]" data-icon="edit_note">edit_note</span>
+</div>
+<div>
+<h3 class="font-headline-md text-headline-md text-on-surface mb-2">1. Vyplníte údaje</h3>
+<p class="font-body-md text-body-md text-secondary">Stačí pár základních informací o vašich příjmech a představě o bydlení.</p>
+</div>
+</div>
+<!-- Step 2 -->
+<div class="flex items-start gap-4">
+<div class="w-12 h-12 shrink-0 bg-primary/5 rounded-full flex items-center justify-center">
+<span class="material-symbols-outlined text-primary text-[28px]" data-icon="psychology">psychology</span>
+</div>
+<div>
+<h3 class="font-headline-md text-headline-md text-on-surface mb-2">2. AI analyzuje trh</h3>
+<p class="font-body-md text-body-md text-secondary">Náš algoritmus Hugo porovná nabídky všech bank v reálném čase.</p>
+</div>
+</div>
+<!-- Step 3 -->
+<div class="flex items-start gap-4">
+<div class="w-12 h-12 shrink-0 bg-primary/5 rounded-full flex items-center justify-center">
+<span class="material-symbols-outlined text-primary text-[28px]" data-icon="assignment_turned_in">assignment_turned_in</span>
+</div>
+<div>
+<h3 class="font-headline-md text-headline-md text-on-surface mb-2">3. Získáte nabídky</h3>
+<p class="font-body-md text-body-md text-secondary">Okamžitě vidíte, u koho získáte nejlepší podmínky a kolik ušetříte.</p>
+</div>
+</div>
+</div>
+</section>
+<!-- Call to Action Footer Area -->
+<section class="px-4 py-12 bg-on-surface text-surface mt-8 rounded-t-[40px]">
+<div class="text-center">
+<h2 class="font-headline-lg-mobile text-headline-lg-mobile mb-4">Připraveni začít?</h2>
+<p class="font-body-md text-body-md text-surface-variant mb-8">Udělejte první krok k vašemu novému domovu ještě dnes.</p>
+<button class="w-full bg-primary text-on-primary h-14 rounded-xl font-label-md text-label-md hover:opacity-90 transition-opacity">
+                    Chci nezávaznou nabídku
+                </button>
+<p class="mt-6 font-label-sm text-label-sm text-tertiary-fixed-dim opacity-60">© 2024 Hypoteeka AI. Všechna práva vyhrazena.</p>
+</div>
+</section>
+</main>
+<!-- BottomNavBar Shell -->
+<nav class="fixed bottom-0 w-full z-50 rounded-t-xl bg-surface-container shadow-lg md:hidden">
+<div class="flex justify-around items-center w-full h-20 px-2 pb-safe">
+<!-- Home (Active) -->
+<a class="flex flex-col items-center justify-center bg-primary-container text-on-primary-container rounded-full px-4 py-1 transition-all duration-200 active:scale-90" href="#">
+<span class="material-symbols-outlined" data-icon="home" style="font-variation-settings: 'FILL' 1;">home</span>
+<span class="font-label-sm text-label-sm">Home</span>
+</a>
+<!-- Calculator -->
+<a class="flex flex-col items-center justify-center text-secondary hover:bg-surface-container-high transition-colors active:scale-90 duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="calculate">calculate</span>
+<span class="font-label-sm text-label-sm">Calculator</span>
+</a>
+<!-- Offers -->
+<a class="flex flex-col items-center justify-center text-secondary hover:bg-surface-container-high transition-colors active:scale-90 duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="local_offer">local_offer</span>
+<span class="font-label-sm text-label-sm">Offers</span>
+</a>
+<!-- Profile -->
+<a class="flex flex-col items-center justify-center text-secondary hover:bg-surface-container-high transition-colors active:scale-90 duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="person">person</span>
+<span class="font-label-sm text-label-sm">Profile</span>
+</a>
+</div>
+</nav>
+<script>
+        // Micro-interactions and subtle effects
+        document.addEventListener('DOMContentLoaded', () => {
+            const cards = document.querySelectorAll('.glass-card, [class*="bg-surface-container"]');
+            
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('animate-in', 'fade-in', 'slide-in-from-bottom-4', 'duration-700');
+                    }
+                });
+            }, { threshold: 0.1 });
+
+            cards.forEach(card => observer.observe(card));
+        });
+    </script>
+</body></html>
