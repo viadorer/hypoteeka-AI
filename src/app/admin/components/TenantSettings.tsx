@@ -29,6 +29,7 @@ export function TenantSettings() {
     vocative_greeting: true,
     lead_capture: true,
     knowledge_base_rag: false,
+    scripted_intro: true,
     primary_flow: 'mortgage',
   });
   const [saving, setSaving] = useState(false);
@@ -58,6 +59,8 @@ export function TenantSettings() {
       vocative_greeting: (f.vocative_greeting as boolean) ?? true,
       lead_capture: (f.lead_capture as boolean) ?? true,
       knowledge_base_rag: (f.knowledge_base_rag as boolean) ?? false,
+      // Bez uložené hodnoty platí výchozí z kódu: zapnuto pro hypoteční flow
+      scripted_intro: (f.scripted_intro as boolean) ?? (f.scriptedIntro as boolean) ?? ((f.primaryFlow ?? f.primary_flow) !== 'valuation'),
       primary_flow: (f.primaryFlow as string) ?? (f.primary_flow as string) ?? 'mortgage',
     });
   }, [tenant]);
@@ -93,6 +96,7 @@ export function TenantSettings() {
           vocative_greeting: form.vocative_greeting,
           lead_capture: form.lead_capture,
           knowledge_base_rag: form.knowledge_base_rag,
+          scripted_intro: form.scripted_intro,
           primaryFlow: form.primary_flow,
         },
       }),
@@ -213,6 +217,7 @@ export function TenantSettings() {
               ['vocative_greeting', 'Oslovení vokativem'],
               ['lead_capture', 'Lead capture'],
               ['knowledge_base_rag', 'Knowledge Base RAG'],
+              ['scripted_intro', 'Skriptovaný úvod (výběr záměru bez AI)'],
             ] as const).map(([key, label]) => (
               <label key={key} className="flex items-center gap-2">
                 <input type="checkbox" checked={form[key]} onChange={e => setForm(f => ({ ...f, [key]: e.target.checked }))} className="rounded" />

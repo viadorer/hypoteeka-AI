@@ -177,15 +177,18 @@ export async function POST(req: Request) {
     // Skriptovaný krok: poslední zpráva nese [STEP:pole=hodnota] z kliknutí
     // na připravenou volbu. Volba jde do profilu hned, aby fáze, persona
     // i uložená session odpovídaly tomu, co klient zvolil.
+    // Přepínač v adminu (Features → Skriptovaný úvod). Vypnuto = žádný krok
+    // se nerozpozná a klik jde na AI jako běžná zpráva; značky se dál skrývají.
+    const scriptSteps = tenantConfig.features.scriptedIntro ? HYPOTEEKA_STEPS : [];
     const lastEntry = msgList[msgList.length - 1];
-    const scripted = lastEntry?.role === 'user' ? resolveStep(textOf(lastEntry), HYPOTEEKA_STEPS) : null;
+    const scripted = lastEntry?.role === 'user' ? resolveStep(textOf(lastEntry), scriptSteps) : null;
     if (scripted) {
       (profile as Record<string, unknown>)[scripted.step.field] = scripted.option.value;
     }
 
     profile.lastMessageAt = new Date().toISOString();
     // Kliky ve skriptu nejsou konverzace — do skóre ani fází se nepočítají.
-    profile.messageCount = msgList.filter(m => m.role === 'user' && !resolveStep(textOf(m), HYPOTEEKA_STEPS)).length;
+    profile.messageCount = msgList.filter(m => m.role === 'user' && !resolveStep(textOf(m), scriptSteps)).length;
 
     // Update conversation state
     const collectedFields = getCollectedFields(profile);
@@ -303,7 +306,7 @@ JAK POUŽÍT:
     }
 
     // Skriptovaný tah model nenapsal — bez vysvětlení by ho bral jako svůj a mohl znovu zdravit.
-    const scriptedChoices = collectResolvedSteps(msgList.filter(m => m.role === 'user').map(textOf), HYPOTEEKA_STEPS);
+    const scriptedChoices = collectResolvedSteps(msgList.filter(m => m.role === 'user').map(textOf), scriptSteps);
     if (scriptedChoices.length > 0) {
       const choiceLines = scriptedChoices.map(({ step, option }) => `- ${option.label} (${step.field}=${option.value}), uloženo v profilu`);
       systemPrompt += `\n\n---\nPRŮBĚH ÚVODU (připravené volby, odpověděl skript, ne ty):\n${choiceLines.join('\n')}\nTyto volby jsou fakta. Znovu se na ně neptej, nezobrazuj znovu výběr „Co teď řešíte?" a znovu se nepředstavuj. Naváž na poslední otázku v konverzaci.`;

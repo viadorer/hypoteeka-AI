@@ -35,6 +35,8 @@ export interface TenantConfig {
     knowledgeBaseRag: boolean;
     ctaIntensity: 'low' | 'medium' | 'high';
     primaryFlow: 'mortgage' | 'valuation';
+    /** Úvodní výběr záměru odehraje skript bez AI (src/lib/scripted). Vypnuto = vše jde na AI. */
+    scriptedIntro: boolean;
   };
   gaId?: string;
   agentName: string;
@@ -65,6 +67,7 @@ const TENANT_CONFIGS: Record<string, TenantConfig> = {
       knowledgeBaseRag: false,
       ctaIntensity: 'medium',
       primaryFlow: 'mortgage',
+      scriptedIntro: true,
     },
     gaId: 'G-Q6HN5J19BT',
     agentName: 'Hugo',
@@ -94,6 +97,7 @@ const TENANT_CONFIGS: Record<string, TenantConfig> = {
       knowledgeBaseRag: false,
       ctaIntensity: 'medium',
       primaryFlow: 'valuation',
+      scriptedIntro: false,
     },
     agentName: 'Hugo',
   },
@@ -185,6 +189,7 @@ function mapDbRowToConfig(row: TenantDbRow): TenantConfig {
       knowledgeBaseRag: (f.knowledge_base_rag as boolean) ?? (f.knowledgeBaseRag as boolean) ?? hardcoded?.features.knowledgeBaseRag ?? false,
       ctaIntensity: ((f.cta_intensity ?? f.ctaIntensity) as 'low' | 'medium' | 'high') ?? hardcoded?.features.ctaIntensity ?? 'medium',
       primaryFlow: ((f.primary_flow ?? f.primaryFlow) as 'mortgage' | 'valuation') ?? hardcoded?.features.primaryFlow ?? 'mortgage',
+      scriptedIntro: (f.scripted_intro as boolean) ?? (f.scriptedIntro as boolean) ?? hardcoded?.features.scriptedIntro ?? false,
     },
     gaId: hardcoded?.gaId,
     agentName: row.agent_name ?? hardcoded?.agentName ?? 'Hugo',
