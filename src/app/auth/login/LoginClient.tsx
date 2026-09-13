@@ -15,13 +15,32 @@ export function LoginClient() {
   const router = useRouter();
   const params = useSearchParams();
   const redirectTo = safeRedirect(params.get('redirect'));
-  const { login, loginWithOAuth } = useAuth();
+  const { login, loginWithOAuth, forgotPassword } = useAuth();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [info, setInfo] = useState('');
   const [loading, setLoading] = useState(false);
+  const [resetLoading, setResetLoading] = useState(false);
   const [oauthLoading, setOauthLoading] = useState(false);
+
+  const handleForgot = async () => {
+    setError('');
+    setInfo('');
+    if (!email) {
+      setError('Vyplňte e-mail, na který pošleme odkaz pro nové heslo.');
+      return;
+    }
+    setResetLoading(true);
+    try {
+      const res = await forgotPassword(email);
+      if (res.error) setError(res.error);
+      else setInfo(res.message ?? 'Pokud účet s tímto e-mailem existuje, odeslali jsme vám odkaz pro obnovení hesla.');
+    } finally {
+      setResetLoading(false);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -87,12 +106,21 @@ export function LoginClient() {
           className="w-full px-4 py-3 rounded-xl border border-outline-variant/40 text-sm outline-none focus:border-primary bg-surface"
         />
         {error && <p className="text-sm text-red-600">{error}</p>}
+        {info && <p className="text-sm text-on-surface-variant">{info}</p>}
         <button
           type="submit"
           disabled={loading}
           className="w-full px-4 py-3 rounded-xl bg-primary text-on-primary text-sm font-semibold hover:opacity-90 disabled:opacity-50 transition-opacity"
         >
           {loading ? 'Přihlašuji…' : 'Přihlásit se'}
+        </button>
+        <button
+          type="button"
+          onClick={handleForgot}
+          disabled={resetLoading}
+          className="w-full text-sm text-primary hover:underline disabled:opacity-50"
+        >
+          {resetLoading ? 'Odesílám odkaz…' : 'Zapomenuté heslo?'}
         </button>
       </form>
     </div>

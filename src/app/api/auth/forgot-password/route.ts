@@ -2,7 +2,9 @@
  * Forgot Password API
  * 
  * Pošle reset email přes Supabase Auth.
- * Uživatel dostane odkaz na /auth/confirm?type=recovery
+ * Odkaz vede přes /auth/callback (výměna kódu za přihlášení) na /auth/reset-password.
+ * Adresa musí být v Supabase → Authentication → Redirect URLs, jinak Supabase
+ * odkaz pošle na Site URL projektu.
  */
 
 import { createSupabaseServer } from '@/lib/supabase/server';
@@ -19,8 +21,10 @@ export async function POST(req: Request) {
     }
 
     const supabase = await createSupabaseServer();
+    // Doména, ze které žádost přišla — dřív bez NEXT_PUBLIC_SITE_URL mířil odkaz na localhost.
+    const origin = new URL(req.url).origin;
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000'}/auth/confirm`,
+      redirectTo: `${origin}/auth/callback?next=/auth/reset-password`,
     });
 
     if (error) {

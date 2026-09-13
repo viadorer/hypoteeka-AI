@@ -3,10 +3,15 @@ import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { ensureProfile } from '@/lib/auth/ensure-profile';
 
+/** Jen relativní cesta v rámci webu — `next=@cizi.cz` by z `${origin}${next}` udělalo cizí doménu. */
+function safeNext(raw: string | null): string {
+  return raw && raw.startsWith('/') && !raw.startsWith('//') ? raw : '/';
+}
+
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get('code');
-  const next = searchParams.get('next') ?? '/';
+  const next = safeNext(searchParams.get('next'));
 
   if (code) {
     const cookieStore = await cookies();
