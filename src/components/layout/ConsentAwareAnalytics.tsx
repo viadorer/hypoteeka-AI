@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
-import { getConsent } from './CookieConsent';
+import { CONSENT_EVENT, getConsent, type ConsentState } from './CookieConsent';
 
 interface Props {
   gaId: string;
@@ -13,26 +13,31 @@ interface Props {
  */
 export function ConsentAwareAnalytics({ gaId }: Props) {
   useEffect(() => {
-    const consent = getConsent();
+    const load = (consent: ConsentState | null) => {
+      // No consent given yet or analytics rejected — don't load
+      if (!consent?.analytics) return;
 
-    // No consent given yet or analytics rejected — don't load
-    if (!consent || !consent.analytics) return;
+      if (document.querySelector(`script[src*="googletagmanager.com/gtag/js?id=${gaId}"]`)) return;
 
-    // Already loaded (e.g., after consent given and page reloaded)
-    if (document.querySelector(`script[src*="googletagmanager.com/gtag/js?id=${gaId}"]`)) return;
+      const script = document.createElement('script');
+      script.async = true;
+      script.src = `https://www.googletagmanager.com/gtag/js?id=${gaId}`;
+      document.head.appendChild(script);
 
-    // Load GA4
-    const script = document.createElement('script');
-    script.async = true;
-    script.src = `https://www.googletagmanager.com/gtag/js?id=${gaId}`;
-    document.head.appendChild(script);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const w = window as any;
+      w.dataLayer = w.dataLayer || [];
+      w.gtag = function () { w.dataLayer.push(arguments); };
+      w.gtag('js', new Date());
+      w.gtag('config', gaId);
+    };
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const w = window as any;
-    w.dataLayer = w.dataLayer || [];
-    w.gtag = function () { w.dataLayer.push(arguments); };
-    w.gtag('js', new Date());
-    w.gtag('config', gaId);
+    load(getConsent());
+
+    // Souhlas z lišty přijde událostí — ne z localStorage, ten se nemusel uložit.
+    const onConsent = (e: Event) => load((e as CustomEvent<ConsentState>).detail);
+    window.addEventListener(CONSENT_EVENT, onConsent);
+    return () => window.removeEventListener(CONSENT_EVENT, onConsent);
   }, [gaId]);
 
   return null;

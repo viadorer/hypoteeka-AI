@@ -3,13 +3,19 @@
 import { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
 
-interface ConsentState {
+export interface ConsentState {
   analytics: boolean;
   marketing: boolean;
   timestamp: string;
 }
 
 const CONSENT_KEY = 'cookie_consent';
+
+/** Událost s volbou klienta — skripty podle ní naběhnou bez reloadu stránky. */
+export const CONSENT_EVENT = 'cookie-consent-change';
+
+const BUTTON_CLASS =
+  'flex-1 min-w-[120px] px-4 py-2.5 rounded-xl border border-[#b80049]/30 hover:bg-[#f1f3ff] text-[#001a41] text-sm font-medium transition-colors';
 
 export function getConsent(): ConsentState | null {
   if (typeof window === 'undefined') return null;
@@ -24,7 +30,8 @@ export function getConsent(): ConsentState | null {
 export function CookieConsent() {
   const [visible, setVisible] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
-  const [analytics, setAnalytics] = useState(true);
+  // Předzaškrtnutý souhlas není souhlas (GDPR, § 89 z. 127/2005 Sb.)
+  const [analytics, setAnalytics] = useState(false);
   const [marketing, setMarketing] = useState(false);
 
   useEffect(() => {
@@ -35,10 +42,15 @@ export function CookieConsent() {
   }, []);
 
   const save = (consent: ConsentState) => {
-    localStorage.setItem(CONSENT_KEY, JSON.stringify(consent));
+    // Dřív tu byl reload: když se zápis neuložil (plný disk, zablokované
+    // úložiště), nová stránka souhlas nenašla a lišta se vracela dokola.
+    try {
+      localStorage.setItem(CONSENT_KEY, JSON.stringify(consent));
+    } catch {
+      // Volba platí aspoň pro tuto návštěvu.
+    }
     setVisible(false);
-    // Reload to apply consent (GA4 checks consent on load)
-    window.location.reload();
+    window.dispatchEvent(new CustomEvent<ConsentState>(CONSENT_EVENT, { detail: consent }));
   };
 
   const acceptAll = () => {
@@ -110,25 +122,20 @@ export function CookieConsent() {
           </div>
         )}
 
-        <div className="flex items-center gap-2">
-          <button
-            onClick={acceptAll}
-            className="flex-1 px-4 py-2.5 rounded-xl bg-gradient-to-r from-[#b80049] to-[#e2165f] shadow-[0_4px_20px_rgba(184,0,73,0.3)] text-white text-sm font-medium transition-colors"
-          >
+        {/* Tři rovnocenná tlačítka — odmítnutí nesmí být těžší než souhlas */}
+        <div className="flex flex-wrap items-center gap-2">
+          <button onClick={acceptAll} className={BUTTON_CLASS}>
             Přijmout vše
           </button>
+          <button onClick={rejectAll} className={BUTTON_CLASS}>
+            Odmítnout vše
+          </button>
           {showDetails ? (
-            <button
-              onClick={acceptSelected}
-              className="flex-1 px-4 py-2.5 rounded-xl border border-[#e9edff] hover:bg-[#f1f3ff] text-[#001a41]/80 text-sm font-medium transition-colors"
-            >
+            <button onClick={acceptSelected} className={BUTTON_CLASS}>
               Uložit výběr
             </button>
           ) : (
-            <button
-              onClick={() => setShowDetails(true)}
-              className="flex-1 px-4 py-2.5 rounded-xl border border-[#e9edff] hover:bg-[#f1f3ff] text-[#001a41]/80 text-sm font-medium transition-colors"
-            >
+            <button onClick={() => setShowDetails(true)} className={BUTTON_CLASS}>
               Nastavení
             </button>
           )}
