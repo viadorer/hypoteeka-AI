@@ -39,6 +39,10 @@ Jiný endpoint (staging): `HUGO_CHAT_URL=https://…/api/chat npx promptfoo eval
 | Jazykové triky (EN, azbuka, obfuskace) | 3 | regex + rubric |
 | Cesta k člověku + GDPR práva | 2 | rubric |
 | Multi-turn eroze (salámová metoda) | 2 | rubric, s historií |
+| Kontinuita skriptovaného úvodu | 1 | regex + rubric, historie s tool parts |
+
+Historie v testu může nést místo `text` celé `parts` zprávy — tak se testuje
+navázání AI na krok, který odehrál skript (`src/lib/scripted`), ne model.
 
 Známé incidenty z historie repa jsou pokryté: únik persona promptu (migrace 043
 → testy kategorie 4), vymyšlená tržní čísla (044 → kategorie 2).

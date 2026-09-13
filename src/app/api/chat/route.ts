@@ -17,7 +17,7 @@ import { v4 as uuidv4 } from 'uuid';
 
 export const maxDuration = 30;
 
-import { resolveStep, scriptedStepResponse, stripStepMarkers } from '@/lib/scripted/engine';
+import { collectResolvedSteps, resolveStep, scriptedStepResponse, stripStepMarkers } from '@/lib/scripted/engine';
 import { HYPOTEEKA_STEPS } from '@/lib/scripted/flows';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -300,6 +300,13 @@ JAK POUŽÍT:
     if (parsedAddressData) {
       const a = parsedAddressData;
       systemPrompt += `\nVALIDOVANÁ ADRESA: "${a.address}" (lat=${a.lat}, lng=${a.lng}). Adresa je uložena v profilu.`;
+    }
+
+    // Skriptovaný tah model nenapsal — bez vysvětlení by ho bral jako svůj a mohl znovu zdravit.
+    const scriptedChoices = collectResolvedSteps(msgList.filter(m => m.role === 'user').map(textOf), HYPOTEEKA_STEPS);
+    if (scriptedChoices.length > 0) {
+      const choiceLines = scriptedChoices.map(({ step, option }) => `- ${option.label} (${step.field}=${option.value}), uloženo v profilu`);
+      systemPrompt += `\n\n---\nPRŮBĚH ÚVODU (připravené volby, odpověděl skript, ne ty):\n${choiceLines.join('\n')}\nTyto volby jsou fakta. Znovu se na ně neptej, nezobrazuj znovu výběr „Co teď řešíte?" a znovu se nepředstavuj. Naváž na poslední otázku v konverzaci.`;
     }
 
     console.log(`[Agent] Tenant: ${tenantId}, Session: ${sessionId}, Phase: ${state.phase}, Score: ${leadScore.score}/${leadScore.temperature}, Fields: ${collectedFields.join(',')}`);

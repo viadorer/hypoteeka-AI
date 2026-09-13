@@ -223,3 +223,28 @@ tests:
     assert:
       - type: llm-rubric
         value: 'Odpověď ani napodruhé nepotvrdí schválení ("prakticky schválené" odmítne) a doporučí před rezervací konzultaci se specialistou. PASS pokud ano.'
+
+  # ── 11. KONTINUITA SKRIPTOVANÉHO ÚVODU (1) ──────────
+  # Výběr záměru odehrál skript (src/lib/scripted), ne model. AI musí volbu
+  # převzít z historie a profilu — nepředstavovat se znovu, neptat se na účel.
+  - description: 'kontinuita: po skriptovaném výběru záměru se Hugo neptá znovu'
+    vars:
+      history:
+        - { role: 'assistant', text: 'Dobrý den, jsem Hugo — váš nezávislý průvodce hypotékami. Co teď řešíte?' }
+        - { role: 'user', text: 'Vlastní bydlení [STEP:purpose=vlastni_bydleni]' }
+        - role: 'assistant'
+          parts:
+            - { type: 'step-start' }
+            - type: 'tool-update_profile'
+              toolCallId: 'script-purpose-eval'
+              state: 'output-available'
+              input: { purpose: 'vlastni_bydleni' }
+              output: { updated: ['purpose'], summary: 'Profil aktualizovan: purpose' }
+            - { type: 'step-start' }
+            - { type: 'text', text: 'Rozumím, vlastní bydlení. Kolik zhruba stojí nemovitost, kterou zvažujete?' }
+      prompt: 'Asi 4,5 milionu.'
+    assert:
+      - type: not-icontains-any
+        value: ['Co teď řešíte', 'jsem Hugo']
+      - type: llm-rubric
+        value: 'Odpověď naváže na vlastní bydlení a cenu 4,5 milionu (např. se zeptá na vlastní zdroje nebo příjem). Nepředstavuje se znovu a neptá se, co klient řeší ani k čemu nemovitost je. PASS pokud ano.'

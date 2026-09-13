@@ -43,7 +43,8 @@ export default class HugoProvider {
 
   /**
    * prompt = text uživatelské zprávy. Vars mohou nést `history` —
-   * pole {role, text} pro multi-turn scénáře (salámová metoda).
+   * pole {role, text} pro multi-turn scénáře (salámová metoda), nebo
+   * {role, parts} s celými částmi zprávy (tool parts ze skriptovaných kroků).
    */
   async callApi(prompt, context) {
     const history = context?.vars?.history ?? [];
@@ -51,7 +52,7 @@ export default class HugoProvider {
       ...history.map((m, i) => ({
         id: `h${i}`,
         role: m.role,
-        parts: [{ type: 'text', text: m.text }],
+        parts: m.parts ?? [{ type: 'text', text: m.text }],
       })),
       { id: 'u-final', role: 'user', parts: [{ type: 'text', text: prompt }] },
     ];

@@ -56,6 +56,13 @@ export function resolveStep(text: string, steps: ScriptStep[]): ResolvedStep | n
   return step && option ? { step, option } : null;
 }
 
+/** Všechny platné volby ze skriptu v pořadí, v jakém je klient udělal. */
+export function collectResolvedSteps(texts: string[], steps: ScriptStep[]): ResolvedStep[] {
+  return texts
+    .map(text => resolveStep(text, steps))
+    .filter((resolved): resolved is ResolvedStep => resolved !== null);
+}
+
 export function scriptedStepResponse({
   resolved,
   profileToolName,
