@@ -3,7 +3,7 @@
 import { useChat } from '@ai-sdk/react';
 import { useRef, useEffect, useState, useMemo, useCallback } from 'react';
 import { v4 as uuidv4 } from 'uuid';
-import { AlertCircle, RotateCcw, Calculator, ShieldCheck, TrendingUp, RefreshCw, PiggyBank, HelpCircle, Search, Phone } from 'lucide-react';
+import { AlertCircle, RotateCcw, Calculator, Home, RefreshCw, PiggyBank, HelpCircle, Search, Phone } from 'lucide-react';
 import Image from 'next/image';
 import { WidgetRenderer } from '../widgets/WidgetRenderer';
 import ReactMarkdown from 'react-markdown';
@@ -18,17 +18,37 @@ import { useAuth } from '@/lib/auth/auth-context';
 import { SiteHeader } from '../layout/SiteHeader';
 import { ExitIntentOverlay } from './ExitIntentOverlay';
 import { MobileCallFab } from './MobileCallFab';
+import { buildStepMessage, stripStepMarkers } from '@/lib/scripted/engine';
+import { PURPOSE_STEP } from '@/lib/scripted/flows';
 
-const QUICK_ACTIONS_MORTGAGE = [
-  { label: 'Spočítat splátku', icon: Calculator, materialIcon: 'calculate', prompt: 'Chci si spočítat splátku hypotéky.' },
-  { label: 'Ověřit bonitu', icon: ShieldCheck, materialIcon: 'verified_user', prompt: 'Chci si ověřit, jestli dosáhnu na hypotéku.' },
-  { label: 'Kolik si mohu půjčit?', icon: TrendingUp, materialIcon: 'trending_up', prompt: 'Kolik si mohu maximálně půjčit na hypotéku?' },
-  { label: 'Refinancování', icon: RefreshCw, materialIcon: 'refresh', prompt: 'Chci refinancovat hypotéku, jaké jsou aktuální podmínky?' },
-  { label: 'Investiční nemovitost', icon: PiggyBank, materialIcon: 'savings', prompt: 'Zvažuji koupi investiční nemovitosti na pronájem.' },
-  { label: 'Prodávám nemovitost', icon: Search, materialIcon: 'sell', prompt: 'Prodávám nemovitost a chci zjistit její tržní cenu.' },
+interface QuickAction {
+  label: string;
+  icon: typeof Calculator;
+  materialIcon: string;
+  /** null = nic neposílat, jen otevřít pole pro vlastní dotaz */
+  prompt: string | null;
+}
+
+const PURPOSE_ICONS: Record<string, Pick<QuickAction, 'icon' | 'materialIcon'>> = {
+  vlastni_bydleni: { icon: Home, materialIcon: 'home' },
+  investice: { icon: PiggyBank, materialIcon: 'savings' },
+  refinancovani: { icon: RefreshCw, materialIcon: 'refresh' },
+  refixace: { icon: RefreshCw, materialIcon: 'lock_clock' },
+  prodej: { icon: Search, materialIcon: 'sell' },
+};
+
+// Výběr záměru běží skriptem (src/lib/scripted): server odpoví bez AI
+// a volbu zapíše do profilu, takže na ni AI v dalším dotazu naváže.
+const QUICK_ACTIONS_MORTGAGE: QuickAction[] = [
+  ...PURPOSE_STEP.options.map(option => ({
+    label: option.label,
+    ...PURPOSE_ICONS[option.value],
+    prompt: buildStepMessage(PURPOSE_STEP, option),
+  })),
+  { label: 'Něco jiného', icon: HelpCircle, materialIcon: 'edit', prompt: null },
 ];
 
-const QUICK_ACTIONS_VALUATION = [
+const QUICK_ACTIONS_VALUATION: QuickAction[] = [
   { label: 'Zjistit cenu', icon: Search, materialIcon: 'search', prompt: 'Chci zjistit tržní cenu své nemovitosti.' },
   { label: 'Odhad nájmu', icon: PiggyBank, materialIcon: 'savings', prompt: 'Chci zjistit, za kolik bych mohl pronajímat svou nemovitost.' },
   { label: 'Spočítat hypotéku', icon: Calculator, materialIcon: 'calculate', prompt: 'Chci si spočítat splátku hypotéky.' },
@@ -423,7 +443,7 @@ export function ChatArea({ initialSessionId = null, onOpenSidebar }: ChatAreaPro
               {message.role === 'user' && (
                 <div className="flex flex-col items-end mb-2">
                   <div className="bg-primary text-on-primary px-5 py-3 md:py-3 rounded-2xl rounded-tr-none max-w-[85%] text-body-md leading-relaxed shadow-md break-words overflow-hidden">
-                    {getTextContent(message).replace(/\s*\[ADDRESS_DATA:.*?\]/g, '')}
+                    {stripStepMarkers(getTextContent(message).replace(/\s*\[ADDRESS_DATA:.*?\]/g, ''))}
                   </div>
                   {msgTimes[message.id] && (
                     <span className="text-label-sm text-on-surface-variant/50 normal-case tracking-normal mr-2 mt-1">
@@ -550,7 +570,7 @@ export function ChatArea({ initialSessionId = null, onOpenSidebar }: ChatAreaPro
                 {QUICK_ACTIONS.map(({ label, materialIcon, prompt }) => (
                   <button
                     key={label}
-                    onClick={() => useBadge(prompt)}
+                    onClick={() => (prompt ? useBadge(prompt) : inputRef.current?.focus())}
                     disabled={isLoading}
                     className="bg-surface-container-high hover:bg-primary-container hover:text-on-primary-container px-4 py-2 rounded-full text-label-md text-on-secondary-container transition-all flex items-center gap-2 border border-outline-variant/20 disabled:opacity-50 active:scale-95 shadow-sm"
                   >

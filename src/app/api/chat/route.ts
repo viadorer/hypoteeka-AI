@@ -17,6 +17,9 @@ import { v4 as uuidv4 } from 'uuid';
 
 export const maxDuration = 30;
 
+import { resolveStep, scriptedStepResponse, stripStepMarkers } from '@/lib/scripted/engine';
+import { HYPOTEEKA_STEPS } from '@/lib/scripted/flows';
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type AnyPart = Record<string, any>;
 
@@ -167,8 +170,22 @@ export async function POST(req: Request) {
       }
     }
     console.log(`[Profile] After merge: equity=${profile.equity}, price=${profile.propertyPrice}, purpose=${profile.purpose}, income=${profile.monthlyIncome}, email=${profile.email}`);
+    const msgList: Array<{ role: string; parts?: AnyPart[] }> = Array.isArray(messages) ? messages : [];
+    const textOf = (m: { parts?: AnyPart[] }): string =>
+      m.parts?.filter((p: AnyPart) => p.type === 'text').map((p: AnyPart) => p.text).join('') ?? '';
+
+    // Skriptovaný krok: poslední zpráva nese [STEP:pole=hodnota] z kliknutí
+    // na připravenou volbu. Volba jde do profilu hned, aby fáze, persona
+    // i uložená session odpovídaly tomu, co klient zvolil.
+    const lastEntry = msgList[msgList.length - 1];
+    const scripted = lastEntry?.role === 'user' ? resolveStep(textOf(lastEntry), HYPOTEEKA_STEPS) : null;
+    if (scripted) {
+      (profile as Record<string, unknown>)[scripted.step.field] = scripted.option.value;
+    }
+
     profile.lastMessageAt = new Date().toISOString();
-    profile.messageCount = messages.filter((m: { role: string }) => m.role === 'user').length;
+    // Kliky ve skriptu nejsou konverzace — do skóre ani fází se nepočítají.
+    profile.messageCount = msgList.filter(m => m.role === 'user' && !resolveStep(textOf(m), HYPOTEEKA_STEPS)).length;
 
     // Update conversation state
     const collectedFields = getCollectedFields(profile);
@@ -191,13 +208,41 @@ export async function POST(req: Request) {
       state.microConversionsOffered.push(microConversion);
     }
 
+    if (scripted) {
+      console.log(`[Script] ${scripted.step.field}=${scripted.option.value}, Session: ${sessionId}, Phase: ${state.phase}`);
+      // Uložení teď: session musí existovat, než klient po streamu pošle
+      // celou historii na /api/sessions/[id]/messages.
+      await storage.saveSession({
+        id: sessionId,
+        tenantId,
+        authorId,
+        userId,
+        profile,
+        state,
+        messages: msgList.map(m => ({
+          role: m.role as 'user' | 'assistant',
+          content: stripStepMarkers(textOf(m)),
+          timestamp: new Date().toISOString(),
+        })),
+        uiMessages: messages,
+        createdAt: existing?.createdAt ?? new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      });
+      return scriptedStepResponse({
+        resolved: scripted,
+        profileToolName: 'update_profile',
+        // Stejný výstup jako update_profile.execute v ai-tools.ts
+        toolOutput: { updated: [scripted.step.field], summary: `Profil aktualizovan: ${scripted.step.field}` },
+      });
+    }
+
     // Extract last user message for knowledge base matching
     // (AI SDK v6 UIMessage nemá .content — text žije v parts)
     const msgArray = Array.isArray(messages) ? messages : [];
     const lastUserMsgObj = [...msgArray].reverse().find((m: { role: string }) => m.role === 'user') as { parts?: AnyPart[]; content?: unknown } | undefined;
     const lastUserMessage = lastUserMsgObj
-      ? (lastUserMsgObj.parts?.filter((p: AnyPart) => p.type === 'text').map((p: AnyPart) => p.text).join('')
-          || (typeof lastUserMsgObj.content === 'string' ? lastUserMsgObj.content : undefined))
+      ? stripStepMarkers(lastUserMsgObj.parts?.filter((p: AnyPart) => p.type === 'text').map((p: AnyPart) => p.text).join('')
+          || (typeof lastUserMsgObj.content === 'string' ? lastUserMsgObj.content : ''))
       : undefined;
 
     // Build dynamic prompt (async - fetches live rates from ČNB API + knowledge base)
@@ -269,7 +314,7 @@ JAK POUŽÍT:
       state,
       messages: messages.map((m: { role: string; parts?: AnyPart[] }) => ({
         role: m.role as 'user' | 'assistant',
-        content: m.parts?.filter((p: AnyPart) => p.type === 'text').map((p: AnyPart) => p.text).join('') ?? '',
+        content: stripStepMarkers(m.parts?.filter((p: AnyPart) => p.type === 'text').map((p: AnyPart) => p.text).join('') ?? ''),
         timestamp: new Date().toISOString(),
       })),
       uiMessages: messages, // Complete UI messages for conversation restore
@@ -553,7 +598,12 @@ JAK POUŽÍT:
       },
     };
 
-    const modelMessages = await convertToModelMessages(messages, {
+    // Značky skriptovaných kroků jsou pro server, ne pro model.
+    const messagesForModel = msgList.map(m => m.role !== 'user' ? m : {
+      ...m,
+      parts: m.parts?.map((p: AnyPart) => (p.type === 'text' ? { ...p, text: stripStepMarkers(p.text) } : p)),
+    });
+    const modelMessages = await convertToModelMessages(messagesForModel as Parameters<typeof convertToModelMessages>[0], {
       tools: tools,
     });
 

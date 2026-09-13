@@ -125,6 +125,10 @@ export function determinePhase(state: ConversationState, collectedFields: string
     return 'discovery';
   }
 
+  // Greeting = zjištění účelu. Známý účel znamená, že úvod proběhl — i když
+  // ho klient zvolil skriptovaným krokem, který se do turnCount nepočítá.
+  if (has('purpose')) return 'discovery';
+
   // Pokud je to první zpráva
   if (state.turnCount <= 1) return 'greeting';
 
